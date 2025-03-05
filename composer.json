@@ -22,5 +22,7 @@
     },
     "suggest": {
          "laravel/frontend-preset": "For scaffolding frontend assets like Tailwind CSS and Alpine.js."
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
