@@ -18,6 +18,7 @@ class MijnuiServiceProvider extends ServiceProvider
         $this->bootAsset();
         $this->bootComponentPath();
         $this->bootTagCompiler();
+        $this->bootPublishes();
     }
 
     public function bootAsset()
@@ -70,6 +71,6 @@ class MijnuiServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../dist/mijnui.css' => public_path('vendor/mijnui/css/mijnui.css'),
             __DIR__.'/../dist/mijnui.js' => public_path('vendor/mijnui/js/mijnui.js'),
-        ], 'assets');
+        ], 'mijnui-assets');
     }
 }
