@@ -15,9 +15,7 @@
         }
     },
     "require": {
-        "php": "^8.1",
-        "livewire/livewire": "^3.5",
-        "laravel/framework": "10.0"
+        "php": "^8.1"
     },
     "suggest": {
          "laravel/frontend-preset": "For scaffolding frontend assets like Tailwind CSS and Alpine.js."
