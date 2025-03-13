@@ -1,7 +1,9 @@
 @props([
-    'class' => '', // Allow custom classes to be passed
+    'class' => '',
 ])
-
-<h3 {{ $attributes->merge(['class' => "text-2xl font-semibold leading-none tracking-tight $class"]) }}>
+@php
+    $base = "text-2xl font-semibold leading-none tracking-tight";
+@endphp
+<h3 {{ $attributes->merge(['class' => "$base $class"]) }}>
     {{ $slot }}
 </h3>

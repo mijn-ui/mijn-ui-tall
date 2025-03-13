@@ -59,7 +59,7 @@
         role="combobox"
         class="flex h-10 items-center justify-between rounded-md border bg-surface px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
     >
-        <span class="line-clamp-1 text-muted" x-text="selectedItem">{{ $placeholder }}</span>
+        <span class="line-clamp-1" x-text="selectedItem">{{ $placeholder }}</span>
         <svg
             stroke="currentColor"
             fill="none"

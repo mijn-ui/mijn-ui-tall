@@ -1,7 +1,9 @@
 @props([
-    'class' => '', // Allow custom classes to be passed
+    'class' => '',
 ])
-
-<p {{ $attributes->merge(['class' => "text-muted-foreground text-small $class"]) }}>
+@php
+    $base = "text-sm text-muted-text";
+@endphp
+<p {{ $attributes->merge(['class' => "$base $class"]) }}>
     {{ $slot }}
 </p>
