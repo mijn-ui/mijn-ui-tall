@@ -18,6 +18,7 @@
                 id="{{ $id ?? $name }}"
                     class="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-[4px] border border-main-text transition-all checked:border-primary checked:bg-primary"
                     type="checkbox"
+                    value="{{ $value }}"
                     @if($checked) checked @endif
                     @if($disabled) disabled @endif
                     {{ $attributes->whereStartsWith('wire:model') }}
