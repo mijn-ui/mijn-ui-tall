@@ -85,7 +85,7 @@
         x-effect="
             if (selectOpen) {
                 $nextTick(() => {
-                    if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight) {
+                    if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
                         if (!$el.classList.contains('bottom-full')) {
                             $el.classList.add('bottom-full');
                             $el.classList.remove('top-full');
@@ -100,20 +100,22 @@
             }
     "
         x-on:scroll.window="
-            if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight) {
-                if (!$el.classList.contains('bottom-full')) {
-                    $el.classList.add('bottom-full');
-                    $el.classList.remove('top-full');
+            $nextTick(() => {
+                if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
+                    if (!$el.classList.contains('bottom-full')) {
+                        $el.classList.add('bottom-full');
+                        $el.classList.remove('top-full');
+                    }
+                } else {
+                    if (!$el.classList.contains('top-full')) {
+                        $el.classList.add('top-full');
+                        $el.classList.remove('bottom-full');
+                    }
                 }
-            } else {
-                if (!$el.classList.contains('top-full')) {
-                    $el.classList.add('top-full');
-                    $el.classList.remove('bottom-full');
-                }
-            }
+            })
         "
         x-transition
-        class="absolute w-full left-0 rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1"
+        class="absolute w-full left-0 rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1 max-h-[50vh] overflow-y-auto"
     >
 
     {{ $slot }}
