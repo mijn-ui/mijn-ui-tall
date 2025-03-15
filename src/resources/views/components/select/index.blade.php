@@ -51,12 +51,14 @@
     }
     })
     "
+    x-on:click.outside="selectOpen = false"
     >
     <!-- ComboBox Trigger -->
     <button
         x-on:click="selectOpen = !selectOpen"
         type="button"
         role="combobox"
+        x-ref="selectTrigger"
         class="flex h-10 items-center justify-between rounded-md border bg-surface px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring"
     >
         <span class="line-clamp-1" x-text="selectedItem">{{ $placeholder }}</span>
@@ -78,15 +80,47 @@
 
     <!-- ComboBox Content -->
     <div
+        x-cloak
         x-show="selectOpen"
+        x-effect="
+            if (selectOpen) {
+                $nextTick(() => {
+                    if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight) {
+                        if (!$el.classList.contains('bottom-full')) {
+                            $el.classList.add('bottom-full');
+                            $el.classList.remove('top-full');
+                        }
+                    } else {
+                        if (!$el.classList.contains('top-full')) {
+                            $el.classList.add('top-full');
+                            $el.classList.remove('bottom-full');
+                        }
+                    }
+                });
+            }
+    "
+        x-on:scroll.window="
+            if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight) {
+                if (!$el.classList.contains('bottom-full')) {
+                    $el.classList.add('bottom-full');
+                    $el.classList.remove('top-full');
+                }
+            } else {
+                if (!$el.classList.contains('top-full')) {
+                    $el.classList.add('top-full');
+                    $el.classList.remove('bottom-full');
+                }
+            }
+        "
         x-transition
-        class="absolute w-full top-full left-0 rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1"
+        class="absolute w-full left-0 rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1"
     >
 
     {{ $slot }}
 
 
 </div>
+
 
 
 </div>

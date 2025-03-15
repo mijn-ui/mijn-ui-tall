@@ -3,20 +3,34 @@
     'hasLinks' => true,
     'hasGuide' => true,
     'hasPerPage' => true,
+    'perPage' => null,
+    'perPageOptions' => ['10', '25', '50', '100', '200'],
 ])
 
+@php
+
+    if (!method_exists($data, 'firstItem')) {
+        throw new \Exception('data for pagination must be type of Illuminate\Pagination\LengthAwarePaginator');
+    }
+
+    $c_page = request()->query('page') ?? 1;
+    $c_perPage = request()->query('perPage') ?? $perPage;
+
+@endphp
+
 <nav {{ $attributes->merge([
-    'class' => 'flex flex-col items-center justify-end gap-2 space-x-2 py-2 sm:flex-row',
+    'class' => 'flex flex-col items-center justify-between gap-2 py-2 sm:flex-row',
 ]) }}>
 
     @if ($hasGuide)
-        <p class="flex-1 text-sm text-muted-foreground">
+        <p class="text-sm text-muted-foreground">
             Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} results
         </p>
     @endif
 
-    @if ($hasLinks)
+    @if ($hasLinks && $data->hasPages())
 
+        <div class="flex items-center gap-2">
             <mijnui:pagination.previous current="{{ $data->currentPage() }}" />
             @if ($data->lastPage() > 1)
                 <mijnui:pagination.link page="1" current="{{ $data->currentPage() }}" />
@@ -26,11 +40,11 @@
                 @endif
 
                 <ul class="flex flex-row items-center gap-1">
-                @for ($i = max(2, $data->currentPage() - 1); $i <= min($data->lastPage() - 1, $data->currentPage() + 1); $i++)
-                    <li>
-                    <mijnui:pagination.link page="{{ $i }}" current="{{ $data->currentPage() }}" />
-                    </li>
-                @endfor
+                    @for ($i = max(2, $data->currentPage() - 1); $i <= min($data->lastPage() - 1, $data->currentPage() + 1); $i++)
+                        <li>
+                            <mijnui:pagination.link page="{{ $i }}" current="{{ $data->currentPage() }}" />
+                        </li>
+                    @endfor
                 </ul>
 
                 @if ($data->currentPage() < $data->lastPage() - 2)
@@ -42,21 +56,28 @@
                 @endif
             @endif
             <mijnui:pagination.next current="{{ $data->currentPage() }}" lastPage="{{ $data->lastPage() }}" />
+        </div>
+
     @endif
 
+    @if ($hasPerPage)
+    <select wire:model.live="perPage">
+        @foreach ($perPageOptions as $perPageOption)
+            <option value="{{ $perPageOption }}">{{ $perPageOption }}</option>
+        @endforeach
+    </select>
+        {{-- <mijnui:select wire:model.live="perPage"
+        x-on:change="
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            params.set('perPage', $el.value)
+            window.history.pushState({}, '', `${url.pathname}?${params.toString()}`);
+        "
+        >
+            @foreach ($perPageOptions as $perPageOption)
+                <mijnui:select.option value="{{ $perPageOption }}">{{ $perPageOption }}</mijnui:select.option>
+            @endforeach
+        </mijnui:select> --}}
+    @endif
 
 </nav>
-
-<script>
-    function changePerPage(page) {
-        let url = new URL(window.location.href);
-        url.searchParams.set('perPage', page);
-        window.location.href = url.toString();
-    }
-
-    function changePage(page) {
-        let url = new URL(window.location.href);
-        url.searchParams.set('page', page);
-        window.location.href = url.toString();
-    }
-</script>

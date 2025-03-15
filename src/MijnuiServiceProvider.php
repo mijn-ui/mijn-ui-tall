@@ -11,22 +11,23 @@ class MijnuiServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(MijnuiTagCompiler::class);
+        $this->app->singleton('mijnui', function () {
+            return new AssetManager();
+        });
     }
 
     public function boot(): void
     {
-        $this->bootAsset();
         $this->bootComponentPath();
         $this->bootTagCompiler();
         $this->bootPublishes();
+
+        AssetManager::boot();
+
+//        app('mijnui')->boot();
+
     }
 
-    public function bootAsset()
-    {
-        Blade::directive('mijnuiScripts', function () {
-            return '<script src="' . asset('vendor/mijnui/js/mijnui.js') . '"></script>';
-        });
-    }
 
     public function bootComponentPath()
     {
