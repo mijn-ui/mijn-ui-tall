@@ -1,5 +1,4 @@
 document.addEventListener("alpine:init", () => {
-    // Initialize sidebar
     Alpine.store("sidebar", {
         isOpen: JSON.parse(localStorage.getItem("mijnuiSidebarOpen")) ?? true,
         toggle() {
@@ -7,12 +6,4 @@ document.addEventListener("alpine:init", () => {
             localStorage.setItem("mijnuiSidebarOpen", this.isOpen);
         }
     });
-
-    // Check if the @mijnuiAppearance directive is present
-    const mijnuiAppearanceDirective = document.querySelector('script[data-mijnui-appearance]');
-
-    if (!mijnuiAppearanceDirective) {
-        localStorage.removeItem("mijnui.appearance");
-    }
-
 });

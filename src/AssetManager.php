@@ -25,41 +25,54 @@ class AssetManager
         });
     }
 
-    public static function mijnuiAppearance()
+    public static function mijnuiAppearance($appearance = 'light')
     {
         return <<<HTML
-            <style>
-                :root.dark {
-                    color-scheme: dark;
-                }
-            </style>
-            <script>
-                window.mijnui = {
-                    applyAppearance (appearance) {
-                        let applyDark = () => document.documentElement.classList.add('dark')
-                        let applyLight = () => document.documentElement.classList.remove('dark')
+<style>
+    :root.dark {
+        color-scheme: dark;
+    }
+</style>
+<script>
+    window.mijnui = {
+        appearance: window.localStorage.getItem('mijnui.appearance') || 'system',
 
-                        if (appearance === 'system') {
-                            let media = window.matchMedia('(prefers-color-scheme: dark)')
+        applyAppearance(appearance) {
+            this.appearance = appearance;
 
-                            window.localStorage.removeItem('mijnui.appearance')
+            if (appearance === 'system') {
+                let media = window.matchMedia('(prefers-color-scheme: dark)');
+                window.localStorage.removeItem('mijnui.appearance');
+                media.matches ? this.enableDarkMode() : this.enableLightMode();
+            } else if (appearance === 'dark') {
+                window.localStorage.setItem('mijnui.appearance', 'dark');
+                this.enableDarkMode();
+            } else if (appearance === 'light') {
+                window.localStorage.setItem('mijnui.appearance', 'light');
+                this.enableLightMode();
+            }
+        },
 
-                            media.matches ? applyDark() : applyLight()
-                        } else if (appearance === 'dark') {
-                            window.localStorage.setItem('mijnui.appearance', 'dark')
+        enableDarkMode() {
+            document.documentElement.classList.add('dark');
+        },
 
-                            applyDark()
-                        } else if (appearance === 'light') {
-                            window.localStorage.setItem('mijnui.appearance', 'light')
+        enableLightMode() {
+            document.documentElement.classList.remove('dark');
+        },
 
-                            applyLight()
-                        }
-                    }
-                }
+        toggleAppearance() {
+            if (this.appearance === 'dark') {
+                this.applyAppearance('light');
+            } else {
+                this.applyAppearance('dark');
+            }
+        }
+    };
 
-                // Apply the appearance on page load
-                window.mijnui.applyAppearance(window.localStorage.getItem('mijnui.appearance') || 'system');
-            </script>
-            HTML;
+    // Apply the appearance on page load
+    window.mijnui.applyAppearance(window.mijnui.appearance || 'light');
+</script>
+HTML;
     }
 }
