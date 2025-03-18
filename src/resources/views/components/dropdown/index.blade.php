@@ -1,11 +1,13 @@
-<div class="relative" x-data="{ dropdownOpen: false }" x-on:click.outside="dropdownOpen = false">
+<div class="relative" x-data="{ dropdownOpen: false }">
 
     @isset($trigger)
-        {{ $trigger }}
+        <div class="relative w-fit" x-on:click.outside="dropdownOpen = false">
+            {{ $trigger }}
+            @isset($content)
+                {{ $content }}
+            @endisset
+        </div>
     @endisset
 
-    @isset($content)
-        {{ $content }}
-    @endisset
 
 </div>
