@@ -1,6 +1,6 @@
 @props([
     'class' => '',
-    'variant' => 'double',
+    'variant' => 'single',
 
 ])
 @php

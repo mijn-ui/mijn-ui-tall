@@ -6,6 +6,7 @@
     'subtle' => false,
     'ghost' => false,
     'disabled' => false,
+    'mijnuiSidebarParent' => '',
 ])
 
 @php
@@ -46,6 +47,9 @@
 
 <button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }}
     @if($disabled) disabled @endif
+    @if($mijnuiSidebarParent)
+        @click="$store.sidebar.setActiveContent('{{$mijnuiSidebarParent}}')"
+    @endif
 >
     {{ $slot }}
 </button>
