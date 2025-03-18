@@ -1,5 +1,5 @@
 @props(['title'])
 
 <h2 id="-title" class="text-lg font-semibold">
-    {{ $title }}
+    {{ $title ?? $slot }}
 </h2>

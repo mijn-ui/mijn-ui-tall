@@ -21,7 +21,7 @@
 
 
 <x-slot name="trigger">
-    <button x-on:click="dropdownOpen = !dropdownOpen" class="{{ $base . $variantClass }}" >
+    <div x-on:click="dropdownOpen = !dropdownOpen" x-ref="trigger" >
         {{ $slot }}
-    </button>
+    </div>
 </x-slot>
