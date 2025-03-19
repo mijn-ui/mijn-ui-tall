@@ -61,23 +61,22 @@
     @endif
 
     @if ($hasPerPage)
-    <select wire:model.live="perPage">
+        {{-- <select wire:model.live="perPage">
         @foreach ($perPageOptions as $perPageOption)
             <option value="{{ $perPageOption }}">{{ $perPageOption }}</option>
         @endforeach
-    </select>
-        {{-- <mijnui:select wire:model.live="perPage"
-        x-on:change="
+    </select> --}}
+        <mijnui:select wire:model.live="perPage"
+            x-on:change="
             const url = new URL(window.location.href);
             const params = new URLSearchParams(url.search);
             params.set('perPage', $el.value)
             window.history.pushState({}, '', `${url.pathname}?${params.toString()}`);
-        "
-        >
+        ">
             @foreach ($perPageOptions as $perPageOption)
                 <mijnui:select.option value="{{ $perPageOption }}">{{ $perPageOption }}</mijnui:select.option>
             @endforeach
-        </mijnui:select> --}}
+        </mijnui:select>
     @endif
 
 </nav>
