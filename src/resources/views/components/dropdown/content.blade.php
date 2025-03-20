@@ -4,8 +4,10 @@
 
 <x-slot name="content">
     <div x-cloak
+    {{$attributes->merge([
+        'class'=> "absolute transition z-10 mt-0.5 w-64 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text"
+    ])}}
         :class="dropdownOpen ? '': 'pointer-events-none opacity-0'"
-        class="absolute transition z-10 mt-0.5 w-64 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text"
         x-ref="dropdown"
         x-on:click="dropdownOpen = false"
         x-effect="
@@ -20,7 +22,7 @@
                     } else if ('{{ $align }}' === 'right') {
                         el.style.right = '0px';
                     }
-                }
+                }   
             })
         "
         role="menu">

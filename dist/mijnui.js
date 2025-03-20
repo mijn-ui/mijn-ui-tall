@@ -25,3 +25,12 @@ document.addEventListener("alpine:init", () => {
         }
     });
 });
+
+console.log('dom started')
+Livewire.on('perPageUpdated', (perPage) => {
+    const url = new URL(window.location.href);
+    console.log('PerPage updated to:', perPage);
+    const params = new URLSearchParams(url.search);
+    params.set('perPage', perPage); // Update the query parameter
+    window.history.pushState({}, '', url.pathname + '?' + params.toString()); // Update the URL
+});

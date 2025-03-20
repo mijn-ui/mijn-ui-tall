@@ -27,9 +27,8 @@
 <mijnui:with-field :$label :$description :$name>
 <div>
     <input
-        class="hidden"
         x-ref="nativeSelect"
-        type="text"
+        type="hidden"
         {{ $attributes->except('class') }}
         @isset($name) name="{{ $name }}" @endisset
     />
