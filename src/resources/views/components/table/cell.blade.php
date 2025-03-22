@@ -1,5 +1,6 @@
-{{--@props(['variant' => 'default'])--}}
-
-<td class="px-4 py-3 font-medium">
+{{-- @props(['variant' => 'default']) --}}
+<td {{$attributes->merge([
+    'class' => 'px-4 py-3'
+])}}>
     {{ $slot }}
 </td>
