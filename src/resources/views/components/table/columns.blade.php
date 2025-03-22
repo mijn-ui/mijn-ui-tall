@@ -1,7 +1,9 @@
-{{--@props(['sortable' => false, 'sorted' => false, 'direction' => 'asc'])--}}
+{{-- @props(['sortable' => false, 'sorted' => false, 'direction' => 'asc']) --}}
 
-<thead class="bg-accent text-xs uppercase text-muted-text">
-<tr>
-    {{ $slot }}
-</tr>
+<thead>
+    <tr {{ $attributes->merge([
+        'class' => 'bg-accent text-xs uppercase text-muted-text',
+    ]) }}>
+        {{ $slot }}
+    </tr>
 </thead>
