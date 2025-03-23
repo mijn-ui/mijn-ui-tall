@@ -15,13 +15,13 @@
             <label for="checkbox" class="relative flex items-center">
                 <input
                     @isset($name) name="{{ $name }}" @endisset
-                id="{{ $id ?? $name }}"
+                    id="{{ $id ?? $name }}"
                     class="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-[4px] border border-main-text transition-all checked:border-primary checked:bg-primary"
                     type="checkbox"
                     value="{{ $value }}"
                     @if($checked) checked @endif
                     @if($disabled) disabled @endif
-                    {{ $attributes->whereStartsWith('wire:model') }}
+                    {{ $attributes->except('class') }}
                 />
                 <span
                     class="pointer-events-none absolute left-2/4 top-2/4 -translate-x-2/4 -translate-y-2/4 opacity-0 transition-opacity peer-checked:opacity-100"
