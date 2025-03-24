@@ -1,3 +1,7 @@
-<p class="text-xs text-muted-text">
+@php
+    $base = "text-xs text-muted-text";
+@endphp
+
+<p {{$attributes->merge(['class' => $base])}}>
     {{$slot}}
 </p>

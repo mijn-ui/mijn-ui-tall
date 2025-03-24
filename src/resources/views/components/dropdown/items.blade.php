@@ -1,3 +1,5 @@
 <x-slot name="body">
-    {{ $slot }}
+    <div {{$attributes}}>
+        {{ $slot }}
+    </div>
 </x-slot>

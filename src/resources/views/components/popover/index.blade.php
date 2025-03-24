@@ -3,8 +3,7 @@
 ])
 
 @php
-    $contentBase = 'absolute bottom-full my-0.5 w-full text-sm';
-   
+    $base = 'absolute bottom-full my-0.5 w-full text-sm';
 @endphp
 
 
@@ -12,7 +11,9 @@
     <div x-on:click="open= !open">
         {{ $trigger }}
     </div>
-    <div x-show="open" x-transition class="{{ $contentBase }}">
+    <div x-show="open" x-transition {{$attributes->merge([
+        'class' => $base
+    ])}}>
         {{ $content }}
     </div>
 </div>

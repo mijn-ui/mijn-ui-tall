@@ -1,7 +1,13 @@
+@php
+    $base = 'group flex w-full items-center justify-between py-3';
+@endphp
+
 <button
     type="button"
-    class="group flex w-full items-center justify-between py-3"
-    @click="open = !open"
+    x-on:click="open = !open"
+    {{$attributes->merge([
+        'class' => $base
+    ])}}
 >
     <span>{{ $slot }}</span>
     <svg

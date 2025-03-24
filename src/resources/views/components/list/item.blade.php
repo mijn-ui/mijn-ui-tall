@@ -11,13 +11,13 @@
     $activeHoverClass = 'hover:bg-primary/30';
 @endphp
 
-@if($href)
+<?php if($href): ?>
     <a {{ $attributes->merge(['class' => "$base $class " . ($active ? "$activeClass $activeHoverClass" : $hoverClass), 'href' => $href]) }}>
         {{ $slot }}
     </a>
-@else
+<?php else: ?> 
 <button {{ $attributes->merge(['class' => "$base $class " . ($active ? "$activeClass $activeHoverClass" : $hoverClass)]) }}>
     {{ $slot }}
 </button>
-@endif
+<?php endif; ?>
 

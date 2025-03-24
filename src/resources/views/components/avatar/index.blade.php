@@ -30,11 +30,11 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => "$base $sizeClasses $radiusClasses $class"]) }}>
-    @if ($src)
+    <?php ($src)
         <img src="{{ $src }}" alt="{{ $alt }}" class="{{ $imageClasses }}">
-    @elseif ($fallback)
+    <?php else: ?> if ($fallback)
         <span class="{{ $fallbackClasses }}">
             {{ $fallback }}
         </span>
-    @endif
+    ?>
 </div>

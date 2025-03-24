@@ -10,13 +10,13 @@
 
     <!-- RadioGroup -->
 <div {{ $attributes->merge(['class' => "$base $class"]) }}>
-    @if($name)
+    <?php if($name): ?>
         <input
             type="hidden"
             {{ $attributes->whereStartsWith('wire:model') }}
             name="{{ $name }}"
         />
-    @endif
+    <?php endif;?>
 
     {{ $slot }}
 </div>

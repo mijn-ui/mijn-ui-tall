@@ -1,10 +1,11 @@
 document.addEventListener("alpine:init", () => {
     Alpine.store("sidebar", {
-        // Sidebar open/close state (persisted in localStorage)
-        isOpen: JSON.parse(localStorage.getItem("mijnuiSidebarOpen")) ?? true,
-
         // Active content state (persisted in localStorage)
         activeContent: localStorage.getItem("mijnuiActiveContent") || null,
+
+        // Sidebar open/close state (persisted in localStorage)
+        isOpen: (JSON.parse(localStorage.getItem("mijnuiSidebarOpen"))) ?? false,
+
 
         // Toggle sidebar open/close
         toggle() {
@@ -27,6 +28,7 @@ document.addEventListener("alpine:init", () => {
 });
 
 console.log('dom started')
+console.log(localStorage.getItem("mijnuiActiveContent"))
 Livewire.on('perPageUpdated', (perPage) => {
     const url = new URL(window.location.href);
     console.log('PerPage updated to:', perPage);

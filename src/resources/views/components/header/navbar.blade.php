@@ -1,9 +1,11 @@
 @props([
     'class' => '',
 ])
+
 @php
     $base = 'flex items-center gap-2';
 @endphp
+
 <nav x-data class="flex w-full items-center justify-between px-3 py-2">
     <div class="flex items-center gap-4">
         <button @click="$store.sidebar.toggle()"

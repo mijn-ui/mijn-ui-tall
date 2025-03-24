@@ -12,7 +12,7 @@
         </table>
     </div>
 
-    @if ($paginate)
+    <?php if($paginate) :?>
         <mijnui:pagination :data="$paginate" :$perPage />
-    @endif
+    <?php endif;?>
 </div>

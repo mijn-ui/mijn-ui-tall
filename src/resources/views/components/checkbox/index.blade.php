@@ -19,8 +19,8 @@
                     class="before:content[''] peer relative h-5 w-5 cursor-pointer appearance-none rounded-[4px] border border-main-text transition-all checked:border-primary checked:bg-primary"
                     type="checkbox"
                     value="{{ $value }}"
-                    @if($checked) checked @endif
-                    @if($disabled) disabled @endif
+                    <?php if($checked) checked ?>
+                    <?php if($disabled) disabled ?>
                     {{ $attributes->except('class') }}
                 />
                 <span

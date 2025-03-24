@@ -1,5 +1,11 @@
 @props(['open' => false])
 
-<div x-data="{ open: @json($open) }" class="w-full border-b">
+@php
+    $base = 'w-full border-b';
+@endphp
+
+<div x-data="{ open: @json($open) }" {{$attributes->merge([
+    'class' => $base
+])}}>
     {{ $slot }}
 </div>
