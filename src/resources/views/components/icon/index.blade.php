@@ -33,7 +33,7 @@
     }
 @endphp
 
-<?php if($isFontAwesome)
+<?php if($isFontAwesome) : ?>
     <!-- Render Font Awesome icon -->
     <i {{ $attributes->merge(['class' => "$name $fontAwesomeClasses $class"]) }}></i>
 <?php else: ?> 
@@ -41,4 +41,4 @@
     <span {{ $attributes->merge(['class' => "$wrapperClasses $class"]) }}>
         {{ $slot }}
     </span>
-?>
+<?php endif; ?>
