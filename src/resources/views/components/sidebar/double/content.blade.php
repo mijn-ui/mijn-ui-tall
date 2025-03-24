@@ -3,9 +3,9 @@
     'mijnuiSidebarChild' => ''
 ])
 <div
-    @if($mijnuiSidebarChild)
+    <?php if($mijnuiSidebarChild): ?>
         x-show="$store.sidebar.isOpen && $store.sidebar.activeContent === '{{$mijnuiSidebarChild}}'"
-    @endif
+    <?php endif; ?>
     :class="$store.sidebar.isOpen ? 'w-56' : 'w-0 overflow-hidden'"
     class="h-full bg-surface transition-all duration-300 ease-in-out">
     <?php if (!empty($title)): ?>

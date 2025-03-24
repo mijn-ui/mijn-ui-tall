@@ -1,3 +1,3 @@
-<div @click="open = false">
+<div x-on:click="open = false">
     {{ $slot }}
 </div>

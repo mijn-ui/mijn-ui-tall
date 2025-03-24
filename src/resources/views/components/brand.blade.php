@@ -17,14 +17,14 @@
     data-flux-brand
 >
     <div class="{{ $hasName ? 'size-6' : 'size-8' }} rounded-sm overflow-hidden shrink-0">
-        @if(is_string($logo))
+        <?php if(is_string($logo)) : ?>
             <img src="{{ $logo }}" {{ $attributes->only('alt') }} />
-        @else
+        <?php else: ?> 
             {{ $logo ?? $slot }}
-        @endif
+        <?php endif; ?>
     </div>
 
-    @if($hasName)
+    <?php if($hasName) : ?>
         <div class="{{ $textClasses }}">{{ $name }}</div>
-    @endif
+    <?php endif; ?>
 </a>

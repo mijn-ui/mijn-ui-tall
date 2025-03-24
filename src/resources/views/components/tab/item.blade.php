@@ -28,7 +28,7 @@
 <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
     {{ $slot }}
 </a>
-<?php else: ?>
+<?php else: ?> 
 <button {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
     {{ $slot }}
 </button>

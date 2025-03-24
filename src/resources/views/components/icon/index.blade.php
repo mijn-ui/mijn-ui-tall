@@ -33,12 +33,12 @@
     }
 @endphp
 
-@if($isFontAwesome)
+<?php if($isFontAwesome)
     <!-- Render Font Awesome icon -->
     <i {{ $attributes->merge(['class' => "$name $fontAwesomeClasses $class"]) }}></i>
-@else
+<?php else: ?> 
     <!-- Render custom SVG icon -->
     <span {{ $attributes->merge(['class' => "$wrapperClasses $class"]) }}>
         {{ $slot }}
     </span>
-@endif
+?>

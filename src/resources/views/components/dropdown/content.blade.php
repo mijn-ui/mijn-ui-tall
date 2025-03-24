@@ -2,10 +2,14 @@
     'align' => 'center',
 ])
 
+@php
+    $base = 'absolute transition z-10 mt-0.5 w-64 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text';
+@endphp
+
 <x-slot name="content">
     <div x-cloak
     {{$attributes->merge([
-        'class'=> "absolute transition z-10 mt-0.5 w-64 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text"
+        'class'=> $base
     ])}}
         :class="dropdownOpen ? '': 'pointer-events-none opacity-0'"
         x-ref="dropdown"
