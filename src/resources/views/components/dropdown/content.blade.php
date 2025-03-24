@@ -3,7 +3,7 @@
 ])
 
 @php
-    $base = 'absolute transition z-10 mt-0.5 w-64 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text';
+    $base = 'absolute transition z-10 mt-0.5 overflow-hidden rounded-md border border-main-border bg-surface text-surface-text';
 @endphp
 
 <x-slot name="content">

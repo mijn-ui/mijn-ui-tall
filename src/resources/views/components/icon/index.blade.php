@@ -11,7 +11,7 @@
     // Default classes for the icon wrapper
     $wrapperClasses = 'inline-flex items-center justify-center';
 
- // Size mapping for Font Awesome icons
+    // Size mapping for Font Awesome icons
     $fontAwesomeSizes = [
         'sm' => 'text-sm',
         'md' => 'text-lg',
@@ -33,12 +33,12 @@
     }
 @endphp
 
-<?php if($isFontAwesome) : ?>
-    <!-- Render Font Awesome icon -->
-    <i {{ $attributes->merge(['class' => "$name $fontAwesomeClasses $class"]) }}></i>
-<?php else: ?> 
-    <!-- Render custom SVG icon -->
-    <span {{ $attributes->merge(['class' => "$wrapperClasses $class"]) }}>
-        {{ $slot }}
-    </span>
+<?php if($isFontAwesome): ?>
+<!-- Render Font Awesome icon -->
+<i {{ $attributes->merge(['class' => "$name $fontAwesomeClasses $class"]) }}></i>
+<?php else: ?>
+<!-- Render custom SVG icon -->
+<span {{ $attributes->merge(['class' => "$wrapperClasses $class"]) }}>
+    {{ $slot }}
+</span>
 <?php endif; ?>
