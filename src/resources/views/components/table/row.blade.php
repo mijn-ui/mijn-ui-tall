@@ -1,5 +1,5 @@
 {{--@props(['key'])--}}
 
-<tr >
+<tr {{$attributes}}>
     {{ $slot }}
 </tr>
