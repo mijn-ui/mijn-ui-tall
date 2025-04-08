@@ -1,6 +1,6 @@
 @props(['name'])
 
-<div x-data="{ open: false }">
+<div x-data="{ open: false }" {{$attributes}}>
 
     @isset($content)
         {{ $content }}
