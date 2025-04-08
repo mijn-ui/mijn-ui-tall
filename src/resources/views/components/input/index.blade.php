@@ -43,7 +43,7 @@
 @endphp
 
 <mijnui:with-field :$label :$description :$name>
-    <div class="relative flex items-center" data-mijnui-input>
+    <div class="relative w-full flex items-center" data-mijnui-input>
         <!-- Start Icon -->
         <?php if($hasStartIcon): ?>
             <div class="absolute left-2 top-1/2 -translate-y-1/2 transform">
