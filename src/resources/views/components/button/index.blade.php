@@ -46,7 +46,7 @@
 @endphp
 
 <button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }}
-    <?php if($disabled) echo "disabled" ?>
+    <?php if($disabled) echo "disabled"; ?>
     <?php if($mijnuiSidebarParent): ?>
         @click="$store.sidebar.setActiveContent('{{$mijnuiSidebarParent}}')"
     <?php endif ?>
