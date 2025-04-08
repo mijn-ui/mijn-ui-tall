@@ -1,6 +1,6 @@
 @props(['name'])
 
-<div x-data="{ open: false }" {{$attributes}}>
+<span x-data="{ open: false }" {{$attributes}}>
 
     @isset($content)
         {{ $content }}
@@ -10,4 +10,4 @@
         {{ $trigger }}
     @endisset
 
-</div>
+</span>
