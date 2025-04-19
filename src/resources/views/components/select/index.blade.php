@@ -25,11 +25,13 @@
 @endphp
 
 <mijnui:with-field :$label :$description :$name>
-<div>
+<div x-data="{value : ''}" x-init="$watch('value', (value) => {
+            $wire.set('{{ $name }}', value);
+    })">
     <input
         class="hidden"
-        x-ref="nativeSelect"
         type="text"
+        x-model="value"
         {{ $attributes->except('class') }}
         @isset($name) name="{{ $name }}" @endisset
     />
@@ -37,20 +39,13 @@
     <!-- ComboBox -->
     <div
         class="flex flex-col justify-center gap-1 relative"
-    x-data="{
-    selectOpen: false,
-    selectedItem: '{{ $placeholder }}',
-    selectedValue: '',
-    chosenText: {}
-    }"
-    x-init="
-    $nextTick(() => {
-    if ($refs.nativeSelect.value) {
-    selectedItem = chosenText[$refs.nativeSelect.value] || '{{ $placeholder }}';
-    selectedValue = $refs.nativeSelect.value;
-    }
-    })
-    "
+        x-data="{
+            selectOpen: false,
+            selectedItem: '{{ $placeholder }}',
+            selectedValue: '',
+            chosenText: {}
+        }"
+
     x-on:click.outside="selectOpen = false"
     >
     <!-- ComboBox Trigger -->

@@ -5,11 +5,10 @@
 
 <button
     x-on:click="
-        $refs.nativeSelect.value = '{{ $value }}';
         selectedItem = '{{ $slot }}';
         selectedValue = '{{ $value }}';
-        $refs.nativeSelect.dispatchEvent(new Event('input'));
         selectOpen = false;
+        value = '{{ $value }}';
     "
     x-init="chosenText['{{ $value }}'] = '{{ $slot }}'"
     :class="{
