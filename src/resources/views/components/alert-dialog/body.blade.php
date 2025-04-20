@@ -1,5 +1,11 @@
 @props(['description'])
 
-<p id="-description" class="text-sm text-gray-600">
+@php
+    $base = 'text-sm text-gray-600';
+@endphp
+
+<p id="-description" {{$attributes->merge([
+    'class' => $base
+])}}>
     {{ $description ?? $slot }}
 </p>

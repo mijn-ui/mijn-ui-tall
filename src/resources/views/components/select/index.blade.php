@@ -18,9 +18,9 @@
         'lg' => 'max-w-lg',
     ][$size];
 
-        $message ??= $name ? $errors->first($name) : null;
+    $message ??= $name ? $errors->first($name) : null;
 
-        $classes = "text-xs text-danger " . ($message ? '' : 'hidden');
+    $classes = "text-xs text-danger " . ($message ? '' : 'hidden');
 
 @endphp
 
@@ -29,9 +29,9 @@
             $wire.set('{{ $name }}', value);
     })">
     <input
-        class="hidden"
         type="text"
         x-model="value"
+        type="hidden"
         {{ $attributes->except('class') }}
         @isset($name) name="{{ $name }}" @endisset
     />

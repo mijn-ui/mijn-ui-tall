@@ -1,5 +1,5 @@
 @php
-        $attributes->onlyProps(['label', 'description', 'name']);
+    $attributes->onlyProps(['label', 'description', 'name']);
 @endphp
 
 @props([
@@ -11,23 +11,24 @@
 ])
 
 <?php if ($label || $description): ?>
-    <mijnui:field>
-        <?php if ($label): ?>
-            <mijnui:label>{{ $label }}</mijnui:label>
-        <?php endif; ?>
+<mijnui:field>
+    <?php if ($label): ?>
+    <mijnui:label>{{ $label }}</mijnui:label>
+    <?php endif; ?>
 
-        <?php if ($description): ?>
-            <mijnui:description>{{ $description }}</mijnui:description>
-        <?php endif; ?>
+    <?php if ($description): ?>
+    <mijnui:description>{{ $description }}</mijnui:description>
+    <?php endif; ?>
 
-        {{$slot}}
+    {{ $slot }}
 
-        <mijnui:error :$name />
+    <mijnui:error :$name />
 
-        <?php if ($descriptionTrailing): ?>
-            <flux:description>{{ $descriptionTrailing }}</flux:description>
-        <?php endif; ?>
-    </mijnui:field>
-<?php else: ?>
+    <?php if ($descriptionTrailing): ?>
+    <mijnui:description>{{ $descriptionTrailing }}</mijnui:description>
+    <?php endif; ?>
+</mijnui:field>
+<?php else: ?> 
 {{ $slot }}
+<mijnui:error :$name />
 <?php endif; ?>

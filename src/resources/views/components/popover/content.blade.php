@@ -2,7 +2,6 @@
     'align' => 'center',
 ])
 
-
 @php
     $base =
         'absolute p-1 bottom-full text-white border border-white rounded-md cursor-pointer select-none bg-primary hover:bg-primary/90';

@@ -1,5 +1,20 @@
-@props(['for' => null])
+@props([
+    'for' => null,
+    'size' => 'sm',
+])
 
-<label for="{{ $for }}" class="text-sm">
+@php
+
+    $sizeClass = [
+        'xs' => 'text-xs',
+        'sm' => 'text-sm',
+        'default' => 'text-base',
+        'lg' => 'text-lg',
+        'xl' => 'text-xl',
+    ][$size];
+
+@endphp
+
+<label for="{{ $for }}" {{ $attributes->merge(['class' => $sizeClass]) }}>
     {{ $slot }}
 </label>

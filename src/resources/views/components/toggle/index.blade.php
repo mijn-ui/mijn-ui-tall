@@ -13,6 +13,7 @@
 
 <label {{ $attributes->merge(['class' => $baseClasses]) }}>
     <input
+        {{$attributes->whereStartsWith('wire:model')}}
         type="checkbox"
         class="peer sr-only"
         {{ $checked ? 'checked' : '' }}

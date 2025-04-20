@@ -22,62 +22,61 @@
     'class' => 'flex flex-col items-center justify-between gap-2 py-2 sm:flex-row',
 ]) }}>
 
-    @if ($hasGuide)
-        <p class="text-sm text-muted-foreground">
-            Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} results
-        </p>
-    @endif
+    <?php if($hasGuide): ?>
+    <p class="text-sm text-muted-foreground">
+        Showing {{ $data->firstItem() }} to {{ $data->lastItem() }} of {{ $data->total() }} results
+    </p>
+    <?php endif;?>
 
-    @if ($hasLinks && $data->hasPages())
+    <?php if($hasLinks && $data->hasPages()): ?>
 
-        <div class="flex items-center gap-2">
-            <mijnui:pagination.previous current="{{ $data->currentPage() }}" />
-            @if ($data->lastPage() > 1)
-                <mijnui:pagination.link page="1" current="{{ $data->currentPage() }}" />
+    <div class="flex items-center gap-2">
+        <mijnui:pagination.previous current="{{ $data->currentPage() }}" />
+        <?php if($data->lastPage() > 1): ?>
+            <mijnui:pagination.link page="1" current="{{ $data->currentPage() }}" />
 
-                @if ($data->currentPage() > 3)
-                    <mijnui:pagination.eclipse />
-                @endif
+            <?php if($data->currentPage() > 3):?>
+            <mijnui:pagination.eclipse />
+            <?php endif;?>
 
-                <ul class="flex flex-row items-center gap-1">
-                    @for ($i = max(2, $data->currentPage() - 1); $i <= min($data->lastPage() - 1, $data->currentPage() + 1); $i++)
-                        <li>
-                            <mijnui:pagination.link page="{{ $i }}" current="{{ $data->currentPage() }}" />
-                        </li>
-                    @endfor
-                </ul>
+            <ul class="flex flex-row items-center gap-1">
+                @for ($i = max(2, $data->currentPage() - 1); $i <= min($data->lastPage() - 1, $data->currentPage() + 1); $i++)
+                    <li>
+                        <mijnui:pagination.link page="{{ $i }}" current="{{ $data->currentPage() }}" />
+                    </li>
+                @endfor
+            </ul>
 
-                @if ($data->currentPage() < $data->lastPage() - 2)
-                    <mijnui:pagination.eclipse />
-                @endif
+            <?php if($data->currentPage() < $data->lastPage() - 2): ?>
+            <mijnui:pagination.eclipse />
+            <?php endif; ?>
 
-                @if ($data->lastPage() > 1)
-                    <mijnui:pagination.link page="{{ $data->lastPage() }}" current="{{ $data->currentPage() }}" />
-                @endif
-            @endif
-            <mijnui:pagination.next current="{{ $data->currentPage() }}" lastPage="{{ $data->lastPage() }}" />
-        </div>
+            <?php if ($data->lastPage() > 1): ?>
+            <mijnui:pagination.link page="{{ $data->lastPage() }}" current="{{ $data->currentPage() }}" />
+            <?php endif; ?>
+        <?php endif;?>
+        <mijnui:pagination.next current="{{ $data->currentPage() }}" lastPage="{{ $data->lastPage() }}" />
+    </div>
 
-    @endif
+    <?php endif;?>
 
-    @if ($hasPerPage)
-    <select wire:model.live="perPage">
+    <?php if($hasPerPage): ?>
+    {{-- <select wire:model.live="perPage">
         @foreach ($perPageOptions as $perPageOption)
             <option value="{{ $perPageOption }}">{{ $perPageOption }}</option>
         @endforeach
-    </select>
-        {{-- <mijnui:select wire:model.live="perPage"
+    </select> --}}
+    <mijnui:select wire:model.live="perPage"
         x-on:change="
             const url = new URL(window.location.href);
             const params = new URLSearchParams(url.search);
             params.set('perPage', $el.value)
             window.history.pushState({}, '', `${url.pathname}?${params.toString()}`);
-        "
-        >
-            @foreach ($perPageOptions as $perPageOption)
-                <mijnui:select.option value="{{ $perPageOption }}">{{ $perPageOption }}</mijnui:select.option>
-            @endforeach
-        </mijnui:select> --}}
-    @endif
+        ">
+        @foreach ($perPageOptions as $perPageOption)
+            <mijnui:select.option value="{{ $perPageOption }}">{{ $perPageOption }}</mijnui:select.option>
+        @endforeach
+    </mijnui:select>
+    <?php endif;?>
 
 </nav>
