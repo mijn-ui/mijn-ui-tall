@@ -29,7 +29,6 @@
             $wire.set('{{ $name }}', value);
     })">
     <input
-        type="text"
         x-model="value"
         type="hidden"
         {{ $attributes->except('class') }}
