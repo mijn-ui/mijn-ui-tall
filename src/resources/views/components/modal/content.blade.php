@@ -2,10 +2,10 @@
 
 @push('modals')
     <x-slot name="content">
-        <div x-show="open" x-transition
+        <div x-bind:class="open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'"
             class="z-[9999] fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
 
-            <div @click.away="open = false" class="bg-white rounded-lg shadow-lg py-4 px-4 {{ $attributes->get('class') }}">
+            <div x-show="open" x-transition @click.away="open = false" class="bg-white rounded-lg shadow-lg py-4 px-4 {{ $attributes->get('class') }}">
                 <div class="relative">
                     <button type="button" x-on:click="open = false" class="z-[9998] absolute top-0 right-0 text-lg text-gray-500 hover:text-gray-700"
                         aria-label="Close">
