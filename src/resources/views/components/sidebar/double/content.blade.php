@@ -3,6 +3,7 @@
     'mijnuiSidebarChild' => ''
 ])
 <div
+x-cloak
     <?php if($mijnuiSidebarChild): ?>
         x-show="$store.sidebar.isOpen && $store.sidebar.activeContent === '{{$mijnuiSidebarChild}}'"
     <?php endif; ?>
