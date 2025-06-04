@@ -8,6 +8,7 @@
     {{$attributes->merge([
         'class' => $base
     ])}}
+    x-transition
 >
     <span>{{ $slot }}</span>
     <svg
