@@ -46,21 +46,18 @@
         </select>
     @else
         <div x-data="{
-            value: @if ($attributes->wire('model')) @entangle($attributes->wire('model'))
-            @else
-            @if ($multiple) [] @else null @endif
-            @endif
+            value: @if ($attributes->wire('model')) @entangle($attributes->wire('model')) @else {{ $multiple ? '[]' : 'null' }} @endif,
+            chosenText: {},
         }">
             <input type="hidden" {{ $attributes->except('class') }}
                 @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
 
             <!-- ComboBox -->
-            <div class="flex flex-col justify-center gap-1 relative" x-data="{
-                selectOpen: false,
-                selectedItem: @if ($multiple) value?.length ? value : [] @endif ?? '{{ $placeholder }}',
+            <div x-data="{
+                selectOpen: false, // Define selectOpen here
+                selectedItem: {{ $multiple ? 'value?.length ? value : []' : "chosenText[value] ?? '$placeholder'" }},
                 selectedValue: {{ $multiple ? '[]' : "''" }},
-                chosenText: {}
-            }"
+            }" class="flex flex-col justify-center gap-1 relative"
                 x-on:click.outside="selectOpen = false">
                 <!-- ComboBox Trigger -->
                 <button x-on:click.self="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
@@ -89,7 +86,7 @@
                             </template>
                         </span>
                     @else
-                        <span class="line-clamp-1" x-text="selectedItem">{{ $placeholder }}</span>
+                        <span class="line-clamp-1" x-text="chosenText[value]">{{ $placeholder }}</span>
                     @endif
 
 
@@ -136,17 +133,10 @@
         "
                     x-transition
                     class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1 max-h-[50vh] overflow-y-auto ">
-
+                    
                     {{ $slot }}
-
-
                 </div>
-
-
-
             </div>
-
-
         </div>
     @endif
 </mijnui:with-field>
