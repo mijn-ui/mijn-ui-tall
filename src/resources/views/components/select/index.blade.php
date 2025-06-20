@@ -7,6 +7,7 @@
     'variant' => 'surface',
     'native' => false,
     'multiple' => false,
+    'disabled' => false,
 ])
 
 @php
@@ -61,6 +62,7 @@
                 x-on:click.outside="selectOpen = false">
                 <!-- ComboBox Trigger -->
                 <button x-on:click.self="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
+                    @disabled($disabled)
                     class="flex h-10 items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
 
                     @if ($multiple)
