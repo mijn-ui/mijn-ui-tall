@@ -1,4 +1,5 @@
 @props([
+    'class' => '',
     'direction' => 'row', // 'row' or 'column'
     'gap' => '4', // Tailwind gap size (e.g., 0, 1, 2, 3, 4, 6, 8)
     'preview' => true,
@@ -8,6 +9,8 @@
 ])
 
 @php
+    $base = 'bg-surface p-8 rounded-lg shadow-lg mb-10';
+
     $direction = in_array($direction, ['row', 'column']) ? $direction : 'row';
 
 
@@ -29,12 +32,13 @@
     $centerClass = $centered ? 'justify-center' : '';
 @endphp
 
-<div class="bg-surface p-8 rounded-lg shadow-lg mb-10">
+
+<div {{ $attributes->class([$base, $class]) }}>
     <div class="py-{{ $padding }}">
         <div class="{{ $containerClass }} {{ $centerClass }}">
             @foreach ($code as $c)
                 @if($direction === 'column')
-                    <div class="w-full">
+                    <div class="">
                         @endif
 
                         {!! Illuminate\Support\Facades\Blade::render($c) !!}

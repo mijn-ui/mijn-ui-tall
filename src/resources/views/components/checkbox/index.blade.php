@@ -9,7 +9,7 @@
     'value' => '1',
 ])
 
-<div class="{{ $class }}">
+<div class="py-2 {{ $class }}">
     <div class="flex items-center gap-2">
         <div class="inline-flex items-center gap-2">
             <label for="checkbox" class="relative flex items-center">

@@ -28,7 +28,7 @@
     <mijnui:description>{{ $descriptionTrailing }}</mijnui:description>
     <?php endif; ?>
 </mijnui:field>
-<?php else: ?> 
+<?php else: ?>
 {{ $slot }}
 <mijnui:error :$name />
 <?php endif; ?>
