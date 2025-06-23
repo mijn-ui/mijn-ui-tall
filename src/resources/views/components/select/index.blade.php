@@ -61,7 +61,7 @@
             }" class="flex flex-col justify-center gap-1 relative"
                 x-on:click.outside="selectOpen = false">
                 <!-- ComboBox Trigger -->
-                <button x-on:click.self="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
+                <button x-on:click="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
                     @disabled($disabled)
                     class="flex h-10 items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
 
@@ -88,7 +88,7 @@
                             </template>
                         </span>
                     @else
-                        <span class="line-clamp-1" x-text="chosenText[value] ?? '{{$placeholder}}'"></span>
+                        <span class="line-clamp-1" x-text="chosenText[value] ?? '{{ $placeholder }}'"></span>
                     @endif
 
 
@@ -134,8 +134,8 @@
             })
         "
                     x-transition
-                    class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden mt-1 max-h-[50vh] overflow-y-auto ">
-                    
+                    class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden max-h-[50vh] overflow-y-auto ">
+
                     {{ $slot }}
                 </div>
             </div>
