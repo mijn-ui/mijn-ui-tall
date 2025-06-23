@@ -89,14 +89,12 @@
     $target = $attributes->whereStartsWith('wire:target')->first();
 @endphp
 
-<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }} <?php if ($disabled) {
-    echo 'disabled';
-} ?>
-    <?php if($mijnuiSidebarParent): ?> @click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" <?php endif ?>>
+<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }}
+    @if ($disabled) disabled @endif <?php if($mijnuiSidebarParent): ?>
+    @click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" <?php endif ?>
 
     @if ($hasLoading)
         <span wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
-            {{$target}}
             {{ $slot }}
         </span>
 
