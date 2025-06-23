@@ -90,30 +90,26 @@
 @endphp
 
 <button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }}
-    @if ($disabled) disabled @endif <?php if($mijnuiSidebarParent): ?>
-    @click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" <?php endif ?>
+    @if ($disabled) disabled @endif
+    @if ($mijnuiSidebarParent) @click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" @endif
+    @if ($hasLoading) <span wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
+    {{ $slot }}
+    </span>
 
-    @if ($hasLoading)
-        <span wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
-            {{ $slot }}
-        </span>
-
-        {{-- Loading spinner or text --}}
-        <span wire:loading @if ($target) wire:target="{{ $target }}" @endif>
-            <div class="flex items-center gap-px">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                    class="animate-spin">
-                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                        stroke-width="2">
-                        <path d="M12 3c4.97 0 9 4.03 9 9" transform="rotate(360 12 12)" />
-                        <path stroke-opacity="0.3"
-                            d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" />
-                    </g>
-                </svg>
-                <p>Loading</p>
-            </div>
-        </span>
-    @else
-        <span>{{ $slot }}</span>
+    {{-- Loading spinner or text --}}
+    <span wire:loading @if ($target) wire:target="{{ $target }}" @endif>
+        <div class="flex items-center gap-px">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="animate-spin">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <path d="M12 3c4.97 0 9 4.03 9 9" transform="rotate(360 12 12)" />
+                    <path stroke-opacity="0.3"
+                        d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" />
+                </g>
+            </svg>
+            <p>Loading</p>
+        </div>
+    </span>
+@else
+    <span>{{ $slot }}</span>
     @endif
 </button>
