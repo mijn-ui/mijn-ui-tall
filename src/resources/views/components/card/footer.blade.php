@@ -1,9 +1,6 @@
-@props([
-    'class' => '',
-])
 @php
-    $base = "flex items-center p-4 pt-0";
+    $base = "flex items-center";
 @endphp
-<div {{ $attributes->merge(['class' => "$base $class"]) }}>
+<div {{ $attributes->merge(['class' => $base ]) }}>
     {{ $slot }}
 </div>
