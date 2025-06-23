@@ -1,7 +1,7 @@
 @props([
     'color' => 'default',
     'size' => 'md',
-    'hasLoading' => $attributes->whereStartsWith('wire:loading')->first(),
+    'hasLoading' => false,
     'rounded' => 'md',
     'outline' => false,
     'subtle' => false,

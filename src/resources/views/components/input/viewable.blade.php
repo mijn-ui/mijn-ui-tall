@@ -7,6 +7,7 @@
 @endphp
 
 <mijnui:button size="icon-xs"
+    type="button"
     :$attributes
     x-data="{ open: false }"
     x-on:click="open = !open; $el.closest('[data-mijnui-input]').querySelector('input').type = open ? 'text' : 'password'"
