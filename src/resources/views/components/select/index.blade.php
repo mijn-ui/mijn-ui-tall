@@ -88,7 +88,7 @@
                             </template>
                         </span>
                     @else
-                        <span class="line-clamp-1" x-text="chosenText[value]">{{ $placeholder }}</span>
+                        <span class="line-clamp-1" x-text="chosenText[value] ?? '{{$placeholder}}'"></span>
                     @endif
 
 
