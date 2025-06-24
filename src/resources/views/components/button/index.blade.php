@@ -8,6 +8,9 @@
     'ghost' => false,
     'disabled' => false,
     'mijnuiSidebarParent' => '',
+    'class' => '',
+    'justify' => 'center',
+    'items' => 'center',
 ])
 
 @php
@@ -87,16 +90,32 @@
     ][$rounded];
 
     $target = $attributes->whereStartsWith('wire:target')->first();
+
+    $justify = [
+        'start' => 'justify-start',
+        'center' => 'justify-center',
+        'end' => 'justify-end',
+        'between' => 'justify-between',
+        'around' => 'justify-around',
+        'evenly' => 'justify-evenly',
+    ][$justify] ?? 'justify-center';
+
+    $alignItems = [
+        'start' => 'items-start',
+        'center' => 'items-center',
+        'end' => 'items-end',
+        'baseline' => 'items-baseline',
+        'stretch' => 'items-stretch',
+    ][$items] ?? 'items-center';
 @endphp
 
-<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses"]) }}
+<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses $class "]) }}
     @if ($disabled) disabled @endif
     @if ($mijnuiSidebarParent) x-on:click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" @endif>
     @if ($hasLoading)
-        <span wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
+        <div class="w-full flex {{ $justify  }} {{ $alignItems }}"  wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
             {{ $slot }}
-        </span>
-
+        </div>
         {{-- Loading spinner or text --}}
         <span wire:loading @if ($target) wire:target="{{ $target }}" @endif>
             <div class="flex items-center gap-px">
@@ -112,6 +131,9 @@
             </div>
         </span>
     @else
-        <span>{{ $slot }}</span>
+        <div class="w-full flex {{ $justify }} {{ $alignItems }}">
+            {{ $slot }}
+        </div>
+
     @endif
 </button>
