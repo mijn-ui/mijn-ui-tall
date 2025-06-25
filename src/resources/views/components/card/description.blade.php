@@ -1,9 +1,6 @@
-@props([
-    'class' => '',
-])
 @php
-    $base = "text-sm text-muted-text";
+    $base = 'text-sm text-muted-text';
 @endphp
-<p {{ $attributes->merge(['class' => "$base $class"]) }}>
+<p {{ $attributes->merge(['class' => "$base"]) }}>
     {{ $slot }}
 </p>
