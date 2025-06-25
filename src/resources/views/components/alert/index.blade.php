@@ -5,7 +5,7 @@
 
 @php
 
-    $base = "relative rounded-lg py-4 px-3 border border-main-border pr-9 w-full";
+    $base = "relative rounded-lg py-4 px-3 pr-9 w-full";
 
     $variantClass = [
         'default' => "border",

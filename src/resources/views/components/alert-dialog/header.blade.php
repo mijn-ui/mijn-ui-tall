@@ -1,11 +1,15 @@
-@props(['title'])
-
 @php
-    $base = "text-lg font-semibold";
+    $base = 'flex flex-col gap-y-1 text-center sm:text-left';
 @endphp
 
-<h2 id="-title" {{$attributes->merge([
-    'class' => $base
-])}}>
-    {{ $title ?? $slot }}
-</h2>
+<x-slot:header>
+    <div {{ $attributes->merge(['class' => $base]) }}>
+        @isset($title)
+            {{ $title }}
+        @endisset
+
+        @isset($description)
+            {{ $description }}
+        @endisset
+    </div>
+</x-slot:header>
