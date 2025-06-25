@@ -1,3 +1,5 @@
 <div x-on:click="open = false">
-    {{ $slot }}
+    <mijnui:button>
+        {{ $slot }}
+    </mijnui:button>
 </div>

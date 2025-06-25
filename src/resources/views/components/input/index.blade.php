@@ -1,6 +1,5 @@
 @props([
     'name' => $attributes->whereStartsWith('wire:model')->first(),
-    'class' => '',
     'type' => 'text',
     'variant' => 'default',
     'placeholder' => '',
