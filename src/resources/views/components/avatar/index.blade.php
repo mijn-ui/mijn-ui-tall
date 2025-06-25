@@ -1,5 +1,4 @@
 @props([
-   'class' => '',
     'size' => 'md',
     'radius' => 'full',
     'src' => null,
@@ -29,7 +28,7 @@
 
 @endphp
 
-<div {{ $attributes->merge(['class' => "$base $sizeClasses $radiusClasses $class"]) }}>
+<div {{ $attributes->merge(['class' => "$base $sizeClasses $radiusClasses"]) }}>
     <?php if($src): ?>
         <img src="{{ $src }}" alt="{{ $alt }}" class="{{ $imageClasses }}">
     <?php elseif ($fallback) :?>

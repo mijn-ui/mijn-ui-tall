@@ -1,6 +1,5 @@
 @props([
     'name' => $attributes->whereStartsWith('wire:model')->first(),
-    'class' => '',
     'label' => '',
     'description' => '',
     'disabled' => false,
@@ -9,7 +8,7 @@
     'value' => '1',
 ])
 
-<div class="py-2 {{ $class }}">
+<div {{ $attributes->class(['py-2']) }}>
     <div class="flex items-center gap-2">
         <div class="inline-flex items-center gap-2">
             <label for="checkbox" class="relative flex items-center">

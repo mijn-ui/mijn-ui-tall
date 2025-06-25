@@ -6,6 +6,7 @@
     'centered' => true,
     'padding' => '20',
     'code' => [],
+    'align' => 'start', // 'start', 'center', 'end'
 ])
 
 @php
@@ -30,12 +31,17 @@
         : "flex flex-col {$gapClass}";
 
     $centerClass = $centered ? 'justify-center' : '';
+    $alignClass = [
+        'start' => "items-start",
+        'center' => "items-center",
+        'end' => "items-end",
+    ][$align]
 @endphp
 
 
 <div {{ $attributes->class([$base, $class]) }}>
     <div class="py-{{ $padding }}">
-        <div class="{{ $containerClass }} {{ $centerClass }}">
+        <div class="{{ $containerClass }} {{ $centerClass }} {{$alignClass}}">
             @foreach ($code as $c)
                 @if($direction === 'column')
                     <div class="">

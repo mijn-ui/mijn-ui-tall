@@ -1,9 +1,6 @@
-@props([
-    'class' => '',
-])
 @php
-    $base = 'p-4 w-full rounded-lg bg-surface text-surface-text shadow-sm space-y-4';
+    $base = 'w-full rounded-lg overflow-hidden bg-surface text-surface-text shadow-sm';
 @endphp
-<div {{ $attributes->merge(['class' => "$base $class"]) }}>
+<div {{ $attributes->merge(['class' => "$base"]) }}>
     {{ $slot }}
 </div>

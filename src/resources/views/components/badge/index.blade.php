@@ -1,17 +1,16 @@
 @props([
     'color' => 'default',
     'size' => 'md',
-    'rounded' => 'full',
+    'rounded' => 'md',
     'outline' => false,
     'ghost' => false,
 ])
 
 @php
-    // Base styles for the badge
-    $base = 'inline-flex items-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring';
+    $base = "text-xs flex items-center font-semibold duration-300 ease-in-out focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-primary/70 disabled:pointer-events-none disabled:opacity-50";
 
     $colorClasses = [
-        'default' => $outline ? 'border border-main-border bg-transparent text-default-text hover:bg-accent hover:text-accent-text' : ($ghost ? 'bg-transparent text-default-text hover:bg-accent hover:text-accent-text' : 'bg-default text-default-text hover:bg-accent hover:text-accent-text shadow-sm'),
+        'default' => $outline ? 'border  border-main-border bg-transparent text-default-text hover:bg-accent hover:text-accent-text' : ($ghost ? 'bg-transparent text-default-text hover:bg-accent hover:text-accent-text' : 'bg-default text-default-text hover:bg-accent hover:text-accent-text shadow-sm'),
         'primary' => $outline ? 'border border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-text' : ($ghost ? 'bg-transparent text-primary hover:bg-primary hover:text-primary-text' : 'bg-primary text-primary-text hover:opacity-hover'),
         'secondary' => $outline ? 'border border-secondary bg-transparent text-secondary hover:bg-secondary hover:text-secondary-text' : ($ghost ? 'bg-transparent text-secondary hover:bg-secondary hover:text-secondary-text' : 'bg-secondary text-secondary-text hover:opacity-hover'),
         'success' => $outline ? 'border border-success bg-transparent text-success hover:bg-success hover:text-success-filled-text' : ($ghost ? 'bg-transparent text-success hover:bg-success hover:text-success-filled-text' : 'bg-success text-success-filled-text hover:opacity-hover'),
@@ -21,10 +20,10 @@
     ][$color];
 
     $sizeClasses = [
-        'xs' => 'px-1.5 py-0.5 text-xs',
-        'sm' => 'px-2 py-0.5 text-sm',
-        'md' => 'px-2.5 py-1 text-sm',
-        'lg' => 'px-3 py-1 text-medium',
+        'xs' => 'px-1.5 py-0.5 ',
+        'sm' => 'px-2 py-0.5 ',
+        'md' => 'px-2.5 py-0.5 ',
+        'lg' => 'px-3 py-1 ',
     ][$size];
 
     $roundedClasses = [
