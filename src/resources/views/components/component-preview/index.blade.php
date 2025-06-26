@@ -42,23 +42,27 @@
 <div {{ $attributes->class([$base, $class]) }}>
     <div class="py-{{ $padding }}">
         <div class="{{ $containerClass }} {{ $centerClass }} {{$alignClass}}">
-            @foreach ($code as $c)
-                @if($direction === 'column')
-                    <div class="">
-                        @endif
+            @if(is_array($code))
+                @foreach ($code as $c)
+                    @if($direction === 'column')
+                        <div class="">
+                    @endif
 
-                        {!! Illuminate\Support\Facades\Blade::render($c) !!}
+                    {!! Illuminate\Support\Facades\Blade::render($c) !!}
 
-                        @if($direction === 'column')
-                    </div>
-                @endif
-            @endforeach
+                    @if($direction === 'column')
+                        </div>
+                    @endif
+                @endforeach
+            @else
+                {!! Illuminate\Support\Facades\Blade::render($code) !!}
+            @endif
         </div>
     </div>
 
     @if($preview)
         <div class="mt-8 text-start">
-            <pre class="p-4 overflow-x-auto rounded-lg text-dark"><code class="rounded-lg language-html">{{ implode("\n"."\n",$code)  }}</code></pre>
+            <pre class="p-4 overflow-x-auto rounded-lg text-dark"><code class="rounded-lg language-html">{{is_array($code) ? implode("\n"."\n",$code) : $code }}</code></pre>
         </div>
     @endif
 </div>
