@@ -58,9 +58,7 @@
 
     @if($preview)
         <div class="mt-8 text-start">
-            <pre class="text-dark p-4 rounded-lg overflow-x-auto">
-                <code class="language-html rounded-lg">{{ implode("\n", $code) }}</code>
-            </pre>
+            <pre class="p-4 overflow-x-auto rounded-lg text-dark"><code class="rounded-lg language-html">{{ implode("\n"."\n",$code)  }}</code></pre>
         </div>
     @endif
 </div>
