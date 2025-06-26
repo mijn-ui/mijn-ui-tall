@@ -1,4 +1,4 @@
-<div class="relative" x-data="{ dropdownOpen: false }">
+<div class="relative cursor-pointer" x-data="{ dropdownOpen: false }">
 
     @isset($trigger)
         <div class="relative w-fit" x-on:click.outside="dropdownOpen = false">
