@@ -1,32 +1,33 @@
 @props([
-    'label' => '',
-    'value' => 75,
-    'minLabel' => '',
-    'maxLabel' => '',
+    'label' => null,
+    'value' => 0,
+    'minLabel' => null,
+    'maxLabel' => null,
+    'maxValue' => 100,
 ])
 
 @php
     $progressWidth = $value . '%';
 @endphp
 
-<div class="w-80 space-y-1">
-    <?php if(is_string($label) && $label !== ''): ?>
+<div class="space-y-1">
+    <?php if($label && is_string($label)): ?>
     <div class="flex items-center justify-between text-sm font-medium text-main-text">
         <h5>{{ $label }}</h5>
-        <p>{{ $value }}%</p>
+        <p>{{ number_format(($value / $maxValue) * 100)  }}%</p>
     </div>
     <?php endif; ?>
-    <div class="relative h-2 w-full overflow-hidden rounded-full bg-gray-200">
+    <div {{$attributes->merge(['class' =>"relative h-2 w-80 overflow-hidden rounded-full bg-gray-200"])}}>
         <div
-            class="h-full bg-primary"
+            class="h-full bg-primary transition-all duration-300 ease-in-out"
             aria-valuemin="0"
-            aria-valuemax="100"
+            aria-valuemax="{{$maxValue}}"
             aria-valuenow="{{ $value }}"
             role="progressbar"
-            style="transform: scaleX({{ $value / 100 }}); transform-origin: left center;">
+            style="transform: scaleX({{ $value / $maxValue }}); transform-origin: left center;">
         </div>
     </div>
-    <?php if ((is_string($minLabel) && $minLabel !== '') || (is_string($maxLabel) && $maxLabel !== '')): ?>
+    <?php if (($minLabel && is_string($minLabel)) || ($maxLabel && is_string($maxLabel))): ?>
     <div class="flex items-center justify-between text-xs text-muted-text">
         <p>{{ $minLabel }}</p>
         <p>{{ $maxLabel }}</p>
