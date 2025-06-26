@@ -1,6 +1,5 @@
 @props([
     'href' => null,
-    'class' => '',
     'active' => false,
 ])
 
@@ -12,11 +11,11 @@
 @endphp
 
 <?php if($href): ?>
-    <a {{ $attributes->merge(['class' => "$base $class " . ($active ? "$activeClass $activeHoverClass" : $hoverClass), 'href' => $href]) }}>
+    <a {{ $attributes->merge(['class' => "$base " . ($active ? "$activeClass $activeHoverClass" : $hoverClass), 'href' => $href]) }}>
         {{ $slot }}
     </a>
 <?php else: ?> 
-<button {{ $attributes->merge(['class' => "$base $class " . ($active ? "$activeClass $activeHoverClass" : $hoverClass)]) }}>
+<button {{ $attributes->merge(['class' => "$base " . ($active ? "$activeClass $activeHoverClass" : $hoverClass)]) }}>
     {{ $slot }}
 </button>
 <?php endif; ?>

@@ -36,5 +36,7 @@
         @isset($body)
             {{ $body }}
         @endisset
+
+        {{$slot}}
     </div>
 </x-slot:content>
