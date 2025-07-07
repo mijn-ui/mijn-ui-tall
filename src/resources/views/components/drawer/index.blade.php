@@ -1,7 +1,7 @@
 @props([
     'position' => 'left',
     'size' => 'md',
-    'noBackdrop' => false,
+    'backdrop' => false,
     'persistent' => false,
     'class' => '',
 ])
@@ -28,27 +28,25 @@ $sizeClass = match ($size) {
 @endphp
 
 <div
-    x-data="{open: false}"
-    x-init="init"
-    @keydown.escape.window="if(!{{$persistent}}) open = false"
+    x-data="{ open: false, persistent: {{ $persistent == 'true' ? 'true' : 'false' }} }"
+    @keydown.escape.window="if(!persistent) open = false"
 >
     @isset($trigger)
         {{ $trigger }}
     @endisset
 
-    @unless($noBackdrop)
-        <div class="fixed inset-0 z-40 bg-black/50" x-show="open" x-transition.opacity @click="if(!{{$persistent}}) open = false"></div>
-    @endunless
+    @if($backdrop)
+        <div class="fixed inset-0 z-40 bg-black/50" x-show="open" x-transition.opacity @click.away="if(!persistent) open = false" ></div>
+    @endif
 
     <div
         x-show="open"
         x-transition
-        @click.away="if(!{{$persistent}}) open = false"
+        @click.away="if(!persistent) open = false"
         class="fixed z-50 bg-white shadow-xl flex flex-col {{ $positionClass }} {{ $sizeClass }} {{ $class }}"
     >
-
          @isset($header)
-            {{ $header }}  
+            {{ $header }}
         @endisset
 
         @isset($content)
