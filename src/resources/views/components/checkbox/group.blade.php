@@ -17,7 +17,7 @@
 <div data-mijn-select-all {{ $attributes->merge(['class' => "$base $directionClass"]) }}>
     <?php if(!$noSelect): ?>
     <mijnui:checkbox class="py-3" :$label id="trigger"
-        x-on:click="Array.from($el.closest('[data-mijn-select-all]').querySelectorAll('input[type=checkbox]')).filter(i => i.id !== 'trigger').forEach(i => i.checked = $event.target.checked)" />
+        x-on:click="Array.from($el.closest('[data-mijn-select-all]').querySelectorAll('input[type=checkbox]')).forEach(i => i.checked = $event.target.checked)" />
         <?php endif ?>
         {{ $slot }}
 </div>
