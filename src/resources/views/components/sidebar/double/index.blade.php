@@ -5,7 +5,7 @@
         <?php if (!empty($logo)): ?>
         <div class="flex items-center justify-center py-4">
             <!-- Sidebar Logo -->
-            <a href="#" class="inline-flex size-10 items-center justify-center gap-1 text-sm text-default-text">
+            <a href="#" class="inline-flex size-10 items-center justify-center gap-1 text-sm text-inverse-text">
                 {{ $logo }}
             </a>
         </div>
@@ -25,7 +25,7 @@
 
 <!-- Sidebar Content Toggle Button -->
 <button @click="$store.sidebar.toggle()"
-    class="absolute -right-4 bottom-32 inline-flex size-7 items-center justify-center gap-0 rounded-md bg-default px-0 text-sm text-default-text transition-colors duration-200 ease-in-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90 disabled:pointer-events-none disabled:opacity-50">
+    class="absolute -right-4 bottom-32 inline-flex size-7 items-center justify-center gap-0 rounded-md bg-inverse px-0 text-sm text-inverse-text transition-colors duration-200 ease-in-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90 disabled:pointer-events-none disabled:opacity-50">
     <!-- Icon with dynamic rotation -->
     <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
         stroke-linejoin="round" :class="$store.sidebar.isOpen ? 'rotate-180' : 'rotate-0'"

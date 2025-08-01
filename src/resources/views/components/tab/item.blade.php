@@ -1,35 +1,32 @@
+
+
 @props([
     'active' => false,
     'disabled' => false,
     'href' => null,
+    'value' => null
 ])
 
 @php
-    // Base classes for the tab button
-    $baseClasses = 'inline-flex h-10 items-center justify-center gap-1 rounded-md px-3 py-2 text-sm drop-shadow-sm';
+    $baseClasses = 'inline-flex h-9 items-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50';
 
-    // Variant classes based on active and disabled states
-    $variantClasses = [
-        'default' => [
-            'active' => 'bg-surface text-main-text hover:bg-surface hover:text-main-text',
-            'inactive' => 'bg-transparent text-muted-text hover:bg-surface hover:text-main-text',
-        ],
-        'disabled' => 'bg-muted/75 text-muted-text/75 cursor-not-allowed',
-    ];
+    $activeClasses = 'data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis';
 
-    // Apply classes based on props
-    $classes = $baseClasses . ' ' . ($disabled
-        ? $variantClasses['disabled']
-        : ($active
-            ? $variantClasses['default']['active']
-            : $variantClasses['default']['inactive']));
+    $dataState = $active ? 'active' : 'inactive';
+
+    $classes = $baseClasses . ' ' . $activeClasses;
 @endphp
-<?php if ($href): ?>
-<a href="{{ $href }}" {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
-    {{ $slot }}
-</a>
-<?php else: ?> 
-<button {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
-    {{ $slot }}
-</button>
-<?php endif; ?>
+
+@if ($href)
+    <a href="{{ $href }}"
+       data-state="{{ $dataState }}"
+       {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
+        {{ $slot }}
+    </a>
+@else
+    <button x-data="{value : '{{$value}}'}" x-on:click="currentValue = value"
+        x-bind:data-state=" (currentValue == value ? 'active' : null) ?? '{{ $dataState }}'"
+        {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
+        {{ $slot }}
+    </button>
+@endif

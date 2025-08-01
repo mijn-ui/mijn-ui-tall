@@ -24,7 +24,7 @@
                 !{{ $disabled ? 'true' : 'false' }},
             'w-full cursor-pointer rounded-md px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-text': value != '{{ $value }}'  &&
                 !{{ $disabled ? 'true' : 'false' }},
-            'pointer-events-none w-full cursor-default rounded-md bg-surface px-4 py-2 text-left text-sm opacity-50 hover:bg-accent hover:text-accent-text': {{ $disabled ? 'true' : 'false' }}
+            'pointer-events-none w-full cursor-inverse rounded-md bg-surface px-4 py-2 text-left text-sm opacity-50 hover:bg-accent hover:text-accent-text': {{ $disabled ? 'true' : 'false' }}
         }"
         type="button" {{ $disabled ? 'disabled' : '' }}>
         {{ $slot }}

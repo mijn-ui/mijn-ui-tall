@@ -17,7 +17,7 @@
 <!-- Sidebar Icon Header -->
 <div class="flex items-center justify-center py-4">
     <!-- Sidebar Logo -->
-    <a href="#" class="inline-flex size-10 items-center justify-center gap-1 text-sm text-default-text">
+    <a href="#" class="inline-flex size-10 items-center justify-center gap-1 text-sm text-inverse-text">
        {{$slot}}
     </a>
 </div>
