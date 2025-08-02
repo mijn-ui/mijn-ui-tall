@@ -1,12 +1,9 @@
-<div class="relative cursor-pointer" x-data="{ dropdownOpen: false }">
-
+<div class="relative" x-data="{ dropdownOpen: false }" x-on:click.outside="dropdownOpen = false">
     @isset($trigger)
-        <div class="relative w-fit" x-on:click.outside="dropdownOpen = false">
-            {{ $trigger }}
-            @isset($content)
-                {{ $content }}
-            @endisset
-        </div>
+        {{ $trigger }}
+    @endisset
+    @isset($content)
+        {{ $content }}
     @endisset
 
 </div>

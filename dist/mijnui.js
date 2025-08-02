@@ -32,19 +32,27 @@ document.addEventListener("alpine:init", () => {
         init() {
             this.theme = localStorage.getItem('theme') || 'light';
             if (this.theme === 'dark') {
-                document.documentElement.classList.add('dark');
+                // Add "dark" to all elements EXCEPT those with class "constant"
+                console.log(document.querySelectorAll('body *:not(.constant):not(.constant *)'))
+                document.querySelectorAll('body *:not(.constant):not(.constant *)').forEach(el => {
+                    el.classList.add('dark');
+                });
+
                 this.changeThemeIcon();
             }
         },
         switchTheme() {
-            document.documentElement.classList.toggle('dark');
+            document.querySelectorAll('body *:not(.constant):not(.constant *)').forEach(el => {
+                el.classList.toggle('dark');
+            });
+
             this.changeThemeIcon();
             this.theme = this.theme === 'light' ? 'dark' : 'light';
             localStorage.setItem('theme', this.theme);
         },
         changeThemeIcon() {
-            document.querySelector('.dark-icon').classList.toggle('hidden');
-            document.querySelector('.light-icon').classList.toggle('hidden');
+            document.querySelector('.dark-icon')?.classList.toggle('hidden');
+            document.querySelector('.light-icon')?.classList.toggle('hidden');
         }
     }));
 
