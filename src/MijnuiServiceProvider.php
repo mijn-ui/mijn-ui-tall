@@ -72,6 +72,13 @@ class MijnuiServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../dist/mijnui.css' => public_path('vendor/mijnui/css/mijnui.css'),
             __DIR__.'/../dist/mijnui.js' => public_path('vendor/mijnui/js/mijnui.js'),
+
+            // Calendar
+            __DIR__.'/../dist/calendar/dayjs.min.js' => public_path('vendor/mijnui/js/calendar/dayjs.min.js'),
+            __DIR__.'/../dist/calendar/localeData.js' => public_path('vendor/mijnui/js/calendar/localeData.js'),
+            __DIR__.'/../dist/calendar/advancedFormat.js' => public_path('vendor/mijnui/js/calendar/advancedFormat.js'),
+            __DIR__.'/../dist/calendar/locale/en.js' => public_path('vendor/mijnui/js/calendar/locale/en.js'),
+            __DIR__.'/../dist/calendar/locale/my.js' => public_path('vendor/mijnui/js/calendar/locale/my.js'),
         ], 'mijnui-assets');
     }
 }

@@ -1,5 +1,5 @@
 @props([
-    'color' => 'default',
+    'color' => 'primary',
     'variant' => 'default',
     'size' => 'sm',
     'hasLoading' => false,

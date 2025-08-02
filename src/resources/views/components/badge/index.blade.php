@@ -6,7 +6,7 @@
     'rounded' => 'sm',
     'fronticon' => null,
     'backicon' => null,
-    'onClick' => null
+    'onClick' => null,
 ])
 
 @php
@@ -15,7 +15,7 @@
 
     $colorClasses = $colorClasses = [
         'default' => [
-             'primary' =>
+            'primary' =>
                 'bg-primary text-primary-foreground hover:bg-primary/80 focus-visible:ring-primary active:bg-primary/70',
             'secondary' =>
                 'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-secondary active:bg-secondary/70',
@@ -29,7 +29,7 @@
         ],
 
         'subtle' => [
-             'primary' =>
+            'primary' =>
                 'border border-border-primary-subtle bg-primary-subtle text-primary-foreground-subtle hover:bg-primary-subtle/80 focus-visible:ring-primary-subtle active:bg-primary-subtle/70',
             'secondary' =>
                 'border border-border-secondary-subtle bg-secondary-subtle text-secondary-foreground-subtle hover:bg-secondary-subtle/80 focus-visible:ring-secondary-subtle active:bg-secondary-subtle/70',
@@ -44,7 +44,7 @@
         ],
 
         'outline' => [
-             'primary' =>
+            'primary' =>
                 'border border-primary text-primary bg-transparent hover:bg-primary/10 focus-visible:ring-primary active:bg-primary/20',
             'secondary' =>
                 'border border-border-secondary text-secondary-foreground bg-transparent hover:bg-secondary/10 focus-visible:ring-secondary active:bg-secondary/20',
@@ -91,13 +91,15 @@
     $finalClasses = "$base $colorClasses $sizeClasses $roundedClasses";
 @endphp
 
-<span {{ $attributes->merge(['class' => $finalClasses]) }}>
+<span {{ $attributes->merge(['class' => $finalClasses])->except('x-text') }}>
     @if ($fronticon)
         <mijnui:icon :name="$fronticon" class="pl-1 shrink-0" :size="$size" />
     @endif
 
-    @if ($title)
-        <span class="font-semibold px-1">{{ $title }}</span>
+    @if ($title || $attributes->has('x-text'))
+        <span class="font-semibold px-1" {{ $attributes->only('x-text') }}>
+            {{ $title }}
+        </span>
     @else
         <span class="inline-flex gap-1 items-center">
             {{ $slot }}
@@ -105,6 +107,7 @@
     @endif
 
     @if ($backicon)
-        <mijnui:icon x-on:click="{{$onClick}}" :name="$backicon" class="pr-1 shrink-0 {{$onClick ? 'cursor-pointer' : ''}}"  :size="$size" />
+        <mijnui:icon x-on:click="{{ $onClick }}" :name="$backicon"
+            class="pr-1 shrink-0 {{ $onClick ? 'cursor-pointer' : '' }}" :size="$size" />
     @endif
 </span>

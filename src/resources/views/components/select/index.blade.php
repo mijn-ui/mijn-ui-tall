@@ -56,35 +56,26 @@
             <!-- ComboBox -->
             <div x-data="{
                 selectOpen: false, // Define selectOpen here
-                selectedItem: {{ $multiple ? 'value?.length ? value : []' : "chosenText[value] ?? '$placeholder'" }},
-                selectedValue: {{ $multiple ? '[]' : "''" }},
+                selectedItem: {{ $multiple ? '[]' : "chosenText[value] ?? '$placeholder'" }},
+                selectedValue: {{ $multiple ? 'value ?? []' : "''" }},
             }" class="flex flex-col justify-center gap-1 relative"
                 x-on:click.outside="selectOpen = false">
                 <!-- ComboBox Trigger -->
-                <button x-on:click="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
+                <button x-on:click.self="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
                     @disabled($disabled)
-                    class="flex h-10 items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
+                    class="flex {{$multiple ? 'h-full' : 'h-10'}} bg-background-alt items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
 
                     @if ($multiple)
-                        <span class="line-clamp-1 flex gap-1 items-center">
+                        <span class="line-clamp-1 flex flex-wrap gap-1 items-center">
                             <template x-for="item in selectedItem">
-                                <mijnui:badge color="primary" size="xs">
-                                    <span x-text="item"></span>
-                                    <button type="button"
-                                        x-on:click="
-                                            const index = selectedItem.indexOf(item);
-                                            if (index > -1) {
-                                                selectedItem.splice(index, 1);
-                                                selectedValue.splice(index, 1);
-                                            }
-                                        ">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M6 18 18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </mijnui:badge>
+                                <mijnui:badge x-text="item" backicon="fa-solid fa-xmark"
+                                    onClick="
+                                    const index = selectedItem.findIndex(i => i === item);
+                                    if (index !== -1) {
+                                        selectedItem.splice(index, 1);
+                                        selectedValue.splice(index, 1);
+                                    }
+                                    " />
                             </template>
                         </span>
                     @else
@@ -134,7 +125,7 @@
             })
         "
                     x-transition
-                    class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden max-h-[50vh] overflow-y-auto ">
+                    class="bg-background-alt absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden max-h-[50vh] overflow-y-auto ">
 
                     {{ $slot }}
                 </div>
