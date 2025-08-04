@@ -102,7 +102,7 @@
 @endphp
 
 <button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses "]) }}
-    @if ($disabled) disabled @endif
+    @if ($disabled) disabled @endif>
     @if ($hasLoading)
         <div class="w-full flex {{ $justify }} {{ $alignItems }}" wire:loading.remove
             @if ($target) wire:target="{{ $target }}" @endif>
