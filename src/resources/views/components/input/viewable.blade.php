@@ -1,10 +1,3 @@
-@php
-    $attributes = $attributes->merge([
-        'variant' => 'subtle',
-        'square' => true,
-    ]);
-@endphp
-
 <button type="button" {{ $attributes->merge(['class' => '-mr-1']) }} x-data="{ open: false }"
     x-on:click="
         open = !open;
