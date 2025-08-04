@@ -21,7 +21,7 @@
         'lg' => 'size-6',
     ];
 
-    $iconClasses = $iconSizes[$size] ?? 'text-lg';
+    $iconClasses =  $iconSizes[$size] ?? 'text-lg';
     $svgClasses = $svgSizes[$size] ?? 'size-5';
 
 @endphp
