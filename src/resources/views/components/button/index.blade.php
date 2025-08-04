@@ -103,7 +103,6 @@
 
 <button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses "]) }}
     @if ($disabled) disabled @endif
-    @if ($mijnuiSidebarParent) x-foreground:click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" @endif>
     @if ($hasLoading)
         <div class="w-full flex {{ $justify }} {{ $alignItems }}" wire:loading.remove
             @if ($target) wire:target="{{ $target }}" @endif>
