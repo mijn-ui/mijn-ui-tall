@@ -1,15 +1,7 @@
-@php
-    $base = 'p-6 pt-0';
-@endphp
+<x-slot:content>
 
-<div {{ $attributes->merge(['class' => "$base"]) }}>
-    @isset($title)
-        {{ $title }}
-    @endisset
+    <div {{ $attributes->merge(['class' => 'p-6 pt-0']) }}>
+        {{ $slot }}
+    </div>
 
-    @isset($description)
-        {{ $description }}
-    @endisset
-    
-    {{ $slot }}
-</div>
+</x-slot:content>

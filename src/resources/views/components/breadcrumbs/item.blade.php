@@ -11,10 +11,10 @@
 @endphp
 
 <!-- Breadcrumb Item -->
-<li {{ $attributes->merge(['class' => $base]) }}>
+<li {{ $attributes->class([$base]) }}>
     @if ($href)
         <!-- Breadcrumb Link -->
-        <a href="{{ $href }}" class="transition-colors hover:text-main-text hover:underline">
+        <a href="{{ $href }}" {{$attributes->only('wire:navigate')}} class="transition-colors hover:text-main-text hover:underline">
             {{ $slot }}
         </a>
     @else

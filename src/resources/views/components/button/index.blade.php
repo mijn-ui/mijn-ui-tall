@@ -13,7 +13,7 @@
 @php
     // Base styles for the button
     $base =
-        'flex flex-wrap items-center gap-2 justify-center text-sm transition-colors duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
+        'inline-flex flex-wrap items-center gap-2 justify-center text-sm transition-colors duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
 
     $colorClasses = [
         'default' => [
