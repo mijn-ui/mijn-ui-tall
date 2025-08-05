@@ -1,4 +1,4 @@
-<div class="flex">
+<div class="flex relative">
 
     <div
         class=" flex flex-col justify-between items-center h-full w-16 space-y-2 overflow-y-auto border-r border-main-border bg-surface">
@@ -31,11 +31,9 @@
         </button>
 
     </div>
-    {{-- <div class="flex flex-col items-center justify-center gap-2 py-4"> --}}
     <div x-bind:style="{ width: $store.sidebar.isOpen ? '14rem' : '0' }"
         class="h-full bg-surface overflow-hidden transition-all border-accent"
         x-bind:class="{ 'border-r': $store.sidebar.isOpen }">
         @stack('mijn_sidebar_content')
     </div>
-    {{-- </div> --}}
 </div>
