@@ -3,7 +3,7 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => "$base"]) }}>
-    <div class="p-6">
+    <div class="p-6 {{isset($header) ? '' :'pb-0'}}">
         @isset($header)
             {{ $header }}
         @endisset
@@ -15,7 +15,7 @@
         @endisset
     </div>
     
-    <div class="p-6 pt-0">
+    <div>
         @isset($footer)
             {{ $footer }}
         @endisset
