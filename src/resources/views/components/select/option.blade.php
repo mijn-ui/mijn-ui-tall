@@ -37,7 +37,7 @@
             'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-primary/20 px-4 py-2 text-left text-sm text-primary': (
                     value == '{{ $value }}' || selectedValue.includes('{{ $value }}')) &&
                 !{{ $disabled ? 'true' : 'false' }},
-            'w-full cursor-pointer rounded-md px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-text': value !=
+            'w-full cursor-pointer hover:bg-primary/20 rounded-md px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-text': value !=
                 '{{ $value }}' &&
                 !{{ $disabled ? 'true' : 'false' }},
             'pointer-events-none w-full cursor-inverse rounded-md bg-surface px-4 py-2 text-left text-sm opacity-50 hover:bg-accent hover:text-accent-text': {{ $disabled ? 'true' : 'false' }}
