@@ -1,7 +1,7 @@
 @props(['variant' => 'single'])
 
 <x-slot:sidebar>
-    <div class="sticky top-0 left-0 h-screen">
+    <div class="sticky top-0 left-0 h-screen z-[100]">
 
         <?php if ($variant === 'single'): ?>
 
