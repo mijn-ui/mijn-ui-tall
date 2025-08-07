@@ -21,18 +21,6 @@
         'absolute border-border bg-background-alt text-foreground z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-sm duration-300 w-60';
 @endphp
 
-@push('styles')
-    <style>
-        .top-full {
-            top: calc(100% + 4px);
-        }
-
-        .bottom-full {
-            bottom: calc(100% + 4px);
-        }
-    </style>
-@endpush
-
 <mijnui:with-field :$label :$description :$name>
     @if ($native)
         <select x-data="{
@@ -101,11 +89,11 @@
                                 const spaceAbove = triggerRect.top;
 
                                 if (spaceBelow < panelHeight && spaceAbove > panelHeight) {
-                                    panel.classList.add('bottom-full');
-                                    panel.classList.remove('top-full');
-                                } else {
-                                    panel.classList.add('top-full');
-                                    panel.classList.remove('bottom-full');
+                                       panel.style.bottom = 'calc(100% + 4px)';
+                                       panel.style.top = '';
+                                       } else {
+                                        panel.style.top = 'calc(100% + 4px)';
+                                        panel.style.bottom = '';
                                 }
                             });
                         }

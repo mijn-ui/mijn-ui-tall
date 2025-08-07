@@ -9,3 +9,4 @@
         {{ $slot }}
     </div>
 </x-slot:header>
+    
