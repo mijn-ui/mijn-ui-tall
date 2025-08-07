@@ -2,7 +2,6 @@
     'value' => null,
 ])
 
-<div x-show="currentValue == '{{ $value }}'">
-
+<div x-cloak x-show="currentValue == '{{ $value }}'">
     {{ $slot }}
 </div>
