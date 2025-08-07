@@ -1,5 +1,5 @@
 @php
-    $base = 'text-sm text-muted-text';
+    $base = 'text-sm text-secondary-foreground';
 @endphp
 
 <p {{ $attributes->merge(['class' => "$base"]) }}>
