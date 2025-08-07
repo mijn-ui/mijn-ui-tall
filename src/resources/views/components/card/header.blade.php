@@ -1,5 +1,3 @@
-<x-slot:header>
-    <div {{ $attributes}}>
-        {{ $slot }}
-    </div>
-</x-slot:header>
+<div {{ $attributes->merge(['class' => 'p-6']) }}>
+    {{ $slot }}
+</div>
