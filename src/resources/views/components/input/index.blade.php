@@ -69,7 +69,7 @@
         @endif
 
         {{-- Input --}}
-        <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}"
+        <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}" {{ $attributes->except('class') }}
             placeholder="{{ $placeholder ?: ' ' }}" @if ($disabled ?? false) disabled @endif
             class="{{ $inputClasses }}" />
 
