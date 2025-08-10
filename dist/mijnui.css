@@ -123,14 +123,4 @@
 		--border-danger: 0 91% 71%;
 		--border-danger-subtle: 0 70% 35%;
 	}
- 
-	* {
-		border-color: hsl(var(--border));
-	}
- 
-	body {
-		background-color: hsl(var(--background));
-		color: hsl(var(--foreground));
-		font-family: "Inter", sans-serif;
-	}
 }
