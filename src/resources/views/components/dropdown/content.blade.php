@@ -1,5 +1,3 @@
-@props(['align' => 'start'])
-
 <x-slot:content>
     <div {{ $attributes }}>
         @isset($header)
