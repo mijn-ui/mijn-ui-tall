@@ -20,9 +20,7 @@
     <a href="{{ $href }}">
 @endif
 <div {{ $attributes->merge(['class' => " $base $textAlignClass"]) }}>
-    <p class="bg-red-900">
-        {{ $slot }}
-    </p>
+    {{ $slot }}
 </div>
 @if ($href)
     </a>

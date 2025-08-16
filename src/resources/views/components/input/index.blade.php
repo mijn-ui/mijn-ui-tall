@@ -69,9 +69,9 @@
         @endif
 
         {{-- Input --}}
-        <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}" 
+        <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}"
             placeholder="{{ $placeholder ?: ' ' }}" @if ($disabled ?? false) disabled @endif
-            class="{{ $inputClasses }}" />
+            class="{{ $inputClasses }}" {{$attributes->except('class')}} />
 
         {{-- End Icon / Viewable / Clearable --}}
         @if ($hasEndIcon)

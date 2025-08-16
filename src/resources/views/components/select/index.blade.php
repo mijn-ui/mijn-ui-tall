@@ -18,7 +18,7 @@
         'border-border min-w-44 bg-background-alt placeholder:text-muted-foreground hover:bg-secondary flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm [&>span]:line-clamp-1 gap-4 [&_svg]:size-4 [&_svg]:opacity-50 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
     $contentClasses =
-        'absolute border-border bg-background-alt text-foreground z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-sm duration-300 w-60';
+        'w-full absolute border-border bg-background-alt text-foreground z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-sm duration-300 w-60';
 @endphp
 
 <mijnui:with-field :$label :$description :$name>
@@ -74,7 +74,7 @@
 
                 <!-- Dropdown -->
                 <div x-cloak x-show="selectOpen" x-ref="dropdownPanel"
-                    x-bind:style="`width: ${$refs.selectTrigger?.offsetWidth}px`" x-transition
+                     x-transition
                     class="{{ $contentClasses }}"
                     x-effect="
                         if (selectOpen) {
