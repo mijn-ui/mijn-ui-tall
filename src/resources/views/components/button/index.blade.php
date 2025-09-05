@@ -1,14 +1,11 @@
 @props([
-    'color' => 'default',
-    'size' => 'md',
+    'color' => 'primary',
+    'variant' => 'default',
+    'size' => 'sm',
     'hasLoading' => false,
     'rounded' => 'md',
-    'outline' => false,
-    'subtle' => false,
-    'ghost' => false,
     'disabled' => false,
     'mijnuiSidebarParent' => '',
-    'class' => '',
     'justify' => 'center',
     'items' => 'center',
 ])
@@ -16,59 +13,52 @@
 @php
     // Base styles for the button
     $base =
-        'inline-flex items-center justify-center gap-1 text-sm transition-colors duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
+        'inline-flex flex-wrap items-center gap-2 justify-center text-sm transition-colors duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
 
     $colorClasses = [
-        'default' => $outline
-            ? 'border bg-transparent border-main-border text-default-text hover:bg-accent hover:text-accent-text'
-            : ($subtle
-                ? 'bg-default/40 text-default-text'
-                : ($ghost
-                    ? 'text-default-text hover:bg-accent hover:text-accent-text'
-                    : 'bg-default  text-default-text hover:opacity-hover')),
-        'primary' => $outline
-            ? 'border bg-transparent border-primary text-primary hover:bg-primary hover:text-primary-text'
-            : ($subtle
-                ? 'bg-primary/20 dark:bg-primary/10 text-primary'
-                : ($ghost
-                    ? 'text-primary hover:bg-primary hover:text-primary-text'
-                    : 'bg-primary text-primary-text hover:opacity-hover')),
-        'secondary' => $outline
-            ? 'border bg-transparent border-secondary text-secondary hover:bg-secondary hover:text-secondary-text'
-            : ($subtle
-                ? 'bg-secondary/20 dark:bg-secondary/10 text-secondary'
-                : ($ghost
-                    ? 'text-secondary hover:bg-secondary hover:text-secondary-text'
-                    : 'bg-secondary text-secondary-text hover:opacity-hover')),
-        'success' => $outline
-            ? 'border bg-transparent border-success text-success hover:bg-success hover:text-success-filled-text'
-            : ($subtle
-                ? 'bg-success/20 dark:bg-success/10 text-success'
-                : ($ghost
-                    ? 'text-success hover:bg-success hover:text-success-filled-text'
-                    : 'bg-success text-success-filled-text hover:opacity-hover')),
-        'info' => $outline
-            ? 'border bg-transparent border-info text-info hover:bg-info hover:text-info-filled-text'
-            : ($subtle
-                ? 'bg-info/20 dark:bg-info/10 text-info'
-                : ($ghost
-                    ? 'text-info hover:bg-info hover:text-info-filled-text'
-                    : 'bg-info text-info-filled-text hover:opacity-hover')),
-        'warning' => $outline
-            ? 'border bg-transparent border-warning text-warning hover:bg-warning hover:text-warning-filled-text'
-            : ($subtle
-                ? 'bg-warning/20 dark:bg-warning/10 text-warning'
-                : ($ghost
-                    ? 'text-warning hover:bg-warning hover:text-warning-filled-text'
-                    : 'bg-warning text-warning-filled-text hover:opacity-hover')),
-        'danger' => $outline
-            ? 'border bg-transparent border-danger text-danger hover:bg-danger hover:text-danger-filled-text'
-            : ($subtle
-                ? 'bg-danger/20 dark:bg-danger/10 text-danger'
-                : ($ghost
-                    ? 'text-danger hover:bg-danger hover:text-danger-filled-text'
-                    : 'bg-danger text-danger-filled-text hover:opacity-hover')),
-    ][$color];
+        'default' => [
+            'default' => 'constant bg-inverse text-inverse-foreground hover:bg-inverse/80',
+            'outline' => 'border border-inverse-outline text-inverse-foreground hover:bg-inverse/10',
+            'subtle' => 'bg-inverse-subtle hover:bg-inverse/20 text-inverse-foreground-subtle',
+            'ghost' => 'text-inverse-foreground hover:bg-inverse-subtle dark:hover:bg-inverse-subtle/30',
+        ],
+        'primary' => [
+            'default' => 'constant bg-primary text-primary-foreground hover:bg-primary/80',
+            'outline' => 'border border-primary-outline text-primary-foreground hover:bg-primary/10',
+            'subtle' => 'bg-primary-subtle hover:bg-primary/20 text-primary-foreground-subtle',
+            'ghost' => 'text-primary-foreground hover:bg-primary-subtle dark:hover:bg-primary-subtle/30',
+        ],
+        'secondary' => [
+            'default' => 'constant bg-secondary text-secondary-foreground hover:bg-secondary/80',
+            'outline' => 'border border-secondary-outline text-secondary-foreground hover:bg-secondary/10',
+            'subtle' => 'bg-secondary-subtle hover:bg-secondary/20 text-secondary-foreground-subtle',
+            'ghost' => 'text-secondary-foreground hover:bg-secondary-subtle dark:hover:bg-secondary-subtle/30',
+        ],
+        'success' => [
+            'default' => 'constant bg-success text-success-foreground hover:bg-success/80',
+            'outline' => 'border border-success-outline text-success-foreground hover:bg-success/10',
+            'subtle' => 'bg-success-subtle hover:bg-success/20 text-success-foreground-subtle',
+            'ghost' => 'text-success-foreground hover:bg-success-subtle dark:hover:bg-success-subtle/30',
+        ],
+        'info' => [
+            'default' => 'constant bg-info text-info-foreground hover:bg-info/80',
+            'outline' => 'border border-info-outline text-info-foreground hover:bg-info/10',
+            'subtle' => 'bg-info-subtle hover:bg-info/20 text-info-foreground-subtle',
+            'ghost' => 'text-info-foreground hover:bg-info-subtle dark:hover:bg-info-subtle/30',
+        ],
+        'warning' => [
+            'default' => 'constant bg-warning text-warning-foreground hover:bg-warning/80',
+            'outline' => 'border border-warning-outline text-warning-foreground hover:bg-warning/10',
+            'subtle' => 'bg-warning-subtle hover:bg-warning/20 text-warning-foreground-subtle',
+            'ghost' => 'text-warning-foreground hover:bg-warning-subtle dark:hover:bg-warning-subtle/30',
+        ],
+        'danger' => [
+            'default' => 'constant bg-danger text-danger-foreground hover:bg-danger/80',
+            'outline' => 'border border-danger-outline text-danger-foreground hover:bg-danger/10',
+            'subtle' => 'bg-danger-subtle hover:bg-danger/20 text-danger-foreground-subtle',
+            'ghost' => 'text-danger-foreground hover:bg-danger-subtle dark:hover:bg-danger-subtle/30',
+        ],
+    ][$color][$variant];
 
     $sizeClasses = [
         'xs' => 'h-8 px-2',
@@ -91,29 +81,31 @@
 
     $target = $attributes->whereStartsWith('wire:target')->first();
 
-    $justify = [
-        'start' => 'justify-start',
-        'center' => 'justify-center',
-        'end' => 'justify-end',
-        'between' => 'justify-between',
-        'around' => 'justify-around',
-        'evenly' => 'justify-evenly',
-    ][$justify] ?? 'justify-center';
+    $justify =
+        [
+            'start' => 'justify-start',
+            'center' => 'justify-center',
+            'end' => 'justify-end',
+            'between' => 'justify-between',
+            'around' => 'justify-around',
+            'evenly' => 'justify-evenly',
+        ][$justify] ?? 'justify-center';
 
-    $alignItems = [
-        'start' => 'items-start',
-        'center' => 'items-center',
-        'end' => 'items-end',
-        'baseline' => 'items-baseline',
-        'stretch' => 'items-stretch',
-    ][$items] ?? 'items-center';
+    $alignItems =
+        [
+            'start' => 'items-start',
+            'center' => 'items-center',
+            'end' => 'items-end',
+            'baseline' => 'items-baseline',
+            'stretch' => 'items-stretch',
+        ][$items] ?? 'items-center';
 @endphp
 
-<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses $class "]) }}
-    @if ($disabled) disabled @endif
-    @if ($mijnuiSidebarParent) x-on:click="$store.sidebar.setActiveContent('{{ $mijnuiSidebarParent }}')" @endif>
+<button {{ $attributes->merge(['class' => "$base $colorClasses $sizeClasses $radiusClasses "]) }}
+    @if ($disabled) disabled @endif>
     @if ($hasLoading)
-        <div class="w-full flex {{ $justify  }} {{ $alignItems }}"  wire:loading.remove @if ($target) wire:target="{{ $target }}" @endif>
+        <div class="w-full flex {{ $justify }} {{ $alignItems }}" wire:loading.remove
+            @if ($target) wire:target="{{ $target }}" @endif>
             {{ $slot }}
         </div>
         {{-- Loading spinner or text --}}
@@ -121,7 +113,8 @@
             <div class="flex items-center gap-px">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     class="animate-spin">
-                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2">
                         <path d="M12 3c4.97 0 9 4.03 9 9" transform="rotate(360 12 12)" />
                         <path stroke-opacity="0.3"
                             d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" />
@@ -131,9 +124,8 @@
             </div>
         </span>
     @else
-        <div class="w-full flex {{ $justify }} {{ $alignItems }}">
+        <div class="w-full flex px-1 {{ $justify }} {{ $alignItems }}">
             {{ $slot }}
         </div>
-
     @endif
 </button>

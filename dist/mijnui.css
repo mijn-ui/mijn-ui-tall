@@ -1,102 +1,126 @@
-@source "../src/resources";
 @layer base {
-    :root {
-        --main: 210 14% 95%; /* slate-100 */
-        --main-text: 0 0% 0%; /* black */
-        --main-border: 0 0% 83%; /* neutral-300 */
-
-        --default: 216 12.2% 83.9%;
-        --default-text: 240 5.9% 10%;
-
-        --surface: 0 0% 98%; /* neutral-50 */
-        --surface-text: 0 0% 0%; /* black */
-
-        --muted: 0 0% 83%; /* neutral-300 */
-        --muted-text: 0 0% 25%; /* neutral-700 */
-
-        --accent: 0 0% 90%; /* neutral-200 */
-        --accent-text: 0 0% 0%; /* black */
-
-        --primary: 29 100% 52%; /* orange-500 */
-        --primary-text: 0 0% 100%; /* white */
-
-        --secondary: 33 35% 50%;
-        --secondary-text: 0 0% 100%;
-
-        --info: 216 76% 52%; /* blue-500 */
-        --info-text: 219 64% 43%; /* blue-800 */
-        --info-filled-text: 0 0% 100%; /* white */
-
-        --danger: 0 72% 43%; /* red-500 */
-        --danger-text: 0 82% 31%; /* red-800 */
-        --danger-filled-text: 0 0% 100%; /* white */
-
-        --warning: 45 92% 47%; /* yellow-500 */
-        --warning-text: 28 73% 26%; /* yellow-900 */
-        --warning-filled-text: 0 0% 0%; /* white */
-
-        --success: 140 76% 38%; /* green-500 */
-        --success-text: 140 49% 20%; /* green-800 */
-        --success-filled-text: 0 0% 100%; /* white */
-
-        --radius: 0.375rem;
-
-        --ring: 0 0% 15%; /* neutral-800 */
-
-        --input-border: 0 0% 83%; /* neutral-300 */
-    }
-
-    .dark {
-        --main: 0 0% 4%; /* neutral-950 */
-        --main-text: 0 0% 96%; /* neutral-100 */
-        --main-border: 0 0% 15%; /* neutral-800 */
-
-        --default: 240 3.7% 15.9%;
-        --default-text: 0 0% 98%;
-
-        --surface: 0 0% 7%; /* neutral-925 */
-        --surface-text: 0 0% 96%; /* neutral-100 */
-
-        --muted: 0 0% 15%; /* neutral-800 */
-        --muted-text: 0 0% 64%; /* neutral-400 */
-
-        --accent: 0 0% 12%; /* neutral-850 */
-        --accent-text: 0 0% 96%; /* neutral-100 */
-
-        --primary: 29 100% 52%; /* orange-500 */
-        --primary-text: 0 0% 100%; /* white */
-
-        --secondary: 33 35% 50%;
-        --secondary-text: 0 0% 100%;
-
-        --info: 216 76% 52%; /* blue-500 */
-        --info-text: 207 70% 80%; /* blue-200 */
-        --info-filled-text: 0 0% 100%; /* white */
-
-        --danger: 0 72% 43%; /* red-500 */
-        --danger-text: 0 79% 79%; /* red-200 */
-        --danger-filled-text: 0 0% 100%; /* white */
-
-        --warning: 45 92% 47%; /* yellow-500 */
-        --warning-text: 45 94% 70%; /* yellow-200 */
-        --warning-filled-text: 0 0% 0%; /* white */
-
-        --success: 140 76% 38%; /* green-500 */
-        --success-text: 140 71% 82%; /* green-200 */
-        --success-filled-text: 0 0% 100%; /* white */
-
-        --radius: 0.375rem;
-
-        --ring: 0 0% 96%; /* neutral-100 */
-
-        --input-border: 0 0% 15%; /* neutral-800 */
-    }
-
-    * {
-        @apply border-main-border;
-    }
-
-    body {
-        @apply bg-main text-main-text;
-    }
+	:root {
+		--background: 0 0 100%;
+		--background-alt: 0 0 100%;
+		--foreground: 240 10% 4%;
+		--border: 240 5% 84%;
+ 
+		--muted: 240 6% 90%;
+		--muted-alt: 240 6% 90%;
+		--muted-foreground: 240 4% 46%;
+		--border-muted: 240 5% 96%;
+ 
+		--inverse: 240 10% 4%;
+		--inverse-foreground: 0 0 98%;
+		--border-inverse: 240 5% 26%;
+ 
+		--primary: 21 90% 48%;
+		--primary-foreground: 20 100% 96%;
+		--primary-subtle: 20 100% 92%;
+		--primary-foreground-subtle: 20 75% 28%;
+		--primary-emphasis: 20 88% 40%;
+		--border-primary: 20 88% 40%;
+		--border-primary-subtle: 21 98% 83%;
+ 
+		--secondary: 240 5% 96%;
+		--secondary-foreground: 240 5% 26%;
+		--border-secondary: 240 6% 90%;
+ 
+		--success: 142 76% 36%;
+		--success-foreground: 143 76% 97%;
+		--success-subtle: 143 84% 93%;
+		--success-foreground-subtle: 142 61% 20%;
+		--success-emphasis: 142 72% 29%;
+		--border-success: 142 72% 29%;
+		--border-success-subtle: 142 79% 85%;
+ 
+		--warning: 41 96% 40%;
+		--warning-foreground: 41 92% 95%;
+		--warning-subtle: 41 97% 88%;
+		--warning-foreground-subtle: 40 73% 26%;
+		--warning-emphasis: 41 92% 33%;
+		--border-warning: 41 92% 33%;
+		--border-warning-subtle: 41 98% 77%;
+ 
+		--danger: 0 72% 51%;
+		--danger-foreground: 0 86% 97%;
+		--danger-subtle: 0 93% 94%;
+		--danger-foreground-subtle: 0 63% 31%;
+		--danger-emphasis: 0 74% 42%;
+		--border-danger: 0 74% 42%;
+		--border-danger-subtle: 0 96% 89%;
+ 
+		--radius-2xs: 0.125rem; /* 2px */
+		--radius-xs: 0.25rem; /* 4px */
+		--radius-sm: 0.375rem; /* 6px */
+		--radius-base: 0.5rem; /* 8px */
+		--radius-lg: 0.75rem; /* 12px */
+		--radius-xl: 1rem; /* 16px */
+		--radius-2xl: 1.25rem; /* 20px */
+		--radius-full: 9999px;
+ 
+		--shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.05);
+		--shadow-sm:
+			0 1px 3px rgba(16, 24, 40, 0.1), 0 1px 2px rgba(16, 24, 40, 0.06);
+		--shadow-md:
+			0 4px 8px rgba(16, 24, 40, 0.1), 0 2px 4px rgba(16, 24, 40, 0.06);
+		--shadow-lg:
+			0 12px 16px rgba(16, 24, 40, 0.08), 0 4px 6px rgba(16, 24, 40, 0.03);
+		--shadow-xl:
+			0 20px 24px rgba(16, 24, 40, 0.08), 0 8px 8px rgba(16, 24, 40, 0.03);
+		--shadow-2xl: 0 24px 48px rgba(16, 24, 40, 0.18);
+		--shadow-3xl: 0 32px 64px rgba(16, 24, 40, 0.14);
+	}
+ 
+	.dark {
+		--background: 240 10% 4%;
+		--background-alt: 240 4% 16%;
+		--foreground: 0 0 100%;
+		--border: 240 5% 26%;
+ 
+		--muted: 240 4% 16%;
+		--muted-alt: 240 10% 4%;
+		--muted-foreground: 240 4% 46%;
+		--border-muted: 240 6% 10%;
+ 
+		--inverse: 0 0 100%;
+		--inverse-foreground: 240 10% 4%;
+		--border-inverse: 240 5% 84%;
+ 
+		--primary: 20 96% 61%;
+		--primary-foreground: 21 81% 15%;
+		--primary-subtle: 20 75% 28%;
+		--primary-foreground-subtle: 20 100% 92%;
+		--primary-emphasis: 20 96% 61%;
+		--border-primary: 20 96% 61%;
+		--border-primary-subtle: 21 79% 34%;
+ 
+		--secondary: 240 6% 10%;
+		--secondary-foreground: 240 5% 84%;
+		--border-secondary: 240 4% 16%;
+ 
+		--success: 142 69% 58%;
+		--success-foreground: 142 80% 10%;
+		--success-subtle: 142 61% 20%;
+		--success-foreground-subtle: 143 84% 93%;
+		--success-emphasis: 142 69% 58%;
+		--border-success: 142 69% 58%;
+		--border-success-subtle: 142 64% 24%;
+ 
+		--warning: 41 96% 53%;
+		--warning-foreground: 41 83% 14%;
+		--warning-subtle: 40 73% 26%;
+		--warning-foreground-subtle: 41 97% 88%;
+		--warning-emphasis: 41 96% 53%;
+		--border-warning: 41 96% 53%;
+		--border-warning-subtle: 41 81% 29%;
+ 
+		--danger: 0 91% 71%;
+		--danger-foreground: 0 75% 15%;
+		--danger-subtle: 0 63% 31%;
+		--danger-foreground-subtle: 0 93% 94%;
+		--danger-emphasis: 0 91% 71%;
+		--border-danger: 0 91% 71%;
+		--border-danger-subtle: 0 70% 35%;
+	}
 }
