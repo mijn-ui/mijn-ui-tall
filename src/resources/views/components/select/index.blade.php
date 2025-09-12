@@ -8,90 +8,56 @@
     'native' => false,
     'multiple' => false,
     'disabled' => false,
+    'searchable' => false,
+    'clearable' => false,
+    'options' => null,
+    'key' => 'id',
+    'value' => 'name'
 ])
 
 @php
-    $base = 'relative px-4 py-2 border rounded cursor-pointer select-none ';
-    $variantClass = [
-        'primary' => 'bg-primary',
-        'surface' => 'bg-surface',
-    ][$variant];
-    $sizeClass = [
-        'default' => 'w-full',
-        'sm' => 'max-w-sm',
-        'md' => 'max-w-md',
-        'lg' => 'max-w-lg',
-    ][$size];
-
-    $class = "$base $variantClass $sizeClass";
-
     $message ??= $name ? $errors->first($name) : null;
+    $errorClass = 'text-xs text-danger ' . ($message ? '' : 'hidden');
 
-    $classes = 'text-xs text-danger ' . ($message ? '' : 'hidden');
+    $triggerClasses =
+        'border-border min-w-44 bg-background-alt placeholder:text-muted-foreground hover:bg-secondary flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm [&>span]:line-clamp-1 gap-4 [&_svg]:size-4 [&_svg]:opacity-50 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
+    $contentClasses =
+        'w-full absolute border-border bg-background-alt text-foreground z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-sm duration-300 w-60';
 @endphp
 
 <mijnui:with-field :$label :$description :$name>
     @if ($native)
         <select x-data="{
             selectOpen: false,
-            selectedItem: '{{ $placeholder }}',
-            selectedValue: '',
-            chosenText: {}
-        }" @isset($name) name="{{ $name }}" @endisset
-            {{ $multiple ? 'multiple' : '' }}
-            {{ $attributes->merge([
-                'class' => $class,
-            ]) }}>
+            selectedItem: {{ $multiple ? '[]' : 'null' }},
+            selectedValue: {{ $multiple ? '[]' : 'null' }},
+            chosenText: {},
+            search: ''
+        }" @isset($name) name="{{ $name }}" @endisset {{ $multiple ? 'multiple' : '' }} {{ $attributes->merge(['class' => $triggerClasses]) }}>
             {{ $slot }}
         </select>
     @else
-        <div x-data="{
-            value: @if ($attributes->wire('model')) @entangle($attributes->wire('model')) @else {{ $multiple ? '[]' : 'null' }} @endif,
-            chosenText: {},
-        }">
-            <input type="hidden" {{ $attributes->except('class') }}
-                @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
+        <div x-data="selectComponent(@js($multiple), '{{ $placeholder }}', @entangle($attributes->wire('model')) ?? null)">
+            <input type="hidden" {{ $attributes->except('class') }} @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
 
-            <!-- ComboBox -->
-            <div x-data="{
-                selectOpen: false, // Define selectOpen here
-                selectedItem: {{ $multiple ? 'value?.length ? value : []' : "chosenText[value] ?? '$placeholder'" }},
-                selectedValue: {{ $multiple ? '[]' : "''" }},
-            }" class="flex flex-col justify-center gap-1 relative"
-                x-on:click.outside="selectOpen = false">
-                <!-- ComboBox Trigger -->
-                <button x-on:click="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
-                    @disabled($disabled)
-                    class="flex h-10 items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
-
-                    @if ($multiple)
-                        <span class="line-clamp-1 flex gap-1 items-center">
-                            <template x-for="item in selectedItem">
-                                <mijnui:badge color="primary" size="xs">
-                                    <span x-text="item"></span>
-                                    <button type="button"
-                                        x-on:click="
-                                            const index = selectedItem.indexOf(item);
-                                            if (index > -1) {
-                                                selectedItem.splice(index, 1);
-                                                selectedValue.splice(index, 1);
-                                            }
-                                        ">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M6 18 18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </mijnui:badge>
+            <div class="relative w-full" x-on:click.outside="selectOpen = false">
+                <!-- Trigger -->
+                <button type="button" x-on:click="selectOpen = !selectOpen" role="combobox" x-ref="selectTrigger"
+                    @disabled($disabled) class="{{ $triggerClasses }}">
+                    <template x-if="multiple">
+                        <div class="flex flex-wrap gap-1 items-center min-h-[1.25rem]">
+                            <template x-for="item in selectedItem" :key="item">
+                                <mijnui:badge x-text="item" backicon="fa-solid fa-xmark" @click.stop="removeSelected(item)" />
                             </template>
-                        </span>
-                    @else
-                        <span class="line-clamp-1" x-text="chosenText[value] ?? '{{ $placeholder }}'"></span>
-                    @endif
-
-
+                            <template x-if="selectedItem.length === 0">
+                                <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="text-muted-text line-clamp-1"></span>
+                            </template>
+                        </div>
+                    </template>
+                    <template x-if="!multiple">
+                        <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="line-clamp-1"></span>
+                    </template>
                     <svg stroke="currentColor" fill="none" viewBox="0 0 24 24" height="1em" width="1em"
                         xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
                         stroke-linejoin="round">
@@ -100,45 +66,94 @@
                     </svg>
                 </button>
 
-                <!-- ComboBox Content -->
-                <div x-cloak x-show="selectOpen"
-                    x-effect="
-                    if (selectOpen) {
-                        $nextTick(() => {
-                        if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
-                            if (!$el.classList.contains('bottom-full')) {
-                                $el.classList.add('bottom-full');
-                                $el.classList.remove('top-full');
-                            }
-                        } else {
-                            if (!$el.classList.contains('top-full')) {
-                                $el.classList.add('top-full');
-                                $el.classList.remove('bottom-full');
-                            }
-                        }
-                    });
-                }"
-                    x-on:scroll.window="
-            $nextTick(() => {
-                if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
-                    if (!$el.classList.contains('bottom-full')) {
-                        $el.classList.add('bottom-full');
-                        $el.classList.remove('top-full');
-                    }
-                } else {
-                    if (!$el.classList.contains('top-full')) {
-                        $el.classList.add('top-full');
-                        $el.classList.remove('bottom-full');
-                    }
-                }
-            })
-        "
-                    x-transition
-                    class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden max-h-[50vh] overflow-y-auto ">
+                <!-- Dropdown -->
+                <div x-cloak x-show="selectOpen" x-ref="dropdownPanel" x-transition
+                    class="{{ $contentClasses }}"
+                    x-effect="adjustDropdown($refs.selectTrigger, $refs.dropdownPanel)">
+                    @if ($searchable)
+                        <div class="border-b border-border-subtle p-2">
+                            <input type="text" x-model="search" placeholder="Search..." class="w-full rounded-md border border-border px-3 py-2 text-sm focus:ring-1 focus:ring-primary outline-none placeholder:text-muted-foreground" />
+                            @if($clearable)
+                                <button type="button" x-show="search" @click="search=''; $nextTick(() => $el.previousElementSibling.focus())" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            @endif
+                        </div>
+                    @endif
 
-                    {{ $slot }}
+                    @if ($options)
+                        @foreach ($options as $opt)
+                            <mijnui:select.option 
+                                disabled="{{ $opt['disabled'] ?? false }}"
+                                value="{{ is_array($opt) ? ($opt[$key] ?? '') : $opt }}">
+                                {{ is_array($opt) ? ($opt[$value] ?? '') : $opt }}
+                            </mijnui:select.option>
+                        @endforeach
+                    @else
+                        {{ $slot }}
+                    @endif
                 </div>
             </div>
         </div>
     @endif
 </mijnui:with-field>
+
+<script>
+    function selectComponent(multiple, placeholder, entangledValue) {
+        return {
+            selectOpen: false,
+            multiple: multiple,
+            selectedItem: multiple ? [] : null,
+            selectedValue: multiple ? (Array.isArray(entangledValue) ? entangledValue : []) : entangledValue,
+            chosenText: {},
+            search: '',
+            value: entangledValue,
+            handleSelect(slot, value) {
+                if (this.multiple) {
+                    if (!Array.isArray(this.selectedItem)) this.selectedItem = [];
+                    if (!Array.isArray(this.selectedValue)) this.selectedValue = [];
+                    if (this.selectedValue?.includes(value)) {
+                        const index = this.selectedValue.indexOf(value);
+                        this.selectedValue.splice(index, 1);
+                        this.selectedItem.splice(index, 1);
+                    } else {
+                        this.selectedValue.push(value);
+                        this.selectedItem.push(slot);
+                    }
+                } else {
+                    this.selectedValue = value;
+                    this.selectedItem = slot;
+                    this.selectOpen = false;
+                }
+                this.value = this.multiple ? this.selectedValue : this.selectedValue;
+            },
+            removeSelected(item) {
+                const index = this.selectedItem.indexOf(item);
+                if (index !== -1) {
+                    this.selectedItem.splice(index, 1);
+                    this.selectedValue.splice(index, 1);
+                    this.value = this.multiple ? this.selectedValue : null;
+                }
+            }
+        }
+    }
+
+    function adjustDropdown(trigger, panel) {
+        const viewportHeight = window.innerHeight;
+        const triggerRect = trigger.getBoundingClientRect();
+        const panelHeight = panel.offsetHeight;
+
+        const spaceBelow = viewportHeight - triggerRect.bottom;
+        const spaceAbove = triggerRect.top;
+
+        if (spaceBelow < panelHeight && spaceAbove > panelHeight) {
+            panel.style.bottom = 'calc(100% + 4px)';
+            panel.style.top = '';
+        } else {
+            panel.style.top = 'calc(100% + 4px)';
+            panel.style.bottom = '';
+        }
+    }
+</script>
