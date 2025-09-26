@@ -123,4 +123,13 @@
 		--border-danger: 0 91% 71%;
 		--border-danger-subtle: 0 70% 35%;
 	}
+
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground
+	}
+
 }
