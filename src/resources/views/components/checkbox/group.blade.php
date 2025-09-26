@@ -5,19 +5,24 @@
 ])
 
 @php
-    $base = 'flex gap-2';
-    $directionClass =
-        [
-            'horizontal' => 'flex-row items-center',
-            'vertical' => 'flex-col items-start',
-        ][$direction] ?? 'flex-row';
-
+    $directionClass = match ($direction) {
+        'vertical' => 'flex-col items-start',
+        default => 'flex-row items-center',
+    };
 @endphp
 
-<div data-mijn-select-all {{ $attributes->merge(['class' => "$base $directionClass"]) }}>
-    <?php if(!$noSelect): ?>
-    <mijnui:checkbox class="py-3" :$label id="trigger"
-        x-on:click="Array.from($el.closest('[data-mijn-select-all]').querySelectorAll('input[type=checkbox]')).filter(i => i.id !== 'trigger').forEach(i => i.checked = $event.target.checked)" />
-        <?php endif ?>
-        {{ $slot }}
+<div data-mijn-select-all {{ $attributes->class(['flex gap-2', $directionClass]) }}>
+    @unless ($noSelect)
+        <mijnui:checkbox id="trigger" class="py-3" :label="$label"
+            x-on:click="
+                Array.from(
+                    $el.closest('[data-mijn-select-all]')
+                         .querySelectorAll('input[type=checkbox]')
+                )
+                .filter(i => i.id !== 'trigger')
+                .forEach(i => i.checked = $event.target.checked)
+            " />
+    @endunless
+
+    {{ $slot }}
 </div>

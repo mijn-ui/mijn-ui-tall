@@ -1,7 +1,3 @@
-@php
-    $base = 'p-6 pt-0';
-@endphp
-
-<div {{ $attributes->merge(['class' => "$base"]) }}>
+<div {{ $attributes->merge(['class' => 'p-6 pt-0']) }}>
     {{ $slot }}
 </div>

@@ -11,24 +11,14 @@
 ])
 
 @php
-    $base = 'relative px-4 py-2 border rounded cursor-pointer select-none ';
-    $variantClass = [
-        'primary' => 'bg-primary',
-        'surface' => 'bg-surface',
-    ][$variant];
-    $sizeClass = [
-        'default' => 'w-full',
-        'sm' => 'max-w-sm',
-        'md' => 'max-w-md',
-        'lg' => 'max-w-lg',
-    ][$size];
-
-    $class = "$base $variantClass $sizeClass";
-
     $message ??= $name ? $errors->first($name) : null;
+    $errorClass = 'text-xs text-danger ' . ($message ? '' : 'hidden');
 
-    $classes = 'text-xs text-danger ' . ($message ? '' : 'hidden');
+    $triggerClasses =
+        'border-border min-w-44 bg-background-alt placeholder:text-muted-foreground hover:bg-secondary flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm [&>span]:line-clamp-1 gap-4 [&_svg]:size-4 [&_svg]:opacity-50 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
+    $contentClasses =
+        'w-full absolute border-border bg-background-alt text-foreground z-50 max-h-96 min-w-32 overflow-hidden rounded-md border shadow-sm duration-300 w-60';
 @endphp
 
 <mijnui:with-field :$label :$description :$name>
@@ -39,10 +29,7 @@
             selectedValue: '',
             chosenText: {}
         }" @isset($name) name="{{ $name }}" @endisset
-            {{ $multiple ? 'multiple' : '' }}
-            {{ $attributes->merge([
-                'class' => $class,
-            ]) }}>
+            {{ $multiple ? 'multiple' : '' }} {{ $attributes->merge(['class' => $triggerClasses]) }}>
             {{ $slot }}
         </select>
     @else
@@ -53,44 +40,29 @@
             <input type="hidden" {{ $attributes->except('class') }}
                 @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
 
-            <!-- ComboBox -->
             <div x-data="{
-                selectOpen: false, // Define selectOpen here
-                selectedItem: {{ $multiple ? 'value?.length ? value : []' : "chosenText[value] ?? '$placeholder'" }},
-                selectedValue: {{ $multiple ? '[]' : "''" }},
-            }" class="flex flex-col justify-center gap-1 relative"
-                x-on:click.outside="selectOpen = false">
-                <!-- ComboBox Trigger -->
+                selectOpen: false,
+                selectedItem: {{ $multiple ? '[]' : "chosenText[value] ?? '$placeholder'" }},
+                selectedValue: {{ $multiple ? 'value ?? []' : "''" }},
+            }" class="relative w-full" x-on:click.outside="selectOpen = false">
+                <!-- Trigger -->
                 <button x-on:click="selectOpen = !selectOpen" type="button" role="combobox" x-ref="selectTrigger"
-                    @disabled($disabled)
-                    class="flex h-10 items-center justify-between rounded-md border px-3 py-2 text-sm placeholder:text-muted-text focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring {{ $variantClass }} {{ $sizeClass }}">
-
+                    @disabled($disabled) class="{{ $triggerClasses }}">
                     @if ($multiple)
-                        <span class="line-clamp-1 flex gap-1 items-center">
-                            <template x-for="item in selectedItem">
-                                <mijnui:badge color="primary" size="xs">
-                                    <span x-text="item"></span>
-                                    <button type="button"
-                                        x-on:click="
-                                            const index = selectedItem.indexOf(item);
-                                            if (index > -1) {
-                                                selectedItem.splice(index, 1);
-                                                selectedValue.splice(index, 1);
-                                            }
-                                        ">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M6 18 18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </mijnui:badge>
+                        <div class="flex flex-wrap gap-1 items-center min-h-[1.25rem]">
+                            <template x-for="item in selectedItem" :key="item">
+                                <mijnui:badge x-text="item" backicon="fa-solid fa-xmark"
+                                    onClick="const index = selectedItem.findIndex(i => i === item); if (index !== -1) { selectedItem.splice(index, 1); selectedValue.splice(index, 1); }" />
                             </template>
-                        </span>
-                    @else
-                        <span class="line-clamp-1" x-text="chosenText[value] ?? '{{ $placeholder }}'"></span>
-                    @endif
 
+                            <template x-if="!selectedItem.length">
+                                <span x-text="chosenText[value] ?? '{{ $placeholder }}'"
+                                    class="text-muted-text line-clamp-1"></span>
+                            </template>
+                        </div>
+                    @else
+                        <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="line-clamp-1"></span>
+                    @endif
 
                     <svg stroke="currentColor" fill="none" viewBox="0 0 24 24" height="1em" width="1em"
                         xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
@@ -100,42 +72,32 @@
                     </svg>
                 </button>
 
-                <!-- ComboBox Content -->
-                <div x-cloak x-show="selectOpen"
+                <!-- Dropdown -->
+                <div x-cloak x-show="selectOpen" x-ref="dropdownPanel"
+                     x-transition
+                    class="{{ $contentClasses }}"
                     x-effect="
-                    if (selectOpen) {
-                        $nextTick(() => {
-                        if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
-                            if (!$el.classList.contains('bottom-full')) {
-                                $el.classList.add('bottom-full');
-                                $el.classList.remove('top-full');
-                            }
-                        } else {
-                            if (!$el.classList.contains('top-full')) {
-                                $el.classList.add('top-full');
-                                $el.classList.remove('bottom-full');
-                            }
-                        }
-                    });
-                }"
-                    x-on:scroll.window="
-            $nextTick(() => {
-                if ($refs.selectTrigger.getBoundingClientRect().bottom + $el.scrollHeight > window.innerHeight && $refs.selectTrigger.getBoundingClientRect().top > window.innerHeight /2) {
-                    if (!$el.classList.contains('bottom-full')) {
-                        $el.classList.add('bottom-full');
-                        $el.classList.remove('top-full');
-                    }
-                } else {
-                    if (!$el.classList.contains('top-full')) {
-                        $el.classList.add('top-full');
-                        $el.classList.remove('bottom-full');
-                    }
-                }
-            })
-        "
-                    x-transition
-                    class="absolute w-full left-0 space-y-px rounded-lg border bg-surface p-1 text-sm text-main-text z-50 overflow-hidden max-h-[50vh] overflow-y-auto ">
+                        if (selectOpen) {
+                            $nextTick(() => {
+                                const trigger = $refs.selectTrigger;
+                                const panel = $refs.dropdownPanel;
+                                const viewportHeight = window.innerHeight;
+                                const triggerRect = trigger.getBoundingClientRect();
+                                const panelHeight = panel.offsetHeight;
 
+                                const spaceBelow = viewportHeight - triggerRect.bottom;
+                                const spaceAbove = triggerRect.top;
+
+                                if (spaceBelow < panelHeight && spaceAbove > panelHeight) {
+                                       panel.style.bottom = 'calc(100% + 4px)';
+                                       panel.style.top = '';
+                                       } else {
+                                        panel.style.top = 'calc(100% + 4px)';
+                                        panel.style.bottom = '';
+                                }
+                            });
+                        }
+                    ">
                     {{ $slot }}
                 </div>
             </div>

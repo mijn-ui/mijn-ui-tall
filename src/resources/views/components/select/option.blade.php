@@ -8,23 +8,39 @@
 
 @if ($native)
     <option value="{{ $value }}" {{ $selected ? 'selected' : '' }} {{ $disabled ? 'disabled' : '' }}>
-        {{ $slot }}</option>
+        {{ $slot }}
+    </option>
 @else
     <button
         x-on:click="
-        {{ $multiple ? "selectedItem.push('$slot')" : "selectedItem = '$slot'" }}
-        {{ $multiple ? "selectedValue.push('$value')" : "selectedValue = '$value'" }}
-        selectOpen = false;
+        selectedItem.includes('{{$slot}}');
+        {{ $multiple
+            ? "selectedItem.includes('$slot') ? selectedItem = selectedItem.filter(i => i !== '$slot') : selectedItem.push('$slot')"
+            : "selectedItem = '$slot'" }}
+
+        selectedValue.includes('{{$value}}');
+        {{ $multiple
+            ? "selectedValue.includes('$value') ? selectedValue = selectedValue.filter(v => v !== '$value') : selectedValue.push('$value')"
+            : "selectedValue = '$value'" }}
+        
+        {{ $multiple ? '' : 'selectOpen = false' }}
+
         value = selectedValue;
     "
-        x-init="chosenText['{{ $value }}'] = '{{ $slot }}'"
+        x-init="
+            chosenText['{{ $value }}'] = '{{ $slot }}';
+            if(selectedValue.includes('{{$value}}')){
+                selectedItem.push('{{$slot}}')
+            }
+        "
         :class="{
             'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-md bg-primary/20 px-4 py-2 text-left text-sm text-primary': (
                     value == '{{ $value }}' || selectedValue.includes('{{ $value }}')) &&
                 !{{ $disabled ? 'true' : 'false' }},
-            'w-full cursor-pointer rounded-md px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-text': value != '{{ $value }}'  &&
+            'w-full cursor-pointer hover:bg-primary/20 rounded-md px-4 py-2 text-left text-sm hover:bg-accent hover:text-accent-text': value !=
+                '{{ $value }}' &&
                 !{{ $disabled ? 'true' : 'false' }},
-            'pointer-events-none w-full cursor-default rounded-md bg-surface px-4 py-2 text-left text-sm opacity-50 hover:bg-accent hover:text-accent-text': {{ $disabled ? 'true' : 'false' }}
+            'pointer-events-none w-full cursor-inverse rounded-md bg-surface px-4 py-2 text-left text-sm opacity-50 hover:bg-accent hover:text-accent-text': {{ $disabled ? 'true' : 'false' }}
         }"
         type="button" {{ $disabled ? 'disabled' : '' }}>
         {{ $slot }}

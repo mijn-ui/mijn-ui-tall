@@ -45,25 +45,8 @@ $dates = collect(range(0, $totalDays - 1))->map(fn($i) => $startDate->copy()->ad
 $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
 @endphp
 
-<div x-data="() => ({
-    expanded: {},
-    entries: {{ $allEntries->toJson() }},
-    dates: {{ $jsDates->toJson() }},
-    dayWidth: {{ $dayWidth }},
-    get visibleEntries() {
-        let top = -1;
-        return this.entries.filter(e => e._is_parent || this.expanded[e._parent])
-            .map(e => ({ ...e, _top: (++top + 1) * 40 - 24 }));
-    },
-    getBarStyle(entry) {
-        const startIdx = this.dates.indexOf(entry.start?.slice(0, 10));
-        const endIdx = this.dates.indexOf(entry.end?.slice(0, 10));
-        if (startIdx === -1 || endIdx === -1) return 'display: none';
-        const left = startIdx * this.dayWidth;
-        const width = Math.max((endIdx - startIdx + 1) * this.dayWidth, this.dayWidth);
-        return `top: ${entry._top}px; left: ${left}px; width: ${width}px;`;
-    }
-})" class="h-[672px] w-full max-w-[1056px] rounded-2xl bg-surface">
+<div x-data="ganttChartComponent({{ $allEntries->toJson() }}, {{ $jsDates->toJson() }}, {{ $dayWidth }})" x-ref="ganttComponent"
+@gantt-updated.window="Livewire.dispatch('updatedGantt', $event.detail)" class="h-[672px] w-full max-w-[1056px] rounded-2xl bg-surface">
     <style>
         .progress-fill {
             height: 100%;
@@ -167,20 +150,140 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
                     <div class="w-[{{ $dayWidth }}px] h-full border-r border-main-border"></div>
                 @endfor
                 <template x-for="entry in visibleEntries" :key="entry._id">
-                    <div class="absolute border border-main-border bg-gray-300 rounded-lg"
-                        :style="getBarStyle(entry) + (entry.text ? 'height: 1rem;' : 'height: 0.5rem;')">
-                        <div class="progress-fill px-2"
-                            :style="`width: ${entry.process ?? 0}%; background-color: var(--color-${entry.color}); opacity: 0.8;`">
-                        </div>
-                        <template x-if="entry.text">
-                            <div
-                                class="absolute inset-0 px-2 text-white text-xs font-semibold">
-                                <span x-text="entry.text"></span>
+                    <div class="absolute border border-main-border bg-gray-300 rounded-lg transition-all duration-300 ease-in-out"
+                        :class="hoveredEntryId === entry._id ? 'outline outline-2 outline-blue-500' : ''"
+                        :style="getBarStyle(entry) + (entry.text ? 'height: 1.5rem;' : 'height: 0.5rem;')"
+                        @mouseenter="hoveredEntryId = entry._id" @mouseleave="clearHover()">
+                        <div class="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-10"
+                            @mousedown.prevent="startResize(entry, 'start', $event)"></div>
+                        
+                        <!-- Right Resize Handle -->
+                        <div class="absolute right-0 top-0 h-full w-2 cursor-ew-resize z-10"
+                            @mousedown.prevent="startResize(entry, 'end', $event)"></div>
+                        <div class="relative w-full h-full progress-wrapper" @mousedown="startDrawProgress(entry, $event)"
+                            @mousemove="drawProgress($event)" @mouseup="stopDrawProgress()" @mouseenter="hoveredProgressEntryId = entry._id"
+                            @mouseleave="hoveredProgressEntryId = null">
+                            <div class="progress-fill px-2 relative pointer-events-none"
+                                :style="`width: ${entry.process ?? 0}%; background-color: var(--color-${entry.color}); opacity: 0.8;`">
+                                <div x-show="hoveredProgressEntryId === entry._id" x-transition
+                                    class="absolute -top-6 right-0 bg-black text-white text-xs px-2 py-1 rounded shadow z-50 whitespace-nowrap">
+                                    <span x-text="`${entry.process ?? 0}%`"></span>
+                                </div>
                             </div>
-                        </template>
+                        
+                            <template x-if="entry.text">
+                                <div class="absolute inset-0 px-2 text-white text-xs font-semibold pointer-events-none">
+                                    <span x-text="entry.text"></span>
+                                </div>
+                            </template>
+                        </div>
+
                     </div>
                 </template>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function ganttChartComponent(allEntries, jsDates, dayWidth) {
+            return {
+                expanded: {},
+                entries: allEntries,
+                dates: jsDates,
+                dayWidth: dayWidth,
+                resizing: null,
+                hoveredProgressEntryId: null,
+
+                get visibleEntries() {
+                    let top = -1;
+                    return this.entries
+                        .filter(e => e._is_parent || this.expanded[e._parent])
+                        .map(e => ({ ...e, _top: (++top + 1) * 40 - 24 }));
+                },
+
+                getBarStyle(entry) {
+                    const startIdx = this.dates.indexOf(entry.start?.slice(0, 10));
+                    const endIdx = this.dates.indexOf(entry.end?.slice(0, 10));
+                    if (startIdx === -1 || endIdx === -1) return 'display: none';
+                    const left = startIdx * this.dayWidth;
+                    const width = Math.max((endIdx - startIdx + 1) * this.dayWidth, this.dayWidth);
+                    return `top: ${entry._top}px; left: ${left}px; width: ${width}px;`;
+                },
+
+                startResize(entry, field, e) {
+                    const container = this.$refs?.timelineContainer || document.body; // fallback
+                    const initialMouseX = e.clientX;
+                    const initialDate = new Date(field === 'start' ? entry.start : entry.end);
+                    const referenceDate = new Date(field === 'start' ? entry.end : entry.start);
+
+                    const moveHandler = (ev) => {
+                        const deltaX = ev.clientX - initialMouseX;
+                        const deltaDays = Math.round(deltaX / this.dayWidth);
+                        const newDate = new Date(initialDate);
+                        newDate.setDate(newDate.getDate() + deltaDays);
+
+                        // Prevent invalid ranges
+                        if (field === 'start' && newDate >= referenceDate) return;
+                        if (field === 'end' && newDate <= referenceDate) return;
+
+                        const isoDate = newDate.toISOString().slice(0, 10);
+
+                        if (field === 'start') {
+                            entry.start = isoDate;
+                        } else {
+                            entry.end = isoDate;
+                        }
+                    };
+
+                    const upHandler = () => {
+                        window.removeEventListener('mousemove', moveHandler);
+                        window.removeEventListener('mouseup', upHandler);
+                        this.resizing = null;
+                        console.log(entry)
+                        this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
+                            detail: entry,
+                            bubbles: true
+                        }));
+                    };
+
+
+                    window.addEventListener('mousemove', moveHandler);
+                    window.addEventListener('mouseup', upHandler);
+                },
+
+                hoveredEntryId: null,
+
+                clearHover() {
+                    this.hoveredEntryId = null;
+                },
+
+
+                 draggedEntry: null,
+                isDrawing: false,
+
+                startDrawProgress(entry, event) {
+                    this.draggedEntry = entry;
+                    this.isDrawing = true;
+                    this.drawProgress(event); // initialize
+                },
+
+                drawProgress(event) {
+                    if (!this.isDrawing || !this.draggedEntry) return;
+
+                    const container = event.currentTarget;
+                    const rect = container.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+                    this.draggedEntry.process = Math.round(percent);
+                },
+
+                stopDrawProgress() {
+                    this.isDrawing = false;
+                    this.draggedEntry = null;
+                },
+
+            };
+        }
+</script>
