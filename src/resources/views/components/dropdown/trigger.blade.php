@@ -1,7 +1,7 @@
-<x-slot name="trigger">
-    <div {{ $attributes->merge([
-        'x-on:click' => 'dropdownOpen = !dropdownOpen;',
-    ]) }} x-ref="trigger">
+@props(['disabled' => false])
+
+<x-slot:trigger>
+    <button {{ $attributes }} type="button" @disabled($disabled)>
         {{ $slot }}
-    </div>
-</x-slot>
+    </button>
+</x-slot:trigger>
