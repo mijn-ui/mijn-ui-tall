@@ -1,19 +1,11 @@
-@props([
-    'align' => 'center',
-])
+<div class="relative" x-data="{ open: false }" x-on:click.outside="open = false">
 
-@php
-    $base = 'absolute bottom-full my-0.5 w-full text-sm';
-@endphp
-
-
-<div class="relative max-w-lg" x-data="{ open: false }" x-on:click.away="open = false">
-    <div x-on:click="open= !open">
+    @isset($trigger)
         {{ $trigger }}
-    </div>
-    <div x-show="open" x-transition {{$attributes->merge([
-        'class' => $base
-    ])}}>
+    @endisset
+    
+    @isset($content)
         {{ $content }}
-    </div>
+    @endisset
+
 </div>

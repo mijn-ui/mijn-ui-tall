@@ -1,232 +1,332 @@
 @props([
     'name' => $attributes->whereStartsWith('wire:model')->first(),
     'locale' => 'en',
-    'placeholder' => 'Pick Date'
+    'placeholder' => 'Pick Date',
+    'displayFormat' => 'DD/MM/YYYY',
+    'range' => false,
+    'disabledDates' => [],
+    'clearable' => true
 ])
+
+@php
+    $allowedFormats = [
+        'YYYY-MM-DD', 'DD/MM/YYYY', 'MM-DD-YYYY', 'MM/DD/YYYY',
+        'DD-MM-YYYY', 'YYYY/MM/DD', 'YYYY.MM.DD', 'DD.MM.YYYY',
+        'MM.DD.YYYY', 'DD MMM YYYY', 'MMM DD, YYYY', 'MMMM D, YYYY',
+        'YYYYMMDD', 'DDMMYYYY'
+    ];
+    $allowedLocales = ['en', 'my'];
+
+    $errors = [];
+
+    if (!in_array($displayFormat, $allowedFormats)) {
+        $errors[] = "Invalid displayFormat '{$displayFormat}', falling back to 'YYYY-MM-DD'.";
+        $displayFormat = 'YYYY-MM-DD';
+    }
+
+    if (!in_array($locale, $allowedLocales)) {
+        $errors[] = "Invalid locale '{$locale}', falling back to 'en'.";
+        $locale = 'en';
+    }
+
+    $disabledDates = array_filter($disabledDates, fn($d) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $d));
+@endphp
 
 <script src="{{ asset('vendor/mijnui/js/calendar/dayjs.min.js') }}"></script>
 
-<div 
-    x-data="calendarComponent('{{ $locale }}', @entangle($name))" 
-    x-init="
-        const loadScript = (src) => {
-            return new Promise((resolve, reject) => {
-                const s = document.createElement('script');
-                s.src = src;
-                s.onload = resolve;
-                s.onerror = reject;
-                document.head.appendChild(s);
-            });
-        };
-
-        Promise.all([
-            loadScript('{{ asset('vendor/mijnui/js/calendar/localeData.js') }}'),
-            loadScript('{{ asset('vendor/mijnui/js/calendar/advancedFormat.js') }}'),
-            loadScript('{{ asset("vendor/mijnui/js/calendar/locale/{$locale}.js") }}')
-        ]).then(() => {
-            dayjs.extend(window.dayjs_plugin_localeData);
-            dayjs.extend(window.dayjs_plugin_advancedFormat);
-            dayjs.locale('{{ $locale }}');
-            $nextTick(() => init());
-        }).catch(error => {
-            console.error('Error loading dayjs scripts:', error);
-        });
-    "
-    class="w-full relative" id="datepicker-container">
-    <mijnui:input
-        :placeholder="$placeholder"
-        class="w-4 mb-1 cursor-pointer"
-        readonly 
-        @click="open = !open" 
-        x-bind:value="selectedDateValue"
-        {{ $attributes->except('wire:model') }}
-    />
-    <input type="hidden" {{ $attributes->only('wire:model') }}>
-    <div x-show="open" x-transition @click.outside="open = false" class="absolute z-50" id="datepicker-calendar">
-        <div class="rounded-lg border border-main-border bg-surface p-3">
-            <div class="relative flex flex-col sm:flex-row">
-                <!-- /* --------------------------- CALENDAR NAV --------------------------- */ -->
-                <nav>
-                    <button
-                        @click="changeMonth(-1)"
-                        class="absolute left-1 top-0 z-10 inline-flex h-7 w-7 items-center justify-center gap-1 rounded-md border border-main-border bg-transparent p-0 text-sm opacity-50 transition-colors duration-150 hover:bg-accent hover:text-accent-text hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90"
-                        aria-label="Go to the Previous Month">
-                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                            stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path d="m15 18-6-6 6-6" />
-                        </svg>
-                    </button>
-        
-                    <button
-                        @click="changeMonth(1)"
-                        class="absolute right-1 top-0 z-10 inline-flex h-7 w-7 items-center justify-center gap-1 rounded-md border border-main-border bg-transparent p-0 text-sm opacity-50 transition-colors duration-150 hover:bg-accent hover:text-accent-text hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90"
-                        aria-label="Go to the Next Month">
-                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                            stroke-linejoin="round" class="h-4 w-4" height="1em" width="1em"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path d="m9 18 6-6-6-6" />
-                        </svg>
-                    </button>
-                </nav>
-        
-                <!-- /* ---------------------------- CALENDAR TITLE --------------------------- */ -->
-                <div>
-                    <div class="relative flex items-center justify-center py-2">
-                        <span class="text-sm font-medium" role="status" x-text="formatMonthYear(displayDate)"></span>
-                    </div>
-        
-                    <!-- /* ---------------------------- CALENDAR TABLE --------------------------- */ -->
-                    <table role="grid" x-bind:aria-label="formatMonthYear(displayDate)"
-                        class="w-full border-collapse space-y-1">
-                        <!-- CALENDAR TABLE HEADER -->
-                        <thead>
-                            <tr class="flex">
-                                <template x-for="day in weekdays" :key="day">
-                                    <th 
-                                        :aria-label="day"
-                                        class="flex h-9 w-9 items-center justify-center text-[0.8rem] font-normal text-muted-text"
-                                        scope="col"
-                                        x-text="day"
-                                        ></th>
-                                </template>
-                            </tr>
-                        </thead>
-        
-                        <!-- CALENDAR TABLE BODY -->
-                        <tbody>
-                            <template 
-                                x-for="(week, weekIndex) in weeks" 
-                                :key="weekIndex"
-                            >
-                                <tr class="mt-0.5 flex w-full">
-                                    <template
-                                        x-for="day in week" 
-                                        :key="day.date"
-                                    >
-                                        <td 
-                                            :data-day="day.date"
-                                            :data-month="day.isLastDayOfMonth ? dayjs(day.date).format('YYYY-MM') : null"
-                                            :data-outside="!day.isCurrentMonth ? true : null"
-                                            :data-today="day.isToday ? true : null"
-                                            :aria-selected="day.isSelected ? true : null"
-                                            :data-selected="day.isSelected ? true : null"
-                                        >
-                                            <button
-                                                @click="selectDate(day.date)"
-                                                class="relative h-9 w-9 rounded-md p-0 text-center text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main"
-                                                :class="[
-                                                    !day.isCurrentMonth || dayjs(day.date).year() !== currentYear  ? 'text-muted-text text-muted-text/80 hover:bg-accent' : '',
-                                                    day.isToday ? 'bg-primary text-primary-text' : '',
-                                                    day.isCurrentMonth && !day.isToday ? 'hover:bg-accent hover:text-accent-text active:brightness-90' : '',
-                                                    day.isSelected ? 'border border-primary' : ''
-                                                ]"
-                                                :aria-label="getArialLabel(day)"
-                                                :tabindex="day.isToday ? 0 : null"
-                                                x-text="dayjs(day.date).date()"
-                                                >
-                                            </button>
-                                        </td>
-                                    </template>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+<div
+    x-data="calendarComponent({
+        locale: '{{ $locale }}',
+        range: {{ $range ? 'true' : 'false' }},
+        displayFormat: '{{ $displayFormat }}',
+        disabledDates: @json($disabledDates),
+        wireValue: @entangle($name),
+        clearable: {{ $clearable }}
+    })"
+    x-init="initComponent()"
+    x-cloak
+    class="w-full relative"
+>
+    @if ($errors)
+        <div class="text-red-500 text-xs mt-1 space-y-1">
+            @foreach ($errors as $err)
+                <div>{{ $err }}</div>
+            @endforeach
         </div>
+    @endif
+
+    <!-- Input Trigger -->
+    <div class="relative">
+        <input id="{{ $name }}" type="text"
+               @click="open = !open"
+               x-bind:value="displayValue"
+               placeholder="{{ $placeholder ?: ' ' }}" 
+               class="rounded-md border focus-visible:border-border-primary-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ring-primary peer bg-secondary flex h-10 w-full px-3 py-2 text-sm placeholder:text-muted-foreground transition duration-300" 
+        />
+
+        <!-- Clear Button -->
+        <button
+            type="button"
+            x-show="clearable && (selected || startDate)"
+            @click="clearSelection()"
+            class="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
+        >
+            ✕
+        </button>
+    </div>
+
+    <!-- Hidden input for Livewire -->
+    <input type="hidden"
+           name="{{ $name }}"
+           x-bind:value="range ? JSON.stringify([startDate, endDate]) : selected">
+
+    <!-- Calendar Dropdown -->
+    <div x-show="open" x-transition @click.outside="open = false"
+         class="absolute top-full left-0 mt-1 w-full min-h-[220px] max-w-[280px] z-[9999]">
+        <template x-if="isInitialized">
+            <div class="rounded-lg border bg-surface p-3 shadow-xl bg-gray-100 mt-1">
+                <!-- Navigation -->
+                <nav class="flex items-center justify-between w-full mb-2">
+                    <button @click="changeMonth(-1)" type="button"
+                            class="h-7 w-7 flex items-center justify-center rounded-md border hover:bg-accent">‹</button>
+                    <div class="text-sm font-medium" x-text="formatMonthYear(displayDate)"></div>
+                    <button @click="changeMonth(1)" type="button"
+                            class="h-7 w-7 flex items-center justify-center rounded-md border hover:bg-accent">›</button>
+                </nav>
+
+                <!-- Weekdays -->
+                <div class="flex w-full">
+                    <template x-for="day in weekdays" :key="day">
+                        <div class="flex-1 text-center text-xs text-muted-text" x-text="day"></div>
+                    </template>
+                </div>
+
+                <!-- Calendar Grid -->
+                <template x-for="(week, wIndex) in weeks" :key="wIndex">
+                    <div class="flex w-full mt-0.5">
+                        <template x-for="day in week" :key="day.date">
+                            <div :class="dayWrapperClasses(day)">
+                                <button type="button" @click="selectDate(day)" :disabled="day.disabled"  :class="dayButtonClasses(day)"
+                                        :aria-label="ariaLabel(day)"
+                                        x-text="dayjs(day.date).date()">
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
     </div>
 </div>
 
 <script>
-    function calendarComponent(locale, wireSelectedDate) {
-        return {
-            open: false,
-            selectedDate: wireSelectedDate,
-            selectedDateValue: '',
-            currentDate: null,
-            displayDate: null,
-            weekdays: [],
-            weeks: [],
-            currentYear: null,
+function calendarComponent({ locale, range, displayFormat, disabledDates, wireValue, clearable }) {
+    return {
+        open: false,
+        locale,
+        range,
+        displayFormat,
+        disabledDates,
+        wireValue,
+        clearable,
+        isInitialized: false,
 
-            init() {
-                this.currentDate = dayjs();
-                this.currentYear = dayjs().year();
-                this.displayDate = this.selectedDate && dayjs(this.selectedDate).isValid() ? dayjs(this.selectedDate) : dayjs();
+        currentDate: null,
+        displayDate: null,
+        weeks: [],
+        weekdays: [],
+        selected: null,
+        startDate: null,
+        endDate: null,
+        displayValue: '',
 
-                // Initialize with placeholder (don't auto-select today)
-                if (this.selectedDate && dayjs(this.selectedDate).isValid()) {
-                    this.selectedDateValue = dayjs(this.selectedDate).format('YYYY-MM-DD');
-                    this.displayDate = dayjs(this.selectedDate);
-                }
+        async initComponent() {
+            await this.initDayjs();
+            this.currentDate = dayjs();
+            this.displayDate = this.currentDate;
+            this.initCalendar();
+            this.isInitialized = true;
+            console.log(this.clearable)
+        },
 
-                this.setWeekdays();
-                this.generateCalendar();
-            },
+        async initDayjs() {
+            const load = src => new Promise((res, rej) => {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = res;
+                s.onerror = rej;
+                document.head.appendChild(s);
+            });
 
-            setWeekdays() {
-                const all = dayjs().localeData().weekdaysMin();
-                const firstDay = dayjs().localeData().firstDayOfWeek();
-                this.weekdays = [
-                    ...all.slice(firstDay), ...all.slice(0, firstDay)
-                ];
-            },
+            await Promise.all([
+                load('/vendor/mijnui/js/calendar/localeData.js'),
+                load('/vendor/mijnui/js/calendar/advancedFormat.js'),
+                load(`/vendor/mijnui/js/calendar/locale/${this.locale}.js`)
+            ]);
 
-            formatMonthYear(date) {
-                return date.format('MMMM YYYY');
-            },
+            dayjs.extend(window.dayjs_plugin_localeData);
+            dayjs.extend(window.dayjs_plugin_advancedFormat);
+            dayjs.locale(this.locale);
+        },
 
-            getArialLabel(day) {
-                let label = dayjs(day.date).format('dddd, MMMM Do, YYYY');
-                if (day.isToday) label = 'Today, ' + label;
-                if (day.isSelected) label += ', selected';
-                return label
-            },
-
-            changeMonth(offset) {
-                this.displayDate = this.displayDate.add(offset, 'month');
-                this.generateCalendar();
-            },
-
-            generateCalendar() {
-                const firstDayOfWeek = dayjs().localeData().firstDayOfWeek();
-                const start = this.displayDate.startOf('month');
-                const end = this.displayDate.endOf('month');
-
-                let startDate = start.subtract((7 + start.day() - firstDayOfWeek) % 7, 'day');
-                let endDate = end.add((6 - ((end.day() - firstDayOfWeek + 7) % 7)), 'day');
-
-                const today = dayjs();
-                const selected = this.selectedDate ? dayjs(this.selectedDate) : null;
-
-                const days = [];
-                let date = startDate;
-
-                while (date.isBefore(endDate) || date.isSame(endDate, 'day')) {
-                    days.push({
-                        date: date.format('YYYY-MM-DD'),
-                        isCurrentMonth: date.month() === this.currentDate.month(),
-                        isToday: date.isSame(today, 'day'),
-                        isSelected: selected && date.isSame(selected, 'day'),
-                        isLastDayOfMonth: date.isSame(date.endOf('month'), 'day')
-                    });
-                    date = date.add(1, 'day');
-                }
-
-                this.weeks = [];
-                for (let i = 0; i < days.length; i += 7) {
-                    this.weeks.push(days.slice(i, i + 7));
-                }
-            },
-
-            selectDate(dateStr) {
-                this.selectedDate = dateStr;
-                this.selectedDateValue = dateStr;
-                this.generateCalendar();
-                this.open = false;
-                // this.$wire.set(selectedDate, dateStr);
+        initCalendar() {
+            if (this.range && this.wireValue && Array.isArray(this.wireValue)) {
+                [this.startDate, this.endDate] = this.wireValue;
+            } else if (this.wireValue) {
+                this.selected = this.wireValue;
             }
+
+            this.setWeekdays();
+            this.generateCalendar();
+            this.updateDisplayValue();
+        },
+
+        setWeekdays() {
+            const all = dayjs().localeData().weekdaysMin();
+            const firstDay = dayjs().localeData().firstDayOfWeek();
+            this.weekdays = [...all.slice(firstDay), ...all.slice(0, firstDay)];
+        },
+
+        formatMonthYear(date) {
+            return dayjs(date).format('MMMM YYYY');
+        },
+
+        ariaLabel(day) {
+            let label = dayjs(day.date).format('dddd, MMMM Do, YYYY');
+            if (day.isToday) label = 'Today, ' + label;
+            if (day.isSelected) label += ', selected';
+            return label;
+        },
+
+        changeMonth(offset) {
+            this.displayDate = dayjs(this.displayDate).add(offset, 'month');
+            this.generateCalendar();
+        },
+
+        generateCalendar() {
+            const firstDay = dayjs().localeData().firstDayOfWeek();
+            const start = dayjs(this.displayDate).startOf('month');
+            const end = dayjs(this.displayDate).endOf('month');
+
+            let startDate = start.subtract((7 + start.day() - firstDay) % 7, 'day');
+            let endDate = end.add((6 - ((end.day() - firstDay + 7) % 7)), 'day');
+
+            const today = dayjs();
+            const days = [];
+            let date = startDate;
+
+            while (date.isBefore(endDate) || date.isSame(endDate, 'day')) {
+                const formatted = date.format('YYYY-MM-DD');
+                days.push({
+                    date: formatted,
+                    isToday: date.isSame(today, 'day'),
+                    isCurrentMonth: date.month() === dayjs(this.displayDate).month(),
+                    disabled: this.disabledDates.includes(formatted),
+                    isSelected: this.isSelected(formatted),
+                    inRange: this.inRange(formatted)
+                });
+                date = date.add(1, 'day');
+            }
+
+            this.weeks = [];
+            for (let i = 0; i < days.length; i += 7) {
+                this.weeks.push(days.slice(i, i + 7));
+            }
+        },
+
+        isSelected(date) {
+            if (this.range) return date === this.startDate || date === this.endDate;
+            return date === this.selected;
+        },
+
+        inRange(date) {
+            if (!this.range || !this.startDate || !this.endDate) return false;
+            return dayjs(date).isAfter(this.startDate, 'day') && dayjs(date).isBefore(this.endDate, 'day');
+        },
+
+        selectDate(day) {
+            if (day.disabled) return;
+
+            if (this.range) {
+                if (!this.startDate || (this.startDate && this.endDate)) {
+                    this.startDate = day.date;
+                    this.endDate = null;
+                } else {
+                    this.endDate = day.date;
+                    if (dayjs(this.endDate).isBefore(this.startDate, 'day')) {
+                        [this.startDate, this.endDate] = [this.endDate, this.startDate];
+                    }
+                    this.open = false; 
+                }
+                this.wireValue = [this.startDate, this.endDate].filter(Boolean);
+            } else {
+                this.selected = day.date;
+                this.wireValue = this.selected;
+                this.open = false;
+            }
+
+            this.updateDisplayValue();
+            this.generateCalendar();
+        },
+
+        updateDisplayValue() {
+            if (this.range && this.startDate) {
+                this.displayValue = this.endDate
+                    ? `${dayjs(this.startDate).format(this.displayFormat)} – ${dayjs(this.endDate).format(this.displayFormat)}`
+                    : dayjs(this.startDate).format(this.displayFormat);
+            } else if (this.selected) {
+                this.displayValue = dayjs(this.selected, 'YYYY-MM-DD').format(this.displayFormat);
+            } else {
+                this.displayValue = '';
+            }
+        },
+
+        clearSelection() {
+            if (this.range) {
+                this.startDate = null;
+                this.endDate = null;
+                this.wireValue = [];
+            } else {
+                this.selected = null;
+                this.wireValue = null;
+            }
+            this.updateDisplayValue();
+        },
+
+        dayWrapperClasses(day) {
+            const d = day.date;
+            const isStart = this.range && this.startDate === d;
+            const isEnd = this.range && this.endDate === d;
+            const isIn = this.range && this.startDate && this.endDate && dayjs(d).isAfter(this.startDate, 'day') && dayjs(d).isBefore(this.endDate, 'day');
+
+            const classes = ['flex-1 flex items-center justify-center'];
+
+            if (isStart || isEnd || isIn) classes.push('bg-gray-200');
+
+            if (isStart && isEnd) classes.push('rounded-full');
+            else if (isStart) classes.push('rounded-l-full');
+            else if (isEnd) classes.push('rounded-r-full');
+
+            return classes.join(' ').trim();
+        },
+
+        dayButtonClasses(day) {
+            const d = day.date;
+            const isStart = this.range && this.startDate === d;
+            const isEnd = this.range && this.endDate === d;
+            const isSingleSelected = !this.range && day.isSelected;
+
+            const classes = ['h-9 w-9 flex items-center justify-center text-sm'];
+
+            if (day.disabled) classes.push('text-muted-text opacity-50 cursor-not-allowed bg-transparent');
+            else if (isStart || isEnd || isSingleSelected) classes.push('bg-primary text-white');
+            else classes.push('bg-transparent');
+
+            classes.push('rounded-lg');
+            if (day.isToday) classes.push('ring-1 ring-primary');
+
+            return classes.join(' ').trim();
         }
     }
+}
 </script>

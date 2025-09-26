@@ -1,5 +1,5 @@
 {{--@props(['key'])--}}
 
-<tr {{$attributes}}>
+<tr {{$attributes->merge(['class' => 'hover:bg-secondary'])}}>
     {{ $slot }}
 </tr>

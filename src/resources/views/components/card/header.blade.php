@@ -1,6 +1,3 @@
-@php
-    $base = 'p-6 flex flex-col space-y-1.5';
-@endphp
-<div {{ $attributes->merge(['class' => $base]) }}>
+<div {{ $attributes->merge(['class' => 'p-6']) }}>
     {{ $slot }}
 </div>
