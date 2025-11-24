@@ -6,7 +6,7 @@
     'disabled' => false,
     'id' => null,
     'checked' => false,
-    'value' => '1',
+    'value' => null,
 ])
 
 @php
@@ -42,10 +42,10 @@
     $iconClasses = "{$colors[$color]['icon']} h-4 w-4";
 @endphp
 
-<div {{ $attributes->class(['flex items-start gap-2']) }}>
+<div {{ $attributes->class(['flex items-start gap-2'])->only(['class']) }}>
     <div class="inline-flex items-center gap-2">
         <label for="{{ $id }}" class="relative flex items-center">
-            <input id="{{ $id }}" name="{{ $name }}" type="checkbox" value="{{ $value }}"
+            <input id={{ $id }} name="{{ $name }}" type="checkbox" value="{{ $value }}"
                 @checked($checked) @disabled($disabled)
                 {{ $attributes->except(['class', 'id', 'name', 'value']) }} class="{{ $inputClasses }}" />
 
