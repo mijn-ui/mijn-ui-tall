@@ -32,7 +32,7 @@
 
     </div>
     <div x-bind:style="{ width: $store.sidebar.isOpen ? '14rem' : '0' }"
-        class="h-full bg-background-alt overflow-hidden transition-all border-border"
+        class="h-full bg-background-alt overflow-x-hidden overflow-y-auto transition-all border-border"
         x-bind:class="{ 'border-r': $store.sidebar.isOpen }">
         @stack('mijn_sidebar_content')
     </div>
