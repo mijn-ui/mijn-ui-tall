@@ -9,13 +9,12 @@ $scales = ['day', 'week', 'month'];
 $scale = in_array($scale, $scales) ? $scale : 'day';
 @endphp
 
-<div
-   class="h-[672px] w-full max-w-[1056px] space-y-2 rounded-2xl bg-surface p-4 {{ $class }}"
->
+<div class="h-screen w-full max-w-6xl rounded-xl bg-surface {{ $class }}">
     <div class="relative flex h-full w-full items-stretch overflow-hidden rounded-lg border border-main-border">
         {{ $slot }}
     </div>
 </div>
+
 
 <script>
 function ganttChart({ tasks, scale }) {

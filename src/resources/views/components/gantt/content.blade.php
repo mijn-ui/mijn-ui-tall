@@ -6,7 +6,6 @@ use Carbon\Carbon;
 $allowedColors = ['primary', 'secondary', 'success', 'warning', 'danger', 'gray'];
 $normalizeColor = fn($color) => in_array($color, $allowedColors) ? $color : 'gray';
 
-// Flatten tasks with parent index and preserve `process` percent for bars
 $entries = [];
 foreach ($tasks as $taskIndex => $task) {
     $subtasks = $task['subtasks'] ?? [];
@@ -21,7 +20,7 @@ foreach ($tasks as $taskIndex => $task) {
         'color' => $normalizeColor($task['color'] ?? null),
         'start' => $task['start'] ?? $fallbackStart,
         'end' => $task['end'] ?? $fallbackEnd,
-        'process' => $task['process'] ?? 0,  // percent 0-100
+        'process' => $task['process'] ?? 0,
     ]);
 
     foreach ($subtasks as $subtaskIndex => $subtask) {
@@ -30,7 +29,7 @@ foreach ($tasks as $taskIndex => $task) {
             '_is_parent' => false,
             '_id' => 'sub-' . $taskIndex . '-' . $subtaskIndex,
             'color' => $normalizeColor($subtask['color'] ?? null),
-            'process' => $subtask['process'] ?? 0,  // percent 0-100
+            'process' => $subtask['process'] ?? 0,
         ]);
     }
 }
@@ -46,22 +45,19 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
 @endphp
 
 <div x-data="ganttChartComponent({{ $allEntries->toJson() }}, {{ $jsDates->toJson() }}, {{ $dayWidth }})" x-ref="ganttComponent"
-@gantt-updated.window="Livewire.dispatch('updatedGantt', $event.detail)" class="h-[672px] w-full max-w-[1056px] rounded-2xl bg-surface">
+    class="flex h-full w-full bg-surface">
     <style>
         .progress-fill {
             height: 100%;
             transition: width 0.4s ease;
         }
-
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
-
         .no-scrollbar {
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-
         :root {
             --color-primary: #3b82f6;
             --color-secondary: #64748b;
@@ -72,33 +68,28 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
         }
     </style>
 
-    <div class="relative flex h-full w-full overflow-hidden rounded-lg">
-        <!-- Sidebar -->
-        <div
-            class="sticky left-0 top-0 z-10 hidden w-60 shrink-0 border-r border-main-border bg-surface p-0 sm:block overflow-y-auto no-scrollbar">
-            @isset($header)
-                {{ $header }}
-            @endisset
+    <!-- Sidebar -->
+    <div class="sticky left-0 top-0 z-20 hidden w-60 shrink-0 flex-col border-r border-main-border bg-surface sm:flex">
+        @isset($header)
+            {{ $header }}
+        @endisset
+
+        <div class="flex-1 overflow-y-auto no-scrollbar">
             @foreach($tasks as $taskIndex => $task)
-                <div>
+                <div class="border-b border-main-border">
+                    <!-- Parent Task -->
                     <button @click="expanded[{{ $taskIndex }}] = !expanded[{{ $taskIndex }}]"
-                            class="flex w-full items-center justify-between px-3 py-2 border-b border-main-border font-medium h-10 
-                            {{ !empty($task['subtasks']) ? 'bg-accent' : '' }}"
+                        class="flex w-full items-center justify-between px-4 py-3 hover:bg-accent transition-colors {{ !empty($task['subtasks']) ? 'bg-accent/50' : '' }}"
                         type="button">
-                        <div class="flex items-center gap-2">
-                            <div class="h-2 w-2 rounded-full"
+                        <div class="flex flex-1 items-center gap-3 min-w-0">
+                            <div class="h-2.5 w-2.5 shrink-0 rounded-full"
                                 :style="`background-color: var(--color-{{ $normalizeColor($task['color'] ?? null) }})`">
                             </div>
-                            <p class="text-sm text-main-text">{{ $task['title'] }}</p>
-                            @if(!empty($task['process']))
-                                <span class="ml-2 text-xs font-semibold"
-                                    :style="`color: var(--color-{{ $normalizeColor($task['color'] ?? null) }})`">
-                                </span>
-                            @endif
+                            <p class="truncate text-sm font-medium text-main-text">{{ $task['title'] }}</p>
                         </div>
                         @if(!empty($task['subtasks']))
                             <span :class="{ 'rotate-0': expanded[{{ $taskIndex }}], 'rotate-180': !expanded[{{ $taskIndex }}] }"
-                                class="transition-transform">
+                                class="ml-2 shrink-0 transition-transform duration-200">
                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
                                     stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
                                     <path d="m6 9 6 6 6-6" />
@@ -107,19 +98,15 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
                         @endif
                     </button>
 
+                    <!-- Subtasks -->
                     @if(!empty($task['subtasks']))
-                        <div x-show="expanded[{{ $taskIndex }}]" x-transition>
+                        <div x-show="expanded[{{ $taskIndex }}]" x-transition class="bg-surface/50">
                             @foreach($task['subtasks'] as $subtask)
-                                <div class="flex items-center gap-2 h-10 px-6 py-2 border-b border-main-border">
-                                    <div class="h-2 w-2 rounded-full"
+                                <div class="flex items-center gap-3 border-t border-main-border/50 px-4 py-2.5 hover:bg-accent/30 transition-colors">
+                                    <div class="h-2 w-2 shrink-0 rounded-full"
                                         :style="`background-color: var(--color-{{ $normalizeColor($subtask['color'] ?? null) }})`">
                                     </div>
-                                    <p class="text-sm text-main-text">{{ $subtask['title'] }}</p>
-                                    @if(!empty($subtask['process']))
-                                        <span class="ml-2 text-xs font-semibold"
-                                            :style="`color: var(--color-{{ $normalizeColor($subtask['color'] ?? null) }})`">
-                                        </span>
-                                    @endif
+                                    <p class="truncate text-sm text-main-text">{{ $subtask['title'] }}</p>
                                 </div>
                             @endforeach
                         </div>
@@ -127,57 +114,73 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
                 </div>
             @endforeach
         </div>
+    </div>
 
-        <!-- Right Timeline -->
-        <div class="relative flex h-full w-full flex-col overflow-auto no-scrollbar">
-            <!-- Header -->
-            <div class="sticky left-0 top-0 h-7 w-full border-b border-main-border bg-accent px-3 py-1 z-10">
-                <p class="text-sm font-semibold text-muted-text">{{ now()->format('M Y') }}</p>
-            </div>
+    <!-- Timeline -->
+    <div class="relative flex h-full w-full flex-col overflow-hidden">
+        <!-- Month Header -->
+        <div class="sticky left-0 top-0 z-10 border-b border-main-border bg-accent px-4 py-2">
+            <p class="text-xs font-semibold text-muted-text uppercase tracking-wide">{{ now()->format('M Y') }}</p>
+        </div>
 
-            <div class="flex w-full items-center">
-                @foreach ($dates as $date)
-                    <div
-                        class="w-[{{ $dayWidth }}px] flex-shrink-0 text-center border-r border-b border-main-border text-sm text-muted-text">
-                        {{ $date->format('d') }}<span class="font-semibold">-{{ strtoupper($date->format('D')[0]) }}</span>
-                    </div>
-                @endforeach
-            </div>
+        <!-- Date Header -->
+        <div class="sticky left-0 top-8 z-10 flex border-b border-main-border bg-surface">
+            @foreach ($dates as $date)
+                <div class="flex w-[63px] shrink-0 flex-col items-center justify-center border-r border-main-border/50 py-2">
+                    <p class="text-xs font-semibold text-main-text">{{ $date->format('d') }}</p>
+                    <p class="text-xs text-muted-text">{{ strtoupper($date->format('D')[0]) }}</p>
+                </div>
+            @endforeach
+        </div>
 
-            <!-- Timeline Bars -->
-            <div class="[&amp;>div]:flex-shrink-0 relative flex h-full w-fit items-center">
-                @for ($i = 0; $i < $dates->count(); $i++)
-                    <div class="w-[{{ $dayWidth }}px] h-full border-r border-main-border"></div>
-                @endfor
+        <!-- Timeline Bars Container -->
+        <div class="relative flex flex-1 overflow-auto no-scrollbar">
+            <div class="relative w-fit">
+                <!-- Grid Lines -->
+                <div class="absolute inset-0 flex pointer-events-none">
+                    @for ($i = 0; $i < $dates->count(); $i++)
+                        <div class="w-[63px] shrink-0 border-r border-main-border/30"></div>
+                    @endfor
+                </div>
+
+                <!-- Task Bars -->
                 <template x-for="entry in visibleEntries" :key="entry._id">
-                    <div class="absolute border border-main-border bg-gray-300 rounded-lg transition-all duration-300 ease-in-out"
-                        :class="hoveredEntryId === entry._id ? 'outline outline-2 outline-blue-500' : ''"
-                        :style="getBarStyle(entry) + (entry.text ? 'height: 1.5rem;' : 'height: 0.5rem;')"
-                        @mouseenter="hoveredEntryId = entry._id" @mouseleave="clearHover()">
-                        <div class="absolute left-0 top-0 h-full w-2 cursor-ew-resize z-10"
+                    <div class="absolute border border-main-border bg-gray-300 rounded-md transition-all duration-300 ease-in-out"
+                        :class="hoveredEntryId === entry._id ? 'outline outline-2 outline-blue-500 shadow-lg' : 'shadow-sm'"
+                        :style="getBarStyle(entry) + (entry.text ? 'height: 1.75rem;' : 'height: 0.5rem;')"
+                        @mouseenter="hoveredEntryId = entry._id"
+                        @mouseleave="clearHover()">
+
+                        <!-- Left Resize Handle -->
+                        <div class="absolute left-0 top-0 h-full w-1.5 cursor-ew-resize z-10 hover:bg-blue-400/50"
                             @mousedown.prevent="startResize(entry, 'start', $event)"></div>
-                        
+
                         <!-- Right Resize Handle -->
-                        <div class="absolute right-0 top-0 h-full w-2 cursor-ew-resize z-10"
+                        <div class="absolute right-0 top-0 h-full w-1.5 cursor-ew-resize z-10 hover:bg-blue-400/50"
                             @mousedown.prevent="startResize(entry, 'end', $event)"></div>
-                        <div class="relative w-full h-full progress-wrapper" @mousedown="startDrawProgress(entry, $event)"
-                            @mousemove="drawProgress($event)" @mouseup="stopDrawProgress()" @mouseenter="hoveredProgressEntryId = entry._id"
+
+                        <!-- Progress Bar -->
+                        <div class="relative w-full h-full progress-wrapper"
+                            @mousedown="startDrawProgress(entry, $event)"
+                            @mousemove="drawProgress($event)"
+                            @mouseup="stopDrawProgress()"
+                            @mouseenter="hoveredProgressEntryId = entry._id"
                             @mouseleave="hoveredProgressEntryId = null">
-                            <div class="progress-fill px-2 relative pointer-events-none"
+                            <div class="progress-fill px-2 relative pointer-events-none flex items-center"
                                 :style="`width: ${entry.process ?? 0}%; background-color: var(--color-${entry.color}); opacity: 0.8;`">
                                 <div x-show="hoveredProgressEntryId === entry._id" x-transition
-                                    class="absolute -top-6 right-0 bg-black text-white text-xs px-2 py-1 rounded shadow z-50 whitespace-nowrap">
+                                    class="absolute -top-7 right-0 bg-black text-white text-xs px-2 py-1 rounded shadow-lg z-50 whitespace-nowrap">
                                     <span x-text="`${entry.process ?? 0}%`"></span>
                                 </div>
                             </div>
-                        
+
+                            <!-- Task Text -->
                             <template x-if="entry.text">
-                                <div class="absolute inset-0 px-2 text-white text-xs font-semibold pointer-events-none">
+                                <div class="absolute inset-0 px-2 flex items-center text-white text-xs font-semibold pointer-events-none truncate">
                                     <span x-text="entry.text"></span>
                                 </div>
                             </template>
                         </div>
-
                     </div>
                 </template>
             </div>
@@ -187,103 +190,92 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
 
 <script>
     function ganttChartComponent(allEntries, jsDates, dayWidth) {
-            return {
-                expanded: {},
-                entries: allEntries,
-                dates: jsDates,
-                dayWidth: dayWidth,
-                resizing: null,
-                hoveredProgressEntryId: null,
+        return {
+            expanded: {},
+            entries: allEntries,
+            dates: jsDates,
+            dayWidth: dayWidth,
+            resizing: null,
+            hoveredProgressEntryId: null,
+            hoveredEntryId: null,
+            draggedEntry: null,
+            isDrawing: false,
 
-                get visibleEntries() {
-                    let top = -1;
-                    return this.entries
-                        .filter(e => e._is_parent || this.expanded[e._parent])
-                        .map(e => ({ ...e, _top: (++top + 1) * 40 - 24 }));
-                },
+            get visibleEntries() {
+                let top = -1;
+                return this.entries
+                    .filter(e => e._is_parent || this.expanded[e._parent])
+                    .map(e => ({ ...e, _top: (++top + 1) * 48 - 20 }));
+            },
 
-                getBarStyle(entry) {
-                    const startIdx = this.dates.indexOf(entry.start?.slice(0, 10));
-                    const endIdx = this.dates.indexOf(entry.end?.slice(0, 10));
-                    if (startIdx === -1 || endIdx === -1) return 'display: none';
-                    const left = startIdx * this.dayWidth;
-                    const width = Math.max((endIdx - startIdx + 1) * this.dayWidth, this.dayWidth);
-                    return `top: ${entry._top}px; left: ${left}px; width: ${width}px;`;
-                },
+            getBarStyle(entry) {
+                const startIdx = this.dates.indexOf(entry.start?.slice(0, 10));
+                const endIdx = this.dates.indexOf(entry.end?.slice(0, 10));
+                if (startIdx === -1 || endIdx === -1) return 'display: none';
+                const left = startIdx * this.dayWidth;
+                const width = Math.max((endIdx - startIdx + 1) * this.dayWidth, this.dayWidth);
+                return `top: ${entry._top}px; left: ${left}px; width: ${width}px;`;
+            },
 
-                startResize(entry, field, e) {
-                    const container = this.$refs?.timelineContainer || document.body; // fallback
-                    const initialMouseX = e.clientX;
-                    const initialDate = new Date(field === 'start' ? entry.start : entry.end);
-                    const referenceDate = new Date(field === 'start' ? entry.end : entry.start);
+            startResize(entry, field, e) {
+                const initialMouseX = e.clientX;
+                const initialDate = new Date(field === 'start' ? entry.start : entry.end);
+                const referenceDate = new Date(field === 'start' ? entry.end : entry.start);
 
-                    const moveHandler = (ev) => {
-                        const deltaX = ev.clientX - initialMouseX;
-                        const deltaDays = Math.round(deltaX / this.dayWidth);
-                        const newDate = new Date(initialDate);
-                        newDate.setDate(newDate.getDate() + deltaDays);
+                const moveHandler = (ev) => {
+                    const deltaX = ev.clientX - initialMouseX;
+                    const deltaDays = Math.round(deltaX / this.dayWidth);
+                    const newDate = new Date(initialDate);
+                    newDate.setDate(newDate.getDate() + deltaDays);
 
-                        // Prevent invalid ranges
-                        if (field === 'start' && newDate >= referenceDate) return;
-                        if (field === 'end' && newDate <= referenceDate) return;
+                    if (field === 'start' && newDate >= referenceDate) return;
+                    if (field === 'end' && newDate <= referenceDate) return;
 
-                        const isoDate = newDate.toISOString().slice(0, 10);
+                    const isoDate = newDate.toISOString().slice(0, 10);
+                    if (field === 'start') {
+                        entry.start = isoDate;
+                    } else {
+                        entry.end = isoDate;
+                    }
+                };
 
-                        if (field === 'start') {
-                            entry.start = isoDate;
-                        } else {
-                            entry.end = isoDate;
-                        }
-                    };
+                const upHandler = () => {
+                    window.removeEventListener('mousemove', moveHandler);
+                    window.removeEventListener('mouseup', upHandler);
+                    this.resizing = null;
+                    this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
+                        detail: entry,
+                        bubbles: true
+                    }));
+                };
 
-                    const upHandler = () => {
-                        window.removeEventListener('mousemove', moveHandler);
-                        window.removeEventListener('mouseup', upHandler);
-                        this.resizing = null;
-                        console.log(entry)
-                        this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
-                            detail: entry,
-                            bubbles: true
-                        }));
-                    };
+                window.addEventListener('mousemove', moveHandler);
+                window.addEventListener('mouseup', upHandler);
+            },
 
+            clearHover() {
+                this.hoveredEntryId = null;
+            },
 
-                    window.addEventListener('mousemove', moveHandler);
-                    window.addEventListener('mouseup', upHandler);
-                },
+            startDrawProgress(entry, event) {
+                this.draggedEntry = entry;
+                this.isDrawing = true;
+                this.drawProgress(event);
+            },
 
-                hoveredEntryId: null,
+            drawProgress(event) {
+                if (!this.isDrawing || !this.draggedEntry) return;
+                const container = event.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+                this.draggedEntry.process = Math.round(percent);
+            },
 
-                clearHover() {
-                    this.hoveredEntryId = null;
-                },
-
-
-                 draggedEntry: null,
-                isDrawing: false,
-
-                startDrawProgress(entry, event) {
-                    this.draggedEntry = entry;
-                    this.isDrawing = true;
-                    this.drawProgress(event); // initialize
-                },
-
-                drawProgress(event) {
-                    if (!this.isDrawing || !this.draggedEntry) return;
-
-                    const container = event.currentTarget;
-                    const rect = container.getBoundingClientRect();
-                    const x = event.clientX - rect.left;
-                    const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
-
-                    this.draggedEntry.process = Math.round(percent);
-                },
-
-                stopDrawProgress() {
-                    this.isDrawing = false;
-                    this.draggedEntry = null;
-                },
-
-            };
-        }
+            stopDrawProgress() {
+                this.isDrawing = false;
+                this.draggedEntry = null;
+            },
+        };
+    }
 </script>
