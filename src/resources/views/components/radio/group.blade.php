@@ -1,5 +1,4 @@
 @props([
-    'class' => '',
     'name' => $attributes->whereStartsWith('wire:model')->first(),
 ])
 
@@ -9,7 +8,7 @@
 @endphp
 
     <!-- RadioGroup -->
-<div {{ $attributes->merge(['class' => "$base $class"]) }}>
+<div {{ $attributes->merge(['class' => "$base"]) }}>
     <?php if($name): ?>
         <input
             type="hidden"

@@ -1,36 +1,40 @@
 @props([
-    'label' => '',
-    'value' => 75,
+    'label' => null,
+    'value' => 0,
     'minLabel' => '',
     'maxLabel' => '',
+    'maxValue' => 100,
 ])
 
-@php
-    $progressWidth = $value . '%';
-@endphp
+<div x-data="{
+    value: 0,
+    target: {{$value}},
+    max: {{$maxValue}},
+    interval: null,
+    start() {
+        this.interval = setInterval(() => {
+            if (this.value >= this.target) {
+                clearInterval(this.interval)
+                return
+            }
+            this.value++
+        }, 20)
+    }
+}" x-init="start()" {{ $attributes->merge(['class' => 'w-80 space-y-1']) }}>
 
-<div class="w-80 space-y-1">
-    <?php if(is_string($label) && $label !== ''): ?>
-    <div class="flex items-center justify-between text-sm font-medium text-main-text">
+    <div class="flex items-center justify-between text-sm font-medium text-foreground">
         <h5>{{ $label }}</h5>
-        <p>{{ $value }}%</p>
+        <p x-text="Math.floor((value / max) * 100) + '%'"></p>
     </div>
-    <?php endif; ?>
-    <div class="relative h-2 w-full overflow-hidden rounded-full bg-gray-200">
-        <div
-            class="h-full bg-primary"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="{{ $value }}"
-            role="progressbar"
-            style="transform: scaleX({{ $value / 100 }}); transform-origin: left center;">
+
+    <div class="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div x-cloak class="h-full bg-primary transition-all duration-100 ease-in-out"
+            :style="'width: ' + (value / max * 100) + '%'">
         </div>
     </div>
-    <?php if ((is_string($minLabel) && $minLabel !== '') || (is_string($maxLabel) && $maxLabel !== '')): ?>
-    <div class="flex items-center justify-between text-xs text-muted-text">
+
+    <div class="text-xs flex items-center justify-between text-muted-foreground">
         <p>{{ $minLabel }}</p>
         <p>{{ $maxLabel }}</p>
     </div>
-    <?php endif; ?>
 </div>
-

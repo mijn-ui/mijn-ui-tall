@@ -1,6 +1,6 @@
 @props([
     'name' => null,
-    'class' => '',
+    'class' => null,
     'size' => 'md',
 ])
 
@@ -8,18 +8,20 @@
     $wrapperClasses = 'inline-flex items-center justify-center';
 
     $iconSizes = [
+        'xs' => 'text-xs',
         'sm' => 'text-sm',
         'md' => 'text-lg',
         'lg' => 'text-xl',
     ];
 
     $svgSizes = [
+        'xs' => 'size-3',
         'sm' => 'size-4',
         'md' => 'size-5',
         'lg' => 'size-6',
     ];
 
-    $iconClasses = $iconSizes[$size] ?? 'text-lg';
+    $iconClasses =  $iconSizes[$size] ?? 'text-lg';
     $svgClasses = $svgSizes[$size] ?? 'size-5';
 
 @endphp

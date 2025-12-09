@@ -18,7 +18,7 @@
 
     $colorClasses = [
         'default' => [
-            'default' => 'border-default-text/20 text-main-text bg-accent',
+            'default' => 'border-inverse-text/20 text-main-text bg-accent',
             'outlined' => 'border-foreground text-foreground',
             'filled' => 'bg-foreground text-white',
         ],

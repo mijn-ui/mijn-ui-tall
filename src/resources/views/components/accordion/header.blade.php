@@ -1,5 +1,5 @@
 @php
-    $base = 'group flex w-full items-center justify-between py-3';
+    $base = 'group flex w-full items-center justify-between py-4';
 @endphp
 
 <x-slot:header>
