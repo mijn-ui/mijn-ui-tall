@@ -18,54 +18,94 @@
 	--shadow-2xl: 0 24px 48px rgba(16, 24, 40, 0.18);
 	--shadow-3xl: 0 32px 64px rgba(16, 24, 40, 0.14);
 
-	/* Foundation Colors */
-	--background: hsl(0 0% 100%);
-	--background-alt: hsl(0 0% 100%);
-	--foreground: hsl(240 10% 4%);
-	--border: hsl(240 5% 84%);
-
+	/* Background */
 	--color-background: var(--background);
 	--color-background-alt: var(--background-alt);
-	--color-foreground: var(--foreground);
 	--color-border: var(--border);
-
-	--color-surface: var(--background);
 	--color-main-border: var(--border);
+
+	/* Foreground */
+	--color-foreground: var(--foreground);
 	--color-main-text: var(--foreground);
 
-	--secondary: hsl(240 5% 96%);
-	--secondary-foreground: hsl(240 5% 26%);
-	--border-secondary: hsl(240 6% 90%);
+	/* Primary */
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-primary-subtle: var(--primary-subtle);
+	--color-primary-foreground-subtle: var(--primary-foreground-subtle);
+	--color-primary-emphasis: var(--primary-emphasis);
+	--color-border-primary: var(--border-primary);
+	--color-border-primary-subtle: var(--border-primary-subtle);
 
+	/* Secondary */
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-border-secondary: var(--border-secondary);
 
-	--muted: hsl(240 6% 90%);
-	--muted-alt: hsl(240 6% 90%);
-	--muted-foreground: hsl(240 4% 46%);
-	--border-muted: hsl(240 5% 96%);
-
+	/* Muted */
 	--color-muted: var(--muted);
 	--color-muted-alt: var(--muted-alt);
 	--color-muted-foreground: var(--muted-foreground);
 	--color-border-muted: var(--border-muted);
 
-	--inverse: hsl(240 10% 4%);
-	--inverse-foreground: hsl(0 0% 98%);
-	--border-inverse: hsl(240 5% 26%);
-	--inverse-subtle: hsl(240 5% 96%);
-	--inverse-outline: hsl(240 5% 84%);
-	--inverse-foreground-subtle: hsl(240 4% 46%);
+	/* Surface */
+	--color-surface: var(--background);
 
+	/* Success */
+	--color-success: var(--success);
+	--color-success-foreground: var(--success-foreground);
+	--color-success-subtle: var(--success-subtle);
+	--color-success-foreground-subtle: var(--success-foreground-subtle);
+	--color-success-emphasis: var(--success-emphasis);
+	--color-border-success: var(--border-success);
+	--color-border-success-subtle: var(--border-success-subtle);
+
+	/* Info */
+	--color-info: var(--info);
+	--color-info-foreground: var(--info-foreground);
+	--color-info-subtle: var(--info-subtle);
+	--color-info-foreground-subtle: var(--info-foreground-subtle);
+	--color-info-emphasis: var(--info-emphasis);
+	--color-border-info: var(--border-info);
+	--color-border-info-subtle: var(--border-info-subtle);
+
+	/* Warning */
+	--color-warning: var(--warning);
+	--color-warning-foreground: var(--warning-foreground);
+	--color-warning-subtle: var(--warning-subtle);
+	--color-warning-foreground-subtle: var(--warning-foreground-subtle);
+	--color-warning-emphasis: var(--warning-emphasis);
+	--color-border-warning: var(--border-warning);
+	--color-border-warning-subtle: var(--border-warning-subtle);
+
+	/* Danger */
+	--color-danger: var(--danger);
+	--color-danger-foreground: var(--danger-foreground);
+	--color-danger-subtle: var(--danger-subtle);
+	--color-danger-foreground-subtle: var(--danger-foreground-subtle);
+	--color-danger-emphasis: var(--danger-emphasis);
+	--color-border-danger: var(--border-danger);
+	--color-border-danger-subtle: var(--border-danger-subtle);
+
+	/* Inverse */
 	--color-inverse: var(--inverse);
 	--color-inverse-foreground: var(--inverse-foreground);
-	--color-border-inverse: var(--border-inverse);
 	--color-inverse-subtle: var(--inverse-subtle);
 	--color-inverse-outline: var(--inverse-outline);
 	--color-inverse-foreground-subtle: var(--inverse-foreground-subtle);
 	--color-inverse-text: var(--inverse-foreground);
-	/* Unified naming */
+	--color-border-inverse: var(--border-inverse);
+}
+
+:root {
+
+	/* Background */
+	--background: hsl(0 0% 100%);
+	--background-alt: hsl(0 0% 100%);
+	--border: hsl(240 5% 84%);
+
+	/* Foreground */
+	--foreground: hsl(240 10% 4%);
 
 	/* Primary */
 	--primary: hsl(20 90% 48%);
@@ -76,13 +116,16 @@
 	--border-primary: hsl(20 88% 40%);
 	--border-primary-subtle: hsl(20 98% 83%);
 
-	--color-primary: var(--primary);
-	--color-primary-foreground: var(--primary-foreground);
-	--color-primary-subtle: var(--primary-subtle);
-	--color-primary-foreground-subtle: var(--primary-foreground-subtle);
-	--color-primary-emphasis: var(--primary-emphasis);
-	--color-border-primary: var(--border-primary);
-	--color-border-primary-subtle: var(--border-primary-subtle);
+	/* Secondary */
+	--secondary: hsl(240 5% 96%);
+	--secondary-foreground: hsl(240 5% 26%);
+	--border-secondary: hsl(240 6% 90%);
+
+	/* Muted */
+	--muted: hsl(240 6% 90%);
+	--muted-alt: hsl(240 6% 90%);
+	--muted-foreground: hsl(240 4% 46%);
+	--border-muted: hsl(240 5% 96%);
 
 	/* Success */
 	--success: hsl(142 76% 36%);
@@ -93,13 +136,14 @@
 	--border-success: hsl(142 72% 29%);
 	--border-success-subtle: hsl(142 79% 85%);
 
-	--color-success: var(--success);
-	--color-success-foreground: var(--success-foreground);
-	--color-success-subtle: var(--success-subtle);
-	--color-success-foreground-subtle: var(--success-foreground-subtle);
-	--color-success-emphasis: var(--success-emphasis);
-	--color-border-success: var(--border-success);
-	--color-border-success-subtle: var(--border-success-subtle);
+	/* Info */
+	--info: hsl(221 83% 53%);
+	--info-foreground: hsl(210 40% 98%);
+	--info-subtle: hsl(210 100% 92%);
+	--info-foreground-subtle: hsl(221 83% 28%);
+	--info-emphasis: hsl(221 83% 45%);
+	--border-info: hsl(221 83% 45%);
+	--border-info-subtle: hsl(221 83% 80%);
 
 	/* Warning */
 	--warning: hsl(41 96% 40%);
@@ -110,14 +154,6 @@
 	--border-warning: hsl(41 92% 33%);
 	--border-warning-subtle: hsl(41 98% 77%);
 
-	--color-warning: var(--warning);
-	--color-warning-foreground: var(--warning-foreground);
-	--color-warning-subtle: var(--warning-subtle);
-	--color-warning-foreground-subtle: var(--warning-foreground-subtle);
-	--color-warning-emphasis: var(--warning-emphasis);
-	--color-border-warning: var(--border-warning);
-	--color-border-warning-subtle: var(--border-warning-subtle);
-
 	/* Danger */
 	--danger: hsl(0 72% 51%);
 	--danger-foreground: hsl(0 86% 97%);
@@ -127,33 +163,15 @@
 	--border-danger: hsl(0 74% 42%);
 	--border-danger-subtle: hsl(0 96% 89%);
 
-	--color-danger: var(--danger);
-	--color-danger-foreground: var(--danger-foreground);
-	--color-danger-subtle: var(--danger-subtle);
-	--color-danger-foreground-subtle: var(--danger-foreground-subtle);
-	--color-danger-emphasis: var(--danger-emphasis);
-	--color-border-danger: var(--border-danger);
-	--color-border-danger-subtle: var(--border-danger-subtle);
+	/* Inverse */
+	--inverse: hsl(240 10% 4%);
+	--inverse-foreground: hsl(0 0% 98%);
+	--inverse-subtle: hsl(240 5% 96%);
+	--inverse-outline: hsl(240 5% 84%);
+	--inverse-foreground-subtle: hsl(240 4% 46%);
+	--border-inverse: hsl(240 5% 26%);
 
-	/* Info */
-	--info: hsl(221 83% 53%);
-	--info-foreground: hsl(210 40% 98%);
-	--info-subtle: hsl(210 100% 92%);
-	--info-foreground-subtle: hsl(221 83% 28%);
-	--info-emphasis: hsl(221 83% 45%);
-	--border-info: hsl(221 83% 45%);
-	--border-info-subtle: hsl(221 83% 80%);
-
-	--color-info: var(--info);
-	--color-info-foreground: var(--info-foreground);
-	--color-info-subtle: var(--info-subtle);
-	--color-info-foreground-subtle: var(--info-foreground-subtle);
-	--color-info-emphasis: var(--info-emphasis);
-	--color-border-info: var(--border-info);
-	--color-border-info-subtle: var(--border-info-subtle);
 }
-
-@variant dark (&:where(.dark, .dark *));
 
 .dark {
 	--background: hsl(240 10% 4%);
@@ -217,6 +235,8 @@
 	--border-info: hsl(217 91% 60%);
 	--border-info-subtle: hsl(217 33% 25%);
 }
+
+@variant dark (&:where(.dark, .dark *));
 
 @layer base {
 	* {
