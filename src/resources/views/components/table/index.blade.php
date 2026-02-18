@@ -38,7 +38,7 @@
         }
     }"
 >
-    <div class="flex items-center justify-between gap-4 px-1">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
         @if($hasSearch)
             <div class="relative max-w-sm w-full">
                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
@@ -54,7 +54,7 @@
         @endif
 
         @if($hasViewableColumns)
-            <x-mijnui::dropdown :close-on-select="false" align="right">
+            <x-mijnui::dropdown :close-on-select="false" align="right" teleport>
                 <x-slot:trigger>
                     <x-mijnui::button variant="outline" class="gap-2">
                         <x-mijnui::icon name="fa-solid fa-filter" size="sm" />

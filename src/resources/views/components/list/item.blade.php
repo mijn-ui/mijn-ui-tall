@@ -2,15 +2,14 @@
     'href' => null,
     'active' => false,
 ])
-
 @php
-    $base = 'text-inverse-text inline-flex h-10 w-full items-center justify-start gap-1 rounded-md px-3.5 text-sm transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90 disabled:pointer-events-none disabled:opacity-50';
+    $base = 'text-foreground inline-flex h-10 w-full items-center justify-start gap-1 rounded-md px-3.5 text-sm transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90 disabled:pointer-events-none disabled:opacity-50';
     $activeClass = 'bg-primary/20 text-primary';
     $hoverClass = 'hover:bg-accent hover:text-accent-text';
     $activeHoverClass = 'hover:bg-primary/30';
 @endphp
 
-<?php if($href): ?>
+    <?php if ($href): ?>
     <a {{ $attributes->merge(['class' => "$base " . ($active ? "$activeClass $activeHoverClass" : $hoverClass), 'href' => $href]) }}>
         {{ $slot }}
     </a>
