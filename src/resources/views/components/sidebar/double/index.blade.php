@@ -31,7 +31,7 @@
         </button>
 
     </div>
-    <div x-bind:style="{ width: $store.sidebar.isOpen ? '14rem' : '0' }"
+    <div x-bind:style="{ width: $store.sidebar.isOpen ? (window.innerWidth < 640 ? 'calc(100vw - 4rem)' : '14rem') : '0' }"
         class="h-full bg-background-alt overflow-hidden transition-all border-border"
         x-bind:class="{ 'border-r': $store.sidebar.isOpen }">
         @stack('mijn_sidebar_content')

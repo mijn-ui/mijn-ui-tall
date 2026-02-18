@@ -1,5 +1,3 @@
-
-
 @props([
     'active' => false,
     'disabled' => false,
@@ -8,7 +6,7 @@
 ])
 
 @php
-    $baseClasses = 'inline-flex h-9 items-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:opacity-50';
+    $baseClasses = 'inline-flex h-9 items-center gap-1.5 border-b px-3 text-sm font-normal leading-none text-secondary-foreground outline-none duration-300 ease-in-out cursor-pointer hover:bg-secondary focus-visible:bg-secondary active:bg-secondary/70 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50';
 
     $activeClasses = 'data-[state=active]:border-b-2 data-[state=active]:border-b-border-primary data-[state=active]:font-medium data-[state=active]:text-primary-emphasis data-[state=active]:hover:bg-transparent data-[state=active]:hover:text-primary-emphasis';
 

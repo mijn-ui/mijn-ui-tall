@@ -3,7 +3,7 @@
 @endphp
 
 <div {{$attributes->merge([
-    'class'=> $base
+    'class' => $base
 ])}}>
     {{ $slot }}
 </div>

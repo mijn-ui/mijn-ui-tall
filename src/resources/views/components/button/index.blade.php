@@ -13,49 +13,49 @@
 @php
     // Base styles for the button
     $base =
-        'inline-flex flex-wrap items-center gap-2 justify-center text-sm transition-colors duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
+        'cursor-pointer inline-flex flex-wrap items-center gap-2 justify-center text-sm font-medium transition-all duration-200 ease-in-out active:brightness-90 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main';
 
     $colorClasses = [
         'default' => [
-            'default' => 'constant bg-inverse text-inverse-foreground hover:bg-inverse/80',
-            'outline' => 'border border-inverse-outline text-inverse-foreground hover:bg-inverse/10',
-            'subtle' => 'bg-inverse-subtle hover:bg-inverse/20 text-inverse-foreground-subtle',
+            'default' => 'shadow-xs bg-inverse text-inverse-foreground hover:bg-inverse/80',
+            'outline' => 'border border-inverse text-inverse-foreground hover:bg-inverse/10',
+            'subtle' => 'border border-inverse bg-inverse-subtle hover:bg-inverse/20 text-inverse-foreground-subtle',
             'ghost' => 'text-inverse-foreground hover:bg-inverse-subtle dark:hover:bg-inverse-subtle/30',
         ],
         'primary' => [
-            'default' => 'constant bg-primary text-primary-foreground hover:bg-primary/80',
-            'outline' => 'border border-primary-outline text-primary-foreground hover:bg-primary/10',
-            'subtle' => 'bg-primary-subtle hover:bg-primary/20 text-primary-foreground-subtle',
-            'ghost' => 'text-primary-foreground hover:bg-primary-subtle dark:hover:bg-primary-subtle/30',
+            'default' => 'shadow-xs bg-primary text-primary-foreground hover:bg-primary/80',
+            'outline' => 'border border-primary text-primary hover:bg-primary/10',
+            'subtle' => 'border border-primary bg-primary-subtle hover:bg-primary/20 text-primary',
+            'ghost' => 'text-primary hover:bg-primary-subtle dark:hover:bg-primary-subtle/30',
         ],
         'secondary' => [
-            'default' => 'constant bg-secondary text-secondary-foreground hover:bg-secondary/80',
-            'outline' => 'border border-secondary-outline text-secondary-foreground hover:bg-secondary/10',
-            'subtle' => 'bg-secondary-subtle hover:bg-secondary/20 text-secondary-foreground-subtle',
+            'default' => 'shadow-xs bg-secondary text-secondary-foreground hover:bg-secondary/80',
+            'outline' => 'border border-border-secondary text-secondary-foreground hover:bg-secondary/10',
+            'subtle' => 'border border-border-secondary bg-secondary-subtle hover:bg-secondary/20 text-secondary-foreground',
             'ghost' => 'text-secondary-foreground hover:bg-secondary-subtle dark:hover:bg-secondary-subtle/30',
         ],
         'success' => [
-            'default' => 'constant bg-success text-success-foreground hover:bg-success/80',
-            'outline' => 'border border-success-outline text-success-foreground hover:bg-success/10',
-            'subtle' => 'bg-success-subtle hover:bg-success/20 text-success-foreground-subtle',
-            'ghost' => 'text-success-foreground hover:bg-success-subtle dark:hover:bg-success-subtle/30',
+            'default' => 'shadow-xs bg-success text-success-foreground hover:bg-success/80',
+            'outline' => 'border border-success text-success hover:bg-success/10',
+            'subtle' => 'border border-success bg-success-subtle hover:bg-success/20 text-success',
+            'ghost' => 'text-success hover:bg-success-subtle dark:hover:bg-primary-subtle/30',
         ],
         'info' => [
-            'default' => 'constant bg-info text-info-foreground hover:bg-info/80',
-            'outline' => 'border border-info-outline text-info-foreground hover:bg-info/10',
-            'subtle' => 'bg-info-subtle hover:bg-info/20 text-info-foreground-subtle',
-            'ghost' => 'text-info-foreground hover:bg-info-subtle dark:hover:bg-info-subtle/30',
+            'default' => 'shadow-xs bg-info text-info-foreground hover:bg-info/80',
+            'outline' => 'border border-info text-info hover:bg-info/10',
+            'subtle' => 'border border-info bg-info-subtle hover:bg-info/20 text-info',
+            'ghost' => 'text-info hover:bg-info-subtle dark:hover:bg-info-subtle/30',
         ],
         'warning' => [
-            'default' => 'constant bg-warning text-warning-foreground hover:bg-warning/80',
-            'outline' => 'border border-warning-outline text-warning-foreground hover:bg-warning/10',
-            'subtle' => 'bg-warning-subtle hover:bg-warning/20 text-warning-foreground-subtle',
-            'ghost' => 'text-warning-foreground hover:bg-warning-subtle dark:hover:bg-warning-subtle/30',
+            'default' => 'shadow-xs bg-warning text-warning-foreground hover:bg-warning/80',
+            'outline' => 'border border-warning text-warning hover:bg-warning/10',
+            'subtle' => 'border border-warning bg-warning-subtle hover:bg-warning/20 text-warning',
+            'ghost' => 'text-warning hover:bg-warning-subtle dark:hover:bg-warning-subtle/30',
         ],
         'danger' => [
-            'default' => 'constant bg-danger text-danger-foreground hover:bg-danger/80',
-            'outline' => 'border border-danger-outline text-danger-foreground hover:bg-danger/10',
-            'subtle' => 'bg-danger-subtle hover:bg-danger/20 text-danger-foreground-subtle',
+            'default' => 'shadow-xs bg-danger text-danger-foreground hover:bg-danger/80',
+            'outline' => 'border border-danger text-danger hover:bg-danger/10',
+            'subtle' => 'border border-danger bg-danger-subtle hover:bg-danger/20 text-danger',
             'ghost' => 'text-danger-foreground hover:bg-danger-subtle dark:hover:bg-danger-subtle/30',
         ],
     ][$color][$variant];

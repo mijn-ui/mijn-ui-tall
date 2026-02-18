@@ -4,14 +4,13 @@
 ])
 @php
     $base = $icon
-        ? 'translate-y-[-3px] [&>i]:absolute [&>i]:left-4 [&>i]:top-3 [&>i]:text-lg'
-        : 'translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:size-5';
+        ? '[&>i]:text-lg'
+        : '[&>svg]:size-5';
 @endphp
-
-<span {{ $attributes->merge(['class' => "$base $class"]) }}>
-    <?php if($icon): ?>
+<span {{ $attributes->merge(['class' => "shrink-0 $base $class"]) }}>
+@if ($icon)
     <i class="{{ $icon }}"></i>
-    <?php else: ?>
-    {{ $slot }}
-    <?php endif; ?>
+@else
+        {{ $slot }}
+    @endif
 </span>

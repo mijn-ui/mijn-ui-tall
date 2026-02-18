@@ -4,44 +4,58 @@
 ])
 
 @php
+    $variant = $variant === 'outlined' ? 'outline' : ($variant === 'filled' ? 'default' : $variant);
 
-    $base = 'relative rounded-lg py-4 px-3 pr-9 w-full';
-
-    $variantClass = [
-        'default' => 'border',
-        'outlined' => 'border',
-        'filled' => 'border-0',
-    ][$variant];
+    $base = 'relative flex gap-3 rounded-lg p-4 w-full';
 
     $colorClasses = [
         'default' => [
-            'default' => 'border-inverse text-inverse bg-inverse-foreground/30',
-            'outlined' => 'border-inverse text-inverse',
-            'filled' => 'constant border-inverse bg-inverse text-inverse-foreground',
+            'default' => 'bg-inverse text-inverse-foreground',
+            'outline' => 'border border-inverse text-inverse',
+            'subtle' => 'bg-inverse-subtle text-inverse border border-inverse/20',
+            'ghost' => 'bg-transparent text-inverse',
+        ],
+        'primary' => [
+            'default' => 'bg-primary text-primary-foreground',
+            'outline' => 'border border-primary text-primary',
+            'subtle' => 'bg-primary-subtle text-primary border border-primary/20',
+            'ghost' => 'bg-transparent text-primary',
+        ],
+        'secondary' => [
+            'default' => 'bg-secondary text-secondary-foreground',
+            'outline' => 'border border-border-secondary text-secondary-foreground',
+            'subtle' => 'bg-secondary-subtle text-secondary-foreground border border-border-secondary/20',
+            'ghost' => 'bg-transparent text-secondary-foreground',
         ],
         'success' => [
-            'default' => 'border-success text-success bg-success-foreground/30',
-            'outlined' => 'border-success text-success',
-            'filled' => 'constant border-success bg-success text-success-foreground',
+            'default' => 'bg-success text-success-foreground',
+            'outline' => 'border border-success text-success',
+            'subtle' => 'bg-success-subtle text-success border border-success/20',
+            'ghost' => 'bg-transparent text-success',
         ],
         'info' => [
-            'default' => 'border-info text-info bg-info-foreground/30',
-            'outlined' => 'border-info text-info',
-            'filled' => 'constant border-info bg-info text-info-foreground',
+            'default' => 'bg-info text-info-foreground',
+            'outline' => 'border border-info text-info',
+            'subtle' => 'bg-info-subtle text-info border border-info/20',
+            'ghost' => 'bg-transparent text-info',
         ],
         'warning' => [
-            'default' => 'border-warning text-warning bg-warning-foreground/30',
-            'outlined' => 'border-warning text-warning',
-            'filled' => 'constant border-warning bg-warning text-warning-foreground',
+            'default' => 'bg-warning text-warning-foreground',
+            'outline' => 'border border-warning text-warning',
+            'subtle' => 'bg-warning-subtle text-warning border border-warning/20',
+            'ghost' => 'bg-transparent text-warning',
         ],
         'danger' => [
-            'default' => 'border-danger text-danger bg-danger-foreground/30',
-            'outlined' => 'border-danger text-danger',
-            'filled' => 'constant border-danger bg-danger text-danger-foreground',
-        ]
+            'default' => 'bg-danger text-danger-foreground',
+            'outline' => 'border border-danger text-danger',
+            'subtle' => 'bg-danger-subtle text-danger border border-danger/20',
+            'ghost' => 'bg-transparent text-danger',
+        ],
     ][$color][$variant];
 @endphp
 
-<div {{ $attributes->merge(['class' => "$base $variantClass $colorClasses"]) }}>
-    {{ $slot }}
+<div {{ $attributes->merge(['class' => "$base $colorClasses"]) }}>
+    <div class="flex-1">
+        {{ $slot }}
+    </div>
 </div>

@@ -1,5 +1,5 @@
 @php
-    $base = 'text-base font-semibold leading-none tracking-tight mb-2';
+    $base = 'text-base font-medium leading-tight tracking-tight mb-1.5';
 @endphp
 
 <h3 {{ $attributes->merge(['class' => "$base"]) }}>

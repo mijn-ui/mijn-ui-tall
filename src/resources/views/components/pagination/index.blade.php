@@ -32,7 +32,12 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
             params.set('page', page);
             params.set('perPage', this.perPage);
 
-            window.location.href = `${url.pathname}?${params.toString()}`;
+            const newUrl = `${url.pathname}?${params.toString()}`;
+            if (window.Livewire) {
+                Livewire.navigate(newUrl);
+            } else {
+                window.location.href = newUrl;
+            }
         },
         updatePerPage(value) {
             this.perPage = value;
@@ -43,7 +48,12 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
             params.set('perPage', this.perPage);
             params.set('page', this.currentPage);
 
-            window.location.href = `${url.pathname}?${params.toString()}`;
+            const newUrl = `${url.pathname}?${params.toString()}`;
+            if (window.Livewire) {
+                Livewire.navigate(newUrl);
+            } else {
+                window.location.href = newUrl;
+            }
         }
     }"
 >
@@ -59,7 +69,9 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
 
         <div class="flex items-center gap-2">
             {{-- Previous --}}
-            <mijnui:pagination.previous current="{{$c_page}}" @click="goToPage(currentPage - 1)"/>
+            <a :href="'?page=' + (currentPage - 1) + '&perPage=' + perPage" wire:navigate>
+                 <mijnui:pagination.previous current="{{$c_page}}" />
+            </a>
             
             {{-- First Page --}}
             <span v-if="currentPage == 1">
@@ -83,7 +95,9 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
 
             <mijnui:pagination.link current="{{$c_page}}" page="{{ $data->lastPage() }}" />
 
-            <mijnui:pagination.next current="{{$c_page}}" lastPage="{{ $data->lastPage() }}" @click="goToPage(currentPage + 1)" />
+            <a :href="'?page=' + (currentPage + 1) + '&perPage=' + perPage" wire:navigate>
+                <mijnui:pagination.next current="{{$c_page}}" lastPage="{{ $data->lastPage() }}" />
+            </a>
 
         </div>
 

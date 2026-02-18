@@ -1,7 +1,7 @@
 <thead>
-    <tr {{ $attributes->merge([
-        'class' => 'bg-secondary text-xs uppercase text-muted-text border-b border-b-background-alt',
-    ]) }}>
+    <tr {{ $attributes->class([
+    'border-b border-border bg-muted/20 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors'
+]) }}>
         {{ $slot }}
     </tr>
 </thead>
