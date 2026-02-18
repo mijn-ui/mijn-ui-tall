@@ -1,5 +1,7 @@
 @props(['disabled' => false])
 
-<button {{ $attributes }} type="button" @disabled($disabled)>
-    {{ $slot }}
-</button>
+<x-slot:trigger>
+    <button {{ $attributes }} type="button" @disabled($disabled)>
+        {{ $slot }}
+    </button>
+</x-slot:trigger>

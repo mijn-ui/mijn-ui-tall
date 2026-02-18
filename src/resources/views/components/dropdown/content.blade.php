@@ -1,4 +1,4 @@
-<div {{ $attributes }}>
+<x-slot:content {{ $attributes }}>
     @isset($header)
         <div class="px-2 py-1.5 text-sm font-semibold">
             {{ $header }}
@@ -8,4 +8,4 @@
     <div>
         {{$slot}}
     </div>
-</div>
+</x-slot:content>
