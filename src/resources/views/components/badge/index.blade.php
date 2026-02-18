@@ -11,9 +11,9 @@
 
 @php
     $base =
-        'inline-flex items-center font-semibold transition duration-300 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
+        'inline-flex items-center gap-1 font-medium transition duration-300 ease-in-out focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50';
 
-    $colorClasses = $colorClasses = [
+    $colorClasses = [
         'default' => [
             'primary' =>
                 'bg-primary text-primary-foreground hover:bg-primary/80 focus-visible:ring-primary active:bg-primary/70',
@@ -30,17 +30,17 @@
 
         'subtle' => [
             'primary' =>
-                'border border-border-primary-subtle bg-primary-subtle text-primary-foreground-subtle hover:bg-primary-subtle/80 focus-visible:ring-primary-subtle active:bg-primary-subtle/70',
+                'border border-primary bg-primary-subtle text-primary hover:bg-primary-subtle/80 focus-visible:ring-primary active:bg-primary-subtle/70',
             'secondary' =>
-                'border border-border-secondary-subtle bg-secondary-subtle text-secondary-foreground-subtle hover:bg-secondary-subtle/80 focus-visible:ring-secondary-subtle active:bg-secondary-subtle/70',
+                'border border-secondary text-secondary-foreground bg-secondary-subtle hover:bg-secondary-subtle/80 focus-visible:ring-secondary active:bg-secondary-subtle/70',
             'success' =>
-                'border border-border-success-subtle bg-success-subtle text-success-foreground-subtle hover:bg-success-subtle/80 focus-visible:ring-success-subtle active:bg-success-subtle/70',
+                'border border-success bg-success-subtle text-success hover:bg-success-subtle/80 focus-visible:ring-success active:bg-success-subtle/70',
             'info' =>
-                'border border-border-info-subtle bg-info-subtle text-info-foreground-subtle hover:bg-info-subtle/80 focus-visible:ring-info-subtle active:bg-info-subtle/70',
+                'border border-info bg-info-subtle text-info hover:bg-info-subtle/80 focus-visible:ring-info active:bg-info-subtle/70',
             'warning' =>
-                'border border-border-warning-subtle bg-warning-subtle text-warning-foreground-subtle hover:bg-warning-subtle/80 focus-visible:ring-warning-subtle active:bg-warning-subtle/70',
+                'border border-warning bg-warning-subtle text-warning hover:bg-warning-subtle/80 focus-visible:ring-warning active:bg-warning-subtle/70',
             'danger' =>
-                'border border-border-danger-subtle bg-danger-subtle text-danger-foreground-subtle hover:bg-danger-subtle/80 focus-visible:ring-danger-subtle active:bg-danger-subtle/70',
+                'border border-danger bg-danger-subtle text-danger hover:bg-danger-subtle/80 focus-visible:ring-danger active:bg-danger-subtle/70',
         ],
 
         'outline' => [
@@ -75,10 +75,10 @@
     ][$variant][$color];
 
     $sizeClasses = [
-        'xs' => 'text-xs px-1 py-0.5',
-        'sm' => 'text-sm px-2 py-0.5',
-        'md' => 'text-sm px-2.5 py-1',
-        'lg' => 'text-base px-3 py-1.5',
+        'xs' => 'text-xs px-2 py-0.5',
+        'sm' => 'text-sm px-2.5 py-0.5',
+        'md' => 'text-sm px-3 py-1',
+        'lg' => 'text-base px-4 py-1.5',
     ][$size ?? 'xs'];
 
     $roundedClasses = [
@@ -93,21 +93,19 @@
 
 <span {{ $attributes->merge(['class' => $finalClasses])->except('x-text') }}>
     @if ($fronticon)
-        <mijnui:icon :name="$fronticon" class="pl-1 shrink-0" :size="$size" />
+        <mijnui:icon :name="$fronticon" class="shrink-0" :size="$size" />
     @endif
 
     @if ($title || $attributes->has('x-text'))
-        <span class="font-semibold px-1" {{ $attributes->only('x-text') }}>
+        <span {{ $attributes->only('x-text') }}>
             {{ $title }}
         </span>
     @else
-        <span class="inline-flex gap-1 items-center">
-            {{ $slot }}
-        </span>
+        {{ $slot }}
     @endif
 
     @if ($backicon)
         <mijnui:icon x-on:click="{{ $onClick }}" :name="$backicon"
-            class="pr-1 shrink-0 {{ $onClick ? 'cursor-pointer' : '' }}" :size="$size" />
+            class="shrink-0 {{ $onClick ? 'cursor-pointer' : '' }}" :size="$size" />
     @endif
 </span>

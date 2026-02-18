@@ -4,33 +4,52 @@
 ])
 
 @php
-    $base = 'pl-8 w-full text-base font-semibold leading-none';
+    $variant = $variant === 'outlined' ? 'outline' : ($variant === 'filled' ? 'default' : $variant);
 
-     $colorClass = [
+    $base = 'w-full text-base font-semibold leading-none mb-1';
+
+    $colorClass = [
         'default' => [
-            'default' => 'text-inverse-emphasis/70',
-            'outlined' => 'text-inverse-emphasis/70',
-            'filled' => 'text-inverse-emphasis dark:text-white',
+            'default' => 'text-inverse-foreground',
+            'outline' => 'text-inverse',
+            'subtle' => 'text-inverse',
+            'ghost' => 'text-inverse',
+        ],
+        'primary' => [
+            'default' => 'text-primary-foreground',
+            'outline' => 'text-primary',
+            'subtle' => 'text-primary',
+            'ghost' => 'text-primary',
+        ],
+        'secondary' => [
+            'default' => 'text-secondary-foreground',
+            'outline' => 'text-secondary-foreground',
+            'subtle' => 'text-secondary-foreground',
+            'ghost' => 'text-secondary-foreground',
         ],
         'success' => [
-            'default' => 'text-success-emphasis/70',
-            'outlined' => 'text-success-emphasis/70',
-            'filled' => 'text-success-emphasis dark:text-white',
+            'default' => 'text-success-foreground',
+            'outline' => 'text-success',
+            'subtle' => 'text-success',
+            'ghost' => 'text-success',
         ],
         'info' => [
-            'default' => 'text-info-emphasis/70',
-            'outlined' => 'text-info-emphasis/70',
-            'filled' => 'text-info-emphasis dark:text-white',
+            'default' => 'text-info-foreground',
+            'outline' => 'text-info',
+            'subtle' => 'text-info',
+            'ghost' => 'text-info',
         ],
         'warning' => [
-            'default' => 'text-warning-emphasis/70',
-            'outlined' => 'text-warning-emphasis/70',
-            'filled' => 'text-warning-emphasis dark:text-white',
+            'default' => 'text-warning-foreground',
+            'outline' => 'text-warning',
+            'subtle' => 'text-warning',
+            'ghost' => 'text-warning',
         ],
         'danger' => [
-            'default' => 'text-danger-emphasis/70',
-            'outlined' => 'text-danger-emphasis/70',
-            'filled' => 'text-danger-emphasis dark:text-white',
+            'default' => 'text-danger-foreground',
+            'outline' => 'text-danger',
+            'subtle' => 'text-danger',
+            'ghost' => 'text-danger',
         ],
     ][$color][$variant];
 @endphp

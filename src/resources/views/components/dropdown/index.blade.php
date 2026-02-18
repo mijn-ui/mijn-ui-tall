@@ -3,6 +3,7 @@
     'offset' => 4,
     'disabled' => false,
     'align' => 'left',
+    'closeOnSelect' => true,
 ])
 
 @php
@@ -11,7 +12,8 @@
 @endphp
 
 <div x-data="{
-    open: false,
+open: false,
+    closeOnSelect: {{ $closeOnSelect ? 'true' : 'false' }},
 }" class="relative inline-block" x-on:click.outside="open = false">
     <!-- Trigger -->
     <div x-on:click="open = !open" x-ref="trigger" @disabled($disabled)>
@@ -21,8 +23,8 @@
     </div>
 
     <!-- Content -->
-    <div x-cloak x-data="{ align: '{{ $align }}' }" x-show="open" x-ref="content" x-transition class="{{ $contentClasses }}"
-        x-effect="
+    <div x-cloak x-data="{ align: '{{ $align }}' }" x-show="open" x-ref="content" x-transition
+        class="{{ $contentClasses }}" @click="if (closeOnSelect) open = false" x-effect="
     if (open) {
         $nextTick(() => {
             const trigger = $refs.trigger;
@@ -57,11 +59,10 @@
                     content.style.left = 0
                     content.style.right = ''
                     break;
-            }
+        }
 
         });
-    }
-">
+    }">
         @isset($content)
             {{ $content }}
         @endisset

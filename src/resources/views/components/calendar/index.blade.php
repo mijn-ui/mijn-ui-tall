@@ -69,7 +69,7 @@
             type="button"
             x-show="clearable && (selected || startDate)"
             @click="clearSelection()"
-            class="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
+            class="absolute right-2 top-2 text-muted-foreground hover:text-foreground"
         >
             ✕
         </button>
@@ -82,9 +82,9 @@
 
     <!-- Calendar Dropdown -->
     <div x-show="open" x-transition @click.outside="open = false"
-         class="absolute top-full left-0 mt-1 w-full min-h-[220px] max-w-[280px] z-[9999]">
+         class="absolute top-full left-0 mt-1 w-full min-h-[220px] max-w-[280px] z-9999">
         <template x-if="isInitialized">
-            <div class="rounded-lg border bg-surface p-3 shadow-xl bg-gray-100 mt-1">
+            <div class="rounded-lg border bg-background-alt p-3 shadow-xl mt-1">
                 <!-- Navigation -->
                 <nav class="flex items-center justify-between w-full mb-2">
                     <button @click="changeMonth(-1)" type="button"
@@ -301,7 +301,7 @@ function calendarComponent({ locale, range, displayFormat, disabledDates, wireVa
 
             const classes = ['flex-1 flex items-center justify-center'];
 
-            if (isStart || isEnd || isIn) classes.push('bg-gray-200');
+            if (isStart || isEnd || isIn) classes.push('bg-primary-subtle');
 
             if (isStart && isEnd) classes.push('rounded-full');
             else if (isStart) classes.push('rounded-l-full');
