@@ -14,12 +14,14 @@
     'viewable' => false,
     'clearable' => false,
     'invalid' => null,
+    'color' => 'primary',
     'wrapperClass' => 'w-full'
 ])
 
 @php
     $id = $id ?: $name;
     $invalid ??= $name && $errors->has($name);
+    $color = $invalid ? 'danger' : ($color ?? 'primary');
 
     $startIcon ??= $icon;
     $hasStartIcon = filled($startIcon);
@@ -32,13 +34,13 @@
           focus-visible:border-border-danger-subtle
           focus-visible:outline-none
           focus-visible:ring-2
-          focus-visible:ring-primary
+          focus-visible:ring-danger
           focus-visible:ring-offset-2
           focus-visible:ring-offset-background ring-danger",
-        $variant === 'underline' => 'border-b focus-visible:border-b-primary outline-none',
+        $variant === 'underline' => "border-b focus-visible:border-b-$color outline-none",
         default
-            => "rounded-md border focus-visible:border-border-primary-subtle focus-visible:outline-none focus-visible:ring-2
-          focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ring-primary",
+            => "rounded-md border focus-visible:border-border-$color-subtle focus-visible:outline-none focus-visible:ring-2
+          focus-visible:ring-$color focus-visible:ring-offset-2 focus-visible:ring-offset-background ring-$color",
     };
 
     $inputClasses = collect([
