@@ -3,11 +3,16 @@
             'class' => 'text-foreground inline-flex h-8 w-8 items-center justify-center gap-1 rounded-md border border-main-border bg-transparent text-sm transition-colors duration-200 ease-in-out hover:bg-accent hover:text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-main active:brightness-90 disabled:pointer-events-none disabled:opacity-50 sm:h-10 sm:w-10',
         ])" x-on:click="$store.sidebar.toggle()" aria-label="{{ __('Toggle sidebar') }}">
     <!-- Open Icon -->
-    <svg x-show="isOpen" x-transition stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
-        stroke-linecap="round" stroke-linejoin="round" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
-        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
-        <path d="M9 3v18"></path>
-        <path d="m16 15-3-3 3-3"></path>
+    <svg x-show="isOpen" x-transition xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+        fill="none" class="injected-svg"
+        data-src="https://cdn.hugeicons.com/icons/sidebar-left-stroke-rounded.svg?v=1.0.0"
+        xmlns:xlink="http://www.w3.org/1999/xlink" role="img" color="currentColor">
+        <path
+            d="M2 12C2 8.31087 2 6.4663 2.81382 5.15877C3.1149 4.67502 3.48891 4.25427 3.91891 3.91554C5.08116 3 6.72077 3 10 3H14C17.2792 3 18.9188 3 20.0811 3.91554C20.5111 4.25427 20.8851 4.67502 21.1862 5.15877C22 6.4663 22 8.31087 22 12C22 15.6891 22 17.5337 21.1862 18.8412C20.8851 19.325 20.5111 19.7457 20.0811 20.0845C18.9188 21 17.2792 21 14 21H10C6.72077 21 5.08116 21 3.91891 20.0845C3.48891 19.7457 3.1149 19.325 2.81382 18.8412C2 17.5337 2 15.6891 2 12Z"
+            stroke="currentColor" stroke-width="1.5"></path>
+        <path d="M9.5 3L9.5 21" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path>
+        <path d="M5 7H6M5 10H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        </path>
     </svg>
 
 </mijnui:button>
