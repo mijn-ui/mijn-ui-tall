@@ -18,6 +18,10 @@
 @php
     $message ??= $name ? $errors->first($name) : null;
     $errorClass = 'text-xs text-danger ' . ($message ? '' : 'hidden');
+    $wireModel = $attributes->wire('model');
+    $wireModelName = $wireModel?->value();
+    $rootModelAttributes = $attributes->only('x-model');
+    $inputAttributes = $attributes->except(['class', 'x-model']);
 
     $triggerClasses =
         'border-border min-w-44 bg-background-alt placeholder:text-muted-foreground hover:bg-secondary flex h-10 w-full items-center justify-between rounded-md border px-3 py-2 text-sm [&>span]:line-clamp-1 gap-4 [&_svg]:size-4 [&_svg]:opacity-50 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background';
@@ -38,8 +42,17 @@
             {{ $slot }}
         </select>
     @else
-        <div x-data="selectComponent(@js($multiple), '{{ $placeholder }}', @entangle($attributes->wire('model')) ?? null)">
-            <input type="hidden" {{ $attributes->except('class') }} @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
+        <div
+            x-data="selectComponent(
+                @js($multiple),
+                @js($placeholder),
+                {{ $wireModelName ? "\$wire.entangle('{$wireModelName}')" : 'null' }},
+                @js($attributes->get('value'))
+            )"
+            x-modelable="value"
+            {{ $rootModelAttributes }}
+        >
+            <input type="hidden" {{ $inputAttributes }} @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
 
             <div class="relative w-full" x-on:click.outside="selectOpen = false">
                 <!-- Trigger -->
@@ -51,12 +64,12 @@
                                 <mijnui:badge x-text="item" backicon="fa-solid fa-xmark" @click.stop="removeSelected(item)" />
                             </template>
                             <template x-if="selectedItem.length === 0">
-                                <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="text-muted-text line-clamp-1"></span>
+                                <span x-text="chosenText[value] ?? placeholder" class="text-muted-text line-clamp-1"></span>
                             </template>
                         </div>
                     </template>
                     <template x-if="!multiple">
-                        <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="line-clamp-1"></span>
+                        <span x-text="chosenText[value] ?? placeholder" class="line-clamp-1"></span>
                     </template>
                     <svg stroke="currentColor" fill="none" viewBox="0 0 24 24" height="1em" width="1em"
                         xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
@@ -101,20 +114,38 @@
 </mijnui:with-field>
 
 <script>
-    function selectComponent(multiple, placeholder, entangledValue) {
+    function selectComponent(multiple, placeholder, entangledValue, initialValue = null) {
         return {
             selectOpen: false,
             multiple: multiple,
+            placeholder: placeholder,
             selectedItem: multiple ? [] : null,
-            selectedValue: multiple ? (Array.isArray(entangledValue) ? entangledValue : []) : entangledValue,
+            selectedValue: multiple ? [] : null,
             chosenText: {},
             search: '',
-            value: entangledValue,
+            value: entangledValue ?? initialValue,
+            init() {
+                this.$nextTick(() => this.syncFromValue());
+                this.$watch('value', () => this.syncFromValue());
+            },
+            syncFromValue() {
+                if (this.multiple) {
+                    const selectedValues = Array.isArray(this.value) ? [...this.value] : [];
+
+                    this.selectedValue = selectedValues;
+                    this.selectedItem = selectedValues.map((item) => this.chosenText[item] ?? item);
+
+                    return;
+                }
+
+                this.selectedValue = this.value ?? null;
+                this.selectedItem = this.selectedValue === null ? null : (this.chosenText[this.selectedValue] ?? this.selectedValue);
+            },
             handleSelect(slot, value) {
                 if (this.multiple) {
                     if (!Array.isArray(this.selectedItem)) this.selectedItem = [];
                     if (!Array.isArray(this.selectedValue)) this.selectedValue = [];
-                    if (this.selectedValue.includes(value)) {
+                    if (this.selectedValue?.includes(value)) {
                         const index = this.selectedValue.indexOf(value);
                         this.selectedValue.splice(index, 1);
                         this.selectedItem.splice(index, 1);
@@ -128,6 +159,7 @@
                     this.selectOpen = false;
                 }
                 this.value = this.multiple ? this.selectedValue : this.selectedValue;
+                this.syncFromValue();
             },
             removeSelected(item) {
                 const index = this.selectedItem.indexOf(item);
@@ -135,6 +167,7 @@
                     this.selectedItem.splice(index, 1);
                     this.selectedValue.splice(index, 1);
                     this.value = this.multiple ? this.selectedValue : null;
+                    this.syncFromValue();
                 }
             }
         }

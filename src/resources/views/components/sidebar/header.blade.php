@@ -5,13 +5,13 @@
     $base = 'flex items-center gap-1 text-main-text  font-extrabold';
 @endphp
 
-<?php if ($variant === 'single'): ?>
+@if($variant === 'single')
 <div class="flex h-10 items-center gap-2 px-2">
-    <h5 {{ $attributes->merge(['class' => "$base $class"]) }}>
+    <h5 {{ $attributes->merge(['class' => $base]) }}>
         {{ $slot }}
     </h5>
 </div>
-<?php elseif ($variant === 'double'): ?>
+@elseif($variant === 'double')
 <!-- Sidebar Icon Header -->
 <div class="flex items-center justify-center py-4">
     <!-- Sidebar Logo -->
@@ -19,4 +19,4 @@
         {{ $slot }}
     </a>
 </div>
-<?php endif; ?>
+@endif

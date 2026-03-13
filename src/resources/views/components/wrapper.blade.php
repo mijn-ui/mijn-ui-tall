@@ -4,7 +4,7 @@
         {{ $sidebar }}
     @endisset
 
-    <div class="flex-1 ">
+    <div class="flex-1 bg-background">
         @isset($header)
             {{ $header }}
         @endisset

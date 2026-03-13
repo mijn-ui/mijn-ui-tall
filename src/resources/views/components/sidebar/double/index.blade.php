@@ -1,7 +1,7 @@
 <div class="flex relative">
 
     <div
-        class=" flex flex-col justify-between items-center h-full w-16 space-y-2 overflow-y-auto border-r border-main-border bg-surface">
+        class=" flex flex-col justify-between items-center h-full w-16 space-y-2 overflow-y-auto border-r border-border bg-background-alt">
         <div>
             @isset($logo)
                 {{ $logo }}
@@ -22,7 +22,7 @@
             <!-- Icon with dynamic rotation -->
             <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                 stroke-linejoin="round" :class="$store.sidebar.isOpen ? 'rotate-180' : 'rotate-0'"
-                class="transition-transform duration-300" height="1em" width="1em"
+                class="transition-transform duration-300 stroke-white" height="1em" width="1em"
                 xmlns="http://www.w3.org/2000/svg">
                 <path d="M5 12h14"></path>
                 <path d="m12 5 7 7-7 7"></path>
@@ -32,7 +32,7 @@
 
     </div>
     <div x-bind:style="{ width: $store.sidebar.isOpen ? '14rem' : '0' }"
-        class="h-full bg-surface overflow-hidden transition-all border-accent"
+        class="h-full bg-background-alt overflow-hidden transition-all border-border"
         x-bind:class="{ 'border-r': $store.sidebar.isOpen }">
         @stack('mijn_sidebar_content')
     </div>
