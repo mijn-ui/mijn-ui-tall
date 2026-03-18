@@ -8,9 +8,9 @@ Explore the components in action by visiting [https://mijn-ui.vercel.app](https:
 
 Before installing Mijnui, ensure your project meets the following requirements:
 
-* Laravel v10.0+
-* Livewire v3.5.19+
-* Tailwind CSS v4.0+
+- Laravel v10.0+
+- Livewire v3.5.19+
+- Tailwind CSS v4.0+
 
 ## Installation
 
@@ -28,8 +28,7 @@ Add the `@mijnuiScripts` Blade directives to your layout file:
 
 ```html
 <body>
-    ...
-    @mijnuiScripts
+  ... @mijnuiScripts
 </body>
 ```
 
@@ -38,7 +37,7 @@ Add the `@mijnuiScripts` Blade directives to your layout file:
 Mijnui uses Tailwind CSS for its default styling. Add the following configuration to your `resources/css/app.css` file:
 
 ```css
-@import '../../vendor/mijnui/mijnui/dist/mijnui.css';
+@import "../../vendor/mijnui/mijnui/dist/mijnui.css";
 
 @tailwind base;
 @tailwind components;
@@ -46,7 +45,6 @@ Mijnui uses Tailwind CSS for its default styling. Add the following configuratio
 ```
 
 If you haven't installed Tailwind yet, you can follow the installation guide on the [Tailwind website](https://tailwindcss.com/docs/guides/laravel).
-
 
 Configure Tailwind to use this font in your `resources/css/app.css`:
 

@@ -60,6 +60,10 @@
             type="text"
             x-model="query"
             :placeholder="placeholder"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="command-list"
+            :aria-activedescendant="selectedIndex >= 0 ? 'command-item-' + selectedIndex : null"
             class="w-full px-3 py-2 text-sm border border-border rounded text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             autocomplete="off"
             spellcheck="false"
@@ -70,7 +74,7 @@
     </div>
 
     <!-- List -->
-    <ul class="max-h-60 overflow-y-auto">
+    <ul id="command-list" role="listbox" class="max-h-60 overflow-y-auto">
         <template x-if="filteredItems.length === 0">
             <li class="p-3 text-sm text-muted-foreground select-none">No results found.</li>
         </template>
@@ -85,9 +89,12 @@
                 <template x-for="(item, itemIndex) in group.items" :key="item">
                     <li
                         x-ref="'item-' + (filteredGroups.slice(0, groupIndex).reduce((acc,g) => acc + g.items.length, 0) + itemIndex)"
+                        :id="'command-item-' + (filteredGroups.slice(0, groupIndex).reduce((acc,g) => acc + g.items.length, 0) + itemIndex)"
+                        role="option"
+                        :aria-selected="(filteredGroups.slice(0, groupIndex).reduce((acc,g) => acc + g.items.length, 0) + itemIndex) === selectedIndex"
                         @click="selectItem(item)"
-                        class="relative flex cursor-default select-none items-center px-2 py-1.5 text-sm outline-none
-                               data-[selected='true']:bg-secondary
+                        class="relative flex cursor-default select-none items-center rounded px-2 py-1.5 text-sm outline-none
+                               data-[selected='true']:bg-secondary data-[selected='true']:ring-1 data-[selected='true']:ring-primary/50
                                data-[disabled]:pointer-events-none data-[disabled='true']:opacity-50"
                         :data-selected="(filteredGroups.slice(0, groupIndex).reduce((acc,g) => acc + g.items.length, 0) + itemIndex) === selectedIndex"
                         tabindex="-1"

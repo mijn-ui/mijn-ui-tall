@@ -1,6 +1,4 @@
 @props([
-    'placement' => 'bottom-start',
-    'offset' => 4,
     'disabled' => false,
     'align' => 'left',
     'closeOnSelect' => true,
@@ -16,7 +14,7 @@
     open: false,
     closeOnSelect: {{ $closeOnSelect ? 'true' : 'false' }},
     teleport: {{ $teleport ? 'true' : 'false' }},
-    align: '{{ $align }}',
+    align: @js($align),
     reposition() {
         if (!this.open || !this.teleport) return;
 
@@ -64,7 +62,7 @@
     @scroll.window.passive.capture="reposition()"
     @resize.window.passive="reposition()">
     <!-- Trigger -->
-    <div x-on:click="open = !open" x-ref="trigger" @disabled($disabled)>
+    <div x-on:click="open = !open" x-ref="trigger" :aria-expanded="open" aria-haspopup="true" aria-controls="dropdown-content" role="button" tabindex="0" @keydown.enter.prevent="open = !open" @keydown.space.prevent="open = !open" @disabled($disabled)>
         @isset($trigger)
             {{ $trigger }}
         @endisset
@@ -75,8 +73,9 @@
         <template x-teleport="body">
     @endif
     <div x-cloak x-show="open" x-ref="content" x-transition
+        id="dropdown-content" role="menu" :aria-hidden="!open"
         class="{{ $contentClasses }}" @click="if (closeOnSelect) open = false"
-        :style="teleport ? 'position: fixed; width: auto;' : ''" 
+        :style="teleport ? 'position: fixed; width: auto;' : ''"
         x-effect="if (open) reposition()"
     >
         @isset($content)

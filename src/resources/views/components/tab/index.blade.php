@@ -2,7 +2,7 @@
     'defaultValue' => null,
 ])
 
-<div x-data="{ currentValue: '{{ $defaultValue }}' }" {{ $attributes }}>
+<div x-data="{ currentValue: @js($defaultValue) }" {{ $attributes }}>
     @isset($list)
         {{ $list }}
     @endisset

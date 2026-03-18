@@ -7,7 +7,6 @@
     'descriptionTrailing' => null,
     'description' => null,
     'label' => null,
-    'badge' => null,
 ])
 
 @if ($label || $description)

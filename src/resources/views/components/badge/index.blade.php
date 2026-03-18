@@ -72,21 +72,21 @@
                 'bg-transparent text-warning hover:bg-warning/10 focus-visible:ring-warning active:bg-warning/20',
             'danger' => 'bg-transparent text-danger hover:bg-danger/10 focus-visible:ring-danger active:bg-danger/20',
         ],
-    ][$variant][$color];
+    ][$variant][$color] ?? 'bg-primary text-primary-foreground hover:bg-primary/80 focus-visible:ring-primary active:bg-primary/70';
 
     $sizeClasses = [
         'xs' => 'text-xs px-2 py-0.5',
         'sm' => 'text-sm px-2.5 py-0.5',
         'md' => 'text-sm px-3 py-1',
         'lg' => 'text-base px-4 py-1.5',
-    ][$size ?? 'xs'];
+    ][$size ?? 'xs'] ?? 'text-xs px-2 py-0.5';
 
     $roundedClasses = [
         'sm' => 'rounded-sm',
         'md' => 'rounded-md',
         'lg' => 'rounded-lg',
         'full' => 'rounded-full',
-    ][$rounded ?? 'md'];
+    ][$rounded ?? 'md'] ?? 'rounded-md';
 
     $finalClasses = "$base $colorClasses $sizeClasses $roundedClasses";
 @endphp
@@ -105,7 +105,12 @@
     @endif
 
     @if ($backicon)
-        <mijnui:icon x-on:click="{{ $onClick }}" :name="$backicon"
-            class="shrink-0 {{ $onClick ? 'cursor-pointer' : '' }}" :size="$size" />
+        @if ($onClick)
+            <button type="button" x-on:click="{{ e($onClick) }}" class="inline-flex shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-current rounded-full" aria-label="Remove">
+                <mijnui:icon :name="$backicon" :size="$size" />
+            </button>
+        @else
+            <mijnui:icon :name="$backicon" class="shrink-0" :size="$size" />
+        @endif
     @endif
 </span>

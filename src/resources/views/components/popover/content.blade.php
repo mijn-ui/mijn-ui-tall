@@ -7,15 +7,14 @@
 @endphp
 
 <x-slot:content>
-    <div x-cloak {{ $attributes->merge(['class' => $base]) }}
+    <div x-cloak role="dialog" {{ $attributes->merge(['class' => $base]) }}
         x-bind:class="{'pointer-events-none opacity-0': !open }"
         x-on:click="open = false"
         x-effect="
             $nextTick(() => {
                 let trigger = $refs.trigger;
-                let align = '{{ $align }}';
+                let align = @js($align);
                 if (trigger) {
-                console.log(trigger.scrollWidth, $el.scrollWidth)
                     if (align == 'center') {
                         $el.style.left = ((trigger.scrollWidth - $el.scrollWidth) / 2) + 'px';
                     } else if (align == 'left') {

@@ -1,3 +1,3 @@
-<div x-on:click="open = false" {{ $attributes }}>
+<button type="button" x-on:click="open = false" aria-label="Close" {{ $attributes }}>
     {{ $slot }}
-</div>
+</button>

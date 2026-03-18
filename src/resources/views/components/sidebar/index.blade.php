@@ -13,14 +13,14 @@
                 x-transition:leave-end="opacity-0">
             </div>
 
-            <aside x-data
+            <aside x-data role="navigation" aria-label="Main navigation"
                 class="flex h-full z-50 shadow-sm ease-out max-sm:fixed max-sm:inset-y-0 max-sm:left-0 max-sm:transition-transform max-sm:duration-300 max-sm:-translate-x-full"
                 :class="$store.sidebar.isOpen ? 'max-sm:translate-x-0' : 'max-sm:-translate-x-full'">
                 {{ $slot }}
             </aside>
         @elseif($variant == "single")
-            <aside x-data x-bind:class="$store.sidebar.isOpen ? 'w-0' : 'w-56 px-2'"
-                class="hidden z-50 h-full space-y-2 overflow-y-auto border-r  overflow-x-hidden border-main-border bg-surface pb-4 pt-2 shadow-sm transition-all duration-200 sm:block">
+            <aside x-data role="navigation" aria-label="Main navigation" x-bind:class="$store.sidebar.isOpen ? 'w-0' : 'w-56 px-2'"
+                class="hidden z-50 h-full space-y-2 overflow-y-auto border-r overflow-x-hidden border-main-border bg-surface pb-4 pt-2 shadow-sm transition-all duration-200 sm:block">
                 @isset($logo)
                     {{ $logo }}
                 @endisset

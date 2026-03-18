@@ -11,6 +11,11 @@
 ])
 
 @php
+    // SECURITY: Blade::render() executes arbitrary code. Only allow in local/dev environments.
+    if (!in_array(app()->environment(), ['local', 'development', 'testing'])) {
+        throw new \RuntimeException('component-preview is only available in local/development environments.');
+    }
+
     $base = 'bg-surface p-8 rounded-lg shadow-lg mb-10';
 
     $validDirection = in_array($direction, ['row', 'column']) ? $direction : 'row';

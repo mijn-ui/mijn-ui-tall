@@ -15,9 +15,10 @@
     <input
         {{$attributes->whereStartsWith('wire:model')}}
         type="checkbox"
+        role="switch"
         class="peer sr-only"
-        {{ $checked ? 'checked' : '' }}
-        {{ $disabled ? 'disabled' : '' }}
+        @checked($checked)
+        @disabled($disabled)
     />
     <div class="{{ $switchClasses }} {{ $disabled ? $disabledClasses : '' }}"></div>
 </label>

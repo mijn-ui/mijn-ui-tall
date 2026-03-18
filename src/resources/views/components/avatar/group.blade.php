@@ -10,9 +10,9 @@
 <div {{ $attributes->merge(['class' => $groupClasses]) }}>
     {{ $slot }}
 
-    <?php if($remainChildren): ?>
+    @if($remainChildren)
         <div class="{{ $remainChildrenClasses }}">
             {{ $remainChildren }}
         </div>
-    <?php endif;?>
+    @endif
 </div>

@@ -11,7 +11,7 @@
 @endphp
 
 <div role="alert" aria-live="polite" aria-atomic="true" {{ $attributes->class($classes) }}>
-    <?php if ($message) : ?>
+    @if($message)
     {{ $message }}
-    <?php endif; ?>
+    @endif
 </div>

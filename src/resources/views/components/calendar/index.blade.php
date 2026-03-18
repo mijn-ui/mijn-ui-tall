@@ -32,16 +32,18 @@
     $disabledDates = array_filter($disabledDates, fn($d) => preg_match('/^\d{4}-\d{2}-\d{2}$/', $d));
 @endphp
 
+@once
 <script src="{{ asset('vendor/mijnui/js/calendar/dayjs.min.js') }}"></script>
+@endonce
 
 <div
     x-data="calendarComponent({
-        locale: '{{ $locale }}',
-        range: {{ $range ? 'true' : 'false' }},
-        displayFormat: '{{ $displayFormat }}',
+        locale: @js($locale),
+        range: @js($range),
+        displayFormat: @js($displayFormat),
         disabledDates: @json($disabledDates),
         wireValue: @entangle($name),
-        clearable: {{ $clearable }}
+        clearable: @js($clearable)
     })"
     x-init="initComponent()"
     x-cloak
@@ -119,6 +121,7 @@
     </div>
 </div>
 
+@once
 <script>
 function calendarComponent({ locale, range, displayFormat, disabledDates, wireValue, clearable }) {
     return {
@@ -146,7 +149,6 @@ function calendarComponent({ locale, range, displayFormat, disabledDates, wireVa
             this.displayDate = this.currentDate;
             this.initCalendar();
             this.isInitialized = true;
-            console.log(this.clearable)
         },
 
         async initDayjs() {
@@ -330,3 +332,4 @@ function calendarComponent({ locale, range, displayFormat, disabledDates, wireVa
     }
 }
 </script>
+@endonce

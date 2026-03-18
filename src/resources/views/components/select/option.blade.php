@@ -13,21 +13,21 @@
 
 <button
     type="button"
-    @click="handleSelect(@js($optionLabel), @js($optionValue))"
-    x-show="!search || @js($searchLabel)?.includes(search.toLowerCase())"
-    x-init="chosenText[@js($optionValue)] = @js($optionLabel);"
+    @click="handleSelect(@js(strip_tags($slot)), @js($value))"
+    x-show="!search || @js(strtolower(strip_tags($slot)))?.includes(search.toLowerCase())"
+    x-init="chosenText[@js($value)] = @js(strip_tags($slot));"
     :class="{
-        'inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-4 py-2 text-left text-sm': true,
-        'bg-primary/10 text-black': multiple ? selectedValue?.includes(@js($optionValue)) : selectedValue === @js($optionValue),
-        'hover:bg-primary/20 hover:text-primary': !(multiple ? selectedValue?.includes(@js($optionValue)) : selectedValue === @js($optionValue)),
-        'opacity-50 pointer-events-none bg-surface': {{ $disabled ? 'true' : 'false' }}
+        'relative flex w-full cursor-pointer select-none items-center justify-between rounded-sm px-2 py-1.5 text-sm outline-none transition-colors': true,
+        'bg-primary/10 text-primary font-medium': multiple ? selectedValue?.includes(@js($value)) : selectedValue === @js($value),
+        'hover:bg-secondary text-foreground': !(multiple ? selectedValue?.includes(@js($value)) : selectedValue === @js($value)),
+        'opacity-50 pointer-events-none': {{ $disabled ? 'true' : 'false' }}
     }"
     {{ $disabled ? 'disabled' : '' }}
 >
-    {{ $slot }}
-    <template x-if="multiple ? selectedValue.includes(@js($optionValue)) : selectedValue === @js($optionValue)">
-        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-            stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+    <span class="truncate">{{ $slot }}</span>
+    <template x-if="multiple ? selectedValue.includes(@js($value)) : selectedValue === @js($value)">
+        <svg stroke="currentColor" fill="none" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round"
+            stroke-linejoin="round" class="size-3.5 shrink-0" xmlns="http://www.w3.org/2000/svg">
             <polyline points="20 6 9 17 4 12" />
         </svg>
     </template>

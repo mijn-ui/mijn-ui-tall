@@ -1,3 +1,3 @@
-<div class="flex items-center gap-2">
+<nav role="navigation" class="flex items-center gap-2">
     {{ $slot }}
-</div>
+</nav>

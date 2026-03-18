@@ -1,3 +1,4 @@
+@once
 <style>
     [draggable="true"] {
         cursor: grab;
@@ -8,108 +9,20 @@
         cursor: grabbing;
         transform: scale(1.02);
     }
-
+    .bg-muted-darker {
+        background-color: rgba(209, 213, 219, 0.3);
+    }
     .dragging {
         opacity: 0.55;
         transform: scale(0.98);
     }
 
     .drop-zone-active {
-        background-color: var(--kanban-subtle);
-        border: 2px dashed var(--kanban-accent);
-    }
-
-    .kanban-column {
-        transition: border-color 0.2s ease, background-color 0.2s ease;
-    }
-
-    .kanban-parent-card {
-        transition: transform 0.15s ease, border-color 0.2s ease;
-    }
-
-    .kanban-parent-card:hover {
-        transform: translateY(-1px);
-        border-color: var(--kanban-accent);
-    }
-
-    .kanban-parent-card.kanban-drop-target {
-        transform: none;
-        border: 2px dashed var(--kanban-accent);
-        background: var(--kanban-subtle);
-    }
-
-    .kanban-child-card {
-        transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-        border-left: 3px solid var(--kanban-accent, hsl(var(--border)));
-    }
-
-    .kanban-child-card:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--kanban-accent) 25%, transparent);
-        border-color: var(--kanban-accent);
-    }
-
-    .kanban-progress-fill {
-        transition: width 0.2s ease;
-    }
-
-    .kanban-card-actions {
-        opacity: 0;
-        transition: opacity 0.15s ease;
-    }
-
-    .kanban-parent-card:hover .kanban-card-actions,
-    .kanban-child-card:hover .kanban-card-actions {
-        opacity: 1;
-    }
-
-    .kanban-grip {
-        cursor: grab;
-        opacity: 0.4;
-        transition: opacity 0.15s ease;
-    }
-
-    .kanban-grip:hover {
-        opacity: 0.8;
-    }
-
-    .kanban-children-enter {
-        animation: kanban-slide-down 0.2s ease;
-    }
-
-    @keyframes kanban-slide-down {
-        from { opacity: 0; max-height: 0; }
-        to { opacity: 1; max-height: 500px; }
-    }
-
-    .kanban-inline-edit-input {
-        background: transparent;
-        border: 1px solid var(--kanban-border);
-        border-radius: 0.375rem;
-        padding: 0.125rem 0.375rem;
-        font-size: inherit;
-        font-weight: inherit;
-        color: inherit;
-        width: 100%;
-        outline: none;
-        transition: border-color 0.15s ease;
-    }
-
-    .kanban-inline-edit-input:focus {
-        border-color: var(--kanban-accent);
-        box-shadow: 0 0 0 1px var(--kanban-accent);
-    }
-
-    .kanban-inline-edit-input.kanban-field-error {
-        border-color: hsl(var(--danger));
-    }
-
-    .kanban-field-error-text {
-        font-size: 0.6875rem;
-        color: hsl(var(--danger));
-        margin-top: 0.125rem;
+        background-color: rgba(209, 213, 219, 0.3);
+        border: 2px dashed #3b82f6;
     }
 </style>
+@endonce
 
 @props([
     'width' => null,
@@ -361,139 +274,51 @@
                         x-bind:style="getAccentDotStyle(column)"
                     ></span>
                     <h3 class="font-medium text-main-text sm:text-lg" x-text="column.name"></h3>
-                    <mijnui:badge
-                        color="secondary"
-                        variant="subtle"
-                        size="xs"
-                        rounded="full"
-                        class="min-w-8 justify-center"
-                        x-bind:style="getCountBadgeStyle(columnId)"
-                        x-text="(cards[columnId] || []).length"
-                    />
+                    <span
+                        class="flex h-5 w-5 items-center justify-center rounded-full bg-surface text-xs font-medium text-muted-text"
+                        x-text="cards[columnId]?.length || 0"></span>
                 </div>
+                <button
+                    class="disabled:text-muted-text/75-text inline-flex h-7 w-7 items-center justify-center gap-1 rounded-full text-sm text-muted-text hover:bg-accent hover:text-main-text">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                        stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="12" cy="5" r="1"></circle>
+                        <circle cx="12" cy="19" r="1"></circle>
+                    </svg>
+                </button>
             </div>
 
-            <div class="space-y-4 px-4 py-2">
-                <template x-for="(card, index) in cards[columnId] || []" :key="card.uid">
+            <!-- Cards Container -->
+            <div class="px-4 py-2 space-y-4">
+                <template x-for="(card, index) in cards[columnId] || []" :key="card.id">
                     <div>
-                        {{-- Parent Card --}}
-                        @if ($hasCardTemplate)
-                            <div
-                                class="kanban-parent-card w-full cursor-pointer rounded-xl p-4"
-                                draggable="true"
-                                @dragstart="handleDragStart($event, card, columnId, index)"
-                                @dragend="resetDragState()"
-                                @dragover.prevent.stop="handleDragOverParent($event, columnId, card, index)"
-                                @dragleave="$el.classList.remove('kanban-drop-target')"
-                                @drop.prevent.stop="handleDropOnParent($event, columnId, card)"
-                                :class="{ 'dragging': isDragging && draggedCard?.uid === card.uid }"
-                                x-bind:style="getParentCardStyle(card)"
-                                @click="handleEdit(card.id)"
-                            >
-                                {{ $cardTemplate }}
-                            </div>
-                        @else
-                            <div
-                                class="kanban-parent-card w-full cursor-pointer space-y-3 rounded-xl p-4"
-                                draggable="true"
-                                @dragstart="handleDragStart($event, card, columnId, index)"
-                                @dragend="resetDragState()"
-                                @dragover.prevent.stop="handleDragOverParent($event, columnId, card, index)"
-                                @dragleave="$el.classList.remove('kanban-drop-target')"
-                                @drop.prevent.stop="handleDropOnParent($event, columnId, card)"
-                                :class="{ 'dragging': isDragging && draggedCard?.uid === card.uid }"
-                                x-bind:style="getParentCardStyle(card)"
-                                @click="handleEdit(card.id)"
-                            >
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="space-y-1">
-                                        <div class="flex items-center gap-2">
-                                            <span
-                                                class="inline-flex h-2.5 w-2.5 rounded-full"
-                                                x-bind:style="getAccentDotStyle(card)"
-                                            ></span>
-                                            <template x-if="!isInlineEditing(card.id, 'title')">
-                                                <h5
-                                                    class="text-sm font-semibold text-main-text"
-                                                    x-text="card.title"
-                                                    @dblclick.stop="startInlineEdit(card.id, 'title', card.title, columnId)"
-                                                ></h5>
-                                            </template>
-                                            <template x-if="isInlineEditing(card.id, 'title')">
-                                                <div @click.stop>
-                                                    <input
-                                                        class="kanban-inline-edit-input text-sm font-semibold"
-                                                        :class="{ 'kanban-field-error': inlineEditError }"
-                                                        type="text"
-                                                        x-model="inlineEditValue"
-                                                        @keydown.enter="confirmInlineEdit(card, columnId)"
-                                                        @keydown.tab.prevent="confirmInlineEdit(card, columnId)"
-                                                        @keydown.escape="cancelInlineEdit()"
-                                                        x-init="$nextTick(() => $el.focus())"
-                                                    />
-                                                    <template x-if="inlineEditError">
-                                                        <p class="kanban-field-error-text" x-text="inlineEditError"></p>
-                                                    </template>
-                                                </div>
-                                            </template>
-                                            {{-- <template x-if="card.has_children">
-                                                <mijnui:badge
-                                                    color="secondary"
-                                                    variant="subtle"
-                                                    size="xs"
-                                                    rounded="full"
-                                                    x-bind:style="getTagStyle(card)"
-                                                    x-text="`${card.children.length} sub`"
-                                                />
-                                            </template> --}}
-                                        </div>
-                                    </div>
+                        <!-- Main Card -->
+                        <div
+                            class="w-full cursor-pointer rounded-lg bg-surface p-4 space-y-3"
+                            draggable="true"
+                            @dragstart="handleDragStart($event, card, columnId, index)"
+                            @dragend="isDragging = false"
+                            @dragover.prevent="updateDropIndex(columnId, index)"
+                            @dragleave="dropIndex = null"
+                            :class="{
+                                'dragging': isDragging && draggedCard?.id === card.id
+                            }"
+                            @click="$wire.startEdit(card.id)"
+                        >
+                            <h5 class="text-sm font-medium" x-text="card.title"></h5>
 
-                                    <div class="kanban-card-actions flex items-center gap-1">
-                                        <template x-if="showEditButton && hasAction(updateAction)">
-                                            <span
-                                                class="cursor-pointer text-muted-text hover:text-main-text transition-colors"
-                                                @click.stop="requestEdit(columnId, card)"
-                                            >
-                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                    <circle cx="12" cy="12" r="1"></circle>
-                                                    <circle cx="12" cy="5" r="1"></circle>
-                                                    <circle cx="12" cy="19" r="1"></circle>
-                                                </svg>
-                                            </span>
-                                        </template>
-
-                                        <template x-if="showDeleteButton && hasAction(deleteAction)">
-                                            <span
-                                                class="cursor-pointer text-muted-text hover:text-danger transition-colors"
-                                                @click.stop="pendingDelete = { columnId, cardId: card.id, kind: 'parent', title: card.title }"
-                                            >
-                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M3 6h18"></path>
-                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                                </svg>
-                                            </span>
-                                        </template>
-                                    </div>
+                            <!-- Tags -->
+                            <template x-if="card.tags && card.tags.length > 0">
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="tag in card.tags">
+                                        <span
+                                            class="inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs hover:bg-accent"
+                                            x-text="tag">
+                                        </span>
+                                    </template>
                                 </div>
-
-                                <template x-if="card.tags.length > 0">
-                                    <div class="flex flex-wrap gap-1">
-                                        <template x-for="tag in card.tags" :key="`${card.uid}-tag-${tag}`">
-                                            <mijnui:badge
-                                                color="secondary"
-                                                variant="subtle"
-                                                size="xs"
-                                                rounded="full"
-                                                x-bind:style="getTagStyle(card)"
-                                                x-text="tag"
-                                            />
-                                        </template>
-                                    </div>
-                                </template>
+                            </template>
 
                                 <div class="space-y-1" x-show="card.showProgress">
                                     <div class="flex items-center justify-between text-xs text-muted-text">
@@ -669,51 +494,55 @@
         </div>
     </template>
 
-    {{-- Delete Confirmation --}}
-    <template x-teleport="body">
+    <!-- New Card Modal -->
+    <div
+        x-show="showModal"
+        x-transition
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        @click.self="showModal = false"
+    >
         <div
-            x-show="pendingDelete"
-            x-transition.opacity
-            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-            @click.self="pendingDelete = null"
+            class="bg-white dark:bg-[#262626] rounded-lg p-6 w-full max-w-md shadow-md"
         >
-            <div
-                x-show="pendingDelete"
-                x-transition
-                class="w-full max-w-sm rounded-xl border bg-white p-6 shadow-lg"
-                @click.stop
-            >
-                <h3 class="text-lg font-semibold text-main-text">Warning</h3>
-                <p class="mt-2 text-sm text-muted-text">
-                    Are you sure you want to delete
-                    <span class="font-medium text-main-text" x-text="pendingDelete?.title || 'this card'"></span>?
-                    This action cannot be undone.
-                </p>
-                <div class="mt-4 flex justify-end gap-2">
-                    <mijnui:button
-                        size="sm"
-                        color="secondary"
-                        variant="outline"
-                        @click="pendingDelete = null"
-                    >Cancel</mijnui:button>
-                    <mijnui:button
-                        size="sm"
-                        color="danger"
-                        @click="
-                            if (pendingDelete) {
-                                deleteCard(pendingDelete.columnId, pendingDelete.cardId, pendingDelete.kind, pendingDelete.parentCardId);
-                            }
-                            pendingDelete = null;
-                        "
-                    >Delete</mijnui:button>
-                </div>
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Add New Work Item</h2>
+
+            <input
+                type="text"
+                x-model="newCardTitle"
+                @input="errorMessage = ''"
+                @keydown.enter="addNewCard"
+                x-ref="newCardInput"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#262626]"
+                placeholder="Enter work item title..."
+            />
+
+            <template x-if="errorMessage">
+                <p class="text-sm text-red-600 mt-1" x-text="errorMessage"></p>
+            </template>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <button
+                    class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    @click="showModal = false"
+                >
+                    Cancel
+                </button>
+                <button
+                    class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                    @click="addNewCard"
+                >
+                    Add
+                </button>
             </div>
         </div>
-    </template>
+    </div>
 </div>
 
+@once
 <script>
-    function kanbanBoard(config) {
+
+    function kanbanBoard(initialData) {
+console.log(initialData);
         return {
             columns: config.columns || {},
             cards: config.cards || {},
@@ -769,289 +598,19 @@
             },
 
             init() {
-                const hydratedColumns = {};
-                const hydratedCards = {};
+                // Debug logging
+                console.log('Kanban Board Initialized');
+                console.log('Columns:', this.columns);
+                console.log('Cards:', this.cards);
 
-                Object.entries(this.columns).forEach(([columnId, column]) => {
-                    hydratedColumns[columnId] = this.hydrateColumn(columnId, column);
-                    hydratedCards[columnId] = (this.cards[columnId] || []).map((card, index) => this.hydrateCard(card, columnId, index));
-                });
-
-                this.columns = hydratedColumns;
-                this.cards = hydratedCards;
-
-                Object.values(this.cards).flat().forEach((card) => {
-                    if (card.has_children) {
-                        this.expandedCards[card.uid] = true;
+                // Ensure all columns have card arrays
+                Object.keys(this.columns).forEach(columnId => {
+                    if (!this.cards[columnId]) {
+                        this.cards[columnId] = [];
                     }
                 });
 
-                this.resolveCallbacks(config.callbackNames || {});
-            },
-
-            // ── Callback Resolution ─────────────────────────────────
-
-            resolveCallbacks(names) {
-                for (const [key, name] of Object.entries(names)) {
-                    if (!name) continue;
-                    if (typeof window[name] === 'function') {
-                        this.__callbacks[key] = window[name];
-                    }
-                }
-            },
-
-            setCallback(name, fn) {
-                if (typeof fn === 'function' && this.__callbacks.hasOwnProperty(name)) {
-                    this.__callbacks[name] = fn;
-                }
-            },
-
-            // ── Hook System ─────────────────────────────────────────
-
-            async fireBeforeHook(hookName, detail) {
-                const callbackKey = `onBefore${hookName}`;
-                const callback = this.__callbacks[callbackKey];
-                if (typeof callback === 'function') {
-                    const result = await callback(detail);
-                    if (result === false) return false;
-                }
-
-                const eventName = `kanban:before-${hookName.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-                const event = new CustomEvent(eventName, {
-                    detail,
-                    bubbles: true,
-                    cancelable: true,
-                });
-                this.$el.dispatchEvent(event);
-                return !event.defaultPrevented;
-            },
-
-            fireAfterHook(hookName, detail) {
-                const callbackKey = `onAfter${hookName}`;
-                const callback = this.__callbacks[callbackKey];
-                if (typeof callback === 'function') {
-                    callback(detail);
-                }
-
-                const eventMap = {
-                    'Create': 'kanban:created',
-                    'Move': 'kanban:moved',
-                    'Update': 'kanban:updated',
-                    'ChildMove': 'kanban:child-moved',
-                };
-                this.$dispatch(eventMap[hookName] || `kanban:${hookName.toLowerCase()}`, detail);
-            },
-
-            // ── Utility ──────────────────────────────────────────────
-
-            headline(value) {
-                return String(value || '')
-                    .replace(/[_-]+/g, ' ')
-                    .trim()
-                    .replace(/\b\w/g, (character) => character.toUpperCase());
-            },
-
-            normalizeColor(color) {
-                const normalized = typeof color === 'string' ? color.toLowerCase() : 'secondary';
-
-                return Object.prototype.hasOwnProperty.call(this.palette, normalized) ? normalized : 'secondary';
-            },
-
-            normalizeProgress(value) {
-                const numericValue = Number(value);
-                const progress = Number.isFinite(numericValue) ? numericValue : 0;
-
-                return Math.max(0, Math.min(100, Math.round(progress)));
-            },
-
-            buildToneVars(color) {
-                const tones = this.palette[this.normalizeColor(color)] || this.palette.secondary || {};
-
-                return [
-                    `--kanban-accent: ${tones.accent || 'hsl(var(--secondary-foreground))'}`,
-                    `--kanban-subtle: ${tones.subtle || 'hsl(var(--secondary))'}`,
-                    `--kanban-foreground: ${tones.foreground || 'hsl(var(--secondary-foreground))'}`,
-                    `--kanban-border: ${tones.border || 'hsl(var(--border-secondary))'}`,
-                    `--kanban-contrast: ${tones.contrast || 'hsl(var(--background))'}`,
-                ].join('; ');
-            },
-
-            composeStyle(...segments) {
-                return segments.filter(Boolean).join('; ');
-            },
-
-            hasAction(action) {
-                return typeof action === 'string' && action.trim().length > 0;
-            },
-
-            isWireMode() {
-                return this.mode === 'wire' && !!this.$wire?.call;
-            },
-
-            // ── Validation ──────────────────────────────────────────
-
-            validateSingleField(value, rules) {
-                if (!Array.isArray(rules)) return null;
-                const str = String(value ?? '');
-
-                for (const rule of rules) {
-                    if (rule === 'required' && str.trim() === '') return 'This field is required.';
-
-                    const minMatch = String(rule).match(/^min:(\d+)$/);
-                    if (minMatch && str.length < parseInt(minMatch[1])) {
-                        return `Must be at least ${minMatch[1]} characters.`;
-                    }
-
-                    const maxMatch = String(rule).match(/^max:(\d+)$/);
-                    if (maxMatch && str.length > parseInt(maxMatch[1])) {
-                        return `Must be at most ${maxMatch[1]} characters.`;
-                    }
-
-                    const patternMatch = String(rule).match(/^pattern:(.+)$/);
-                    if (patternMatch && !new RegExp(patternMatch[1]).test(str)) {
-                        return 'Invalid format.';
-                    }
-                }
-                return null;
-            },
-
-            validateFields(data, rules) {
-                const errors = {};
-                for (const [field, fieldRules] of Object.entries(rules || {})) {
-                    const error = this.validateSingleField(data[field], fieldRules);
-                    if (error) errors[field] = error;
-                }
-                return errors;
-            },
-
-            // ── Hydration ────────────────────────────────────────────
-
-            hydrateColumn(columnId, column) {
-                const color = this.normalizeColor(column.color || 'secondary');
-
-                return {
-                    ...column,
-                    id: column.id || columnId,
-                    name: column.name || this.headline(columnId),
-                    color,
-                    createPayload: column.createPayload && typeof column.createPayload === 'object' ? { ...column.createPayload } : {},
-                    editForm: column.editForm && typeof column.editForm === 'object' ? { ...column.editForm } : {},
-                    styles: {
-                        vars: this.buildToneVars(color),
-                    },
-                };
-            },
-
-            hydrateChild(child, fallbackColor, childKey) {
-                const color = this.normalizeColor(child.color || fallbackColor);
-
-                return {
-                    ...child,
-                    uid: child.uid || childKey,
-                    name: child.name || child.title || 'Untitled child',
-                    type: child.type || 'Child',
-                    status_name: child.status_name || '',
-                    progress: this.normalizeProgress(child.progress),
-                    color,
-                    styles: {
-                        vars: this.buildToneVars(color),
-                    },
-                };
-            },
-
-            hydrateCard(card, columnId, cardIndex = 0) {
-                const color = this.normalizeColor(card.color || this.columns[columnId]?.color || 'secondary');
-                const baseId = card.id || `${columnId}-${cardIndex}`;
-                const children = Array.isArray(card.children)
-                    ? card.children.map((child, childIndex) => this.hydrateChild(child, color, `${columnId}-card-${baseId}-child-${child.id || childIndex}`))
-                    : [];
-
-                return {
-                    ...card,
-                    id: baseId,
-                    uid: card.uid || `${columnId}-card-${baseId}`,
-                    title: card.title || card.name || 'Untitled',
-                    tags: Array.isArray(card.tags) ? card.tags : [],
-                    items: Array.isArray(card.items) ? card.items : [],
-                    avatars: Array.isArray(card.avatars) ? card.avatars : [],
-                    progress: this.normalizeProgress(card.progress),
-                    showProgress: Boolean(card.showProgress ?? this.normalizeProgress(card.progress) > 0),
-                    is_parent: Boolean(card.is_parent ?? children.length > 0),
-                    children,
-                    has_children: children.length > 0,
-                    meta: card.meta && typeof card.meta === 'object' ? { ...card.meta } : {},
-                    color,
-                    styles: {
-                        vars: this.buildToneVars(color),
-                    },
-                };
-            },
-
-            // ── Style Getters ────────────────────────────────────────
-
-            getColumnStyle(columnId) {
-                return this.composeStyle(this.widthStyle, this.columns[columnId]?.styles?.vars);
-            },
-
-            getCountBadgeStyle(columnId) {
-                return this.composeStyle(
-                    this.columns[columnId]?.styles?.vars,
-                    'background-color: var(--kanban-subtle); color: var(--kanban-foreground); border: 1px solid var(--kanban-border);'
-                );
-            },
-
-            getParentCardStyle(card) {
-                return this.composeStyle(
-                    card.styles?.vars,
-                    'border: 1px solid var(--kanban-border); background-color: var(--kanban-subtle);'
-                );
-            },
-
-            getTagStyle(card) {
-                return this.composeStyle(
-                    card.styles?.vars,
-                    'border-color: var(--kanban-border); background-color: var(--kanban-subtle); color: var(--kanban-foreground);'
-                );
-            },
-
-            getProgressFillStyle(card) {
-                return this.composeStyle(
-                    card.styles?.vars,
-                    `width: ${this.normalizeProgress(card.progress)}%; background-color: var(--kanban-accent);`
-                );
-            },
-
-            getChildRowStyle(child) {
-                return this.composeStyle(
-                    child.styles?.vars,
-                    'border-color: var(--kanban-border); background-color: var(--kanban-subtle); color: var(--kanban-foreground);'
-                );
-            },
-
-            getChildMoveButtonStyle(child) {
-                return this.composeStyle(
-                    child.styles?.vars,
-                    'border-color: var(--kanban-border); background-color: var(--kanban-contrast); color: var(--kanban-foreground);'
-                );
-            },
-
-            getChildAccentStyle(child) {
-                return this.composeStyle(child.styles?.vars, 'background-color: var(--kanban-accent);');
-            },
-
-            getAccentDotStyle(entity) {
-                return this.composeStyle(entity?.styles?.vars, 'background-color: var(--kanban-accent);');
-            },
-
-            getEntityActionStyle(entity) {
-                return this.composeStyle(entity?.styles?.vars, 'color: var(--kanban-foreground);');
-            },
-
-            getToneBadgeStyle(color) {
-                return this.composeStyle(
-                    this.buildToneVars(color),
-                    'background-color: var(--kanban-subtle); color: var(--kanban-foreground); border: 1px solid var(--kanban-border);'
-                );
+                console.log('Cards after init:', this.cards);
             },
 
             getAddButtonStyle(columnId) {
@@ -1839,3 +1398,4 @@
         };
     }
 </script>
+@endonce

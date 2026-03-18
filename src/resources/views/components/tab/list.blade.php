@@ -3,7 +3,7 @@
 @endphp
 
 <x-slot:list>
-    <div {{ $attributes->merge(['class' => $base]) }}>
+    <div role="tablist" {{ $attributes->merge(['class' => $base]) }}>
         {{ $slot }}
     </div>
 </x-slot:list>

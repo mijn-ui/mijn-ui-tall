@@ -1,5 +1,5 @@
 @php
-$base = 'text-sm text-accent-text'
+$base = 'text-sm text-accent-text';
 @endphp
 
 <x-slot:description>

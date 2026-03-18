@@ -5,7 +5,7 @@
     $paddingClosed = $variant === 'single' ? 'sm:pl-0' : 'sm:pl-20';
 @endphp
 
-<main x-data :class="$store.sidebar.isOpen ? '{{ $paddingOpen }}' : '{{ $paddingClosed }}'"
+<main x-data :class="$store.sidebar.isOpen ? @js($paddingOpen) : @js($paddingClosed)"
     class="pt-14 transition-all duration-300 pl-0">
     {{ $slot }}
 </main>

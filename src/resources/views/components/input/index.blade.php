@@ -73,6 +73,9 @@
         {{-- Input --}}
         <input id="{{ $id }}" name="{{ $name }}" type="{{ $type }}"
             placeholder="{{ $placeholder ?: ' ' }}" @if ($disabled ?? false) disabled @endif
+            @if ($invalid) aria-invalid="true" @endif
+            @if ($description) aria-describedby="{{ $id }}-description" @endif
+            @if ($invalid && $name && $errors->has($name)) aria-errormessage="{{ $name }}-error" @endif
             class="{{ $inputClasses }}" {{$attributes->except('class')}} />
 
         {{-- End Icon / Viewable / Clearable --}}
