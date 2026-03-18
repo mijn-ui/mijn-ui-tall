@@ -1,7 +1,3 @@
-@php
-    $base = 'py-4 text-sm text-muted-foreground';
-@endphp
-
-<div {{ $attributes->merge(['class' => $base]) }}>
+<p class="text-sm text-muted-text">
     {{ $slot }}
-</div>
+    </div>

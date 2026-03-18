@@ -153,8 +153,7 @@
                     this.selectedItem = slot;
                     this.selectOpen = false;
                 }
-                this.value = this.multiple ? this.selectedValue : this.selectedValue;
-                this.syncFromValue();
+                this.value = this.selectedValue;
             },
             removeSelected(item) {
                 const index = this.selectedItem.indexOf(item);

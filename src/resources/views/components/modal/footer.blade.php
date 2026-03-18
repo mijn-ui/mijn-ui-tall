@@ -1,7 +1,3 @@
-@php
-    $base = 'flex flex-col-reverse gap-2 sm:flex-row sm:justify-end';
-@endphp
-
-<div {{ $attributes->merge(['class' => $base]) }}>
+<div {{ $attributes->merge(['class' => 'flex items-center justify-end gap-2 p-4']) }}>
     {{ $slot }}
 </div>

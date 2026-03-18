@@ -1,34 +1,25 @@
-@aware(['size', 'persistent'])
+@props([])
 
-@props([
-    'size' => 'md',
-    'persistent' => false,
-])
+@push('modals')
+    <x-slot name="content">
+        <div x-bind:class="open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'"
+            class="z-[9999] fixed inset-0 bg-black/50 flex items-center justify-center p-4" aria-hidden="true">
 
-@php
-    $sizeClass = match ($size) {
-        'sm' => 'max-w-sm',
-        'md' => 'max-w-lg',
-        'lg' => 'max-w-2xl',
-        'xl' => 'max-w-4xl',
-        'full' => 'max-w-[calc(100vw-2rem)]',
-        default => 'max-w-lg',
-    };
-
-    $isPersistent = filter_var($persistent, FILTER_VALIDATE_BOOLEAN);
-@endphp
-
-<div x-cloak x-show="open"
-    x-on:keydown.escape.window="{{ $isPersistent ? '' : 'open = false' }}"
-    x-transition:enter="transition ease-out duration-200"
-    x-transition:enter-start="opacity-0"
-    x-transition:enter-end="opacity-100"
-    x-transition:leave="transition ease-in duration-150"
-    x-transition:leave-start="opacity-100"
-    x-transition:leave-end="opacity-0"
-    class="fixed inset-0 flex items-center bg-black justify-center z-50 p-4">
-    <div @unless($isPersistent) x-on:click.outside="open = false" @endunless
-        {{ $attributes->merge(['class' => "relative w-full $sizeClass rounded-xl border border-border bg-white z-50 p-6 shadow-lg"]) }}>
-        {{ $slot }}
-    </div>
-</div>
+            <div x-show="open" x-transition @click.away="open = false" @keydown.escape.window="open = false"
+                x-trap.noscroll="open" role="dialog" aria-modal="true" :aria-labelledby="modalId + '-title'"
+                class="bg-background-alt text-foreground rounded-lg shadow-lg py-4 px-4 max-w-full sm:max-w-lg {{ $attributes->get('class') }}">
+                <div class="relative">
+                    <button type="button" x-on:click="open = false"
+                        class="z-[9998] absolute top-0 right-0 text-lg text-muted-text hover:text-foreground"
+                        aria-label="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    {{ $slot }}
+                </div>
+            </div>
+        </div>
+    </x-slot>
+@endpush

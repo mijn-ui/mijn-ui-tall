@@ -66,12 +66,19 @@
     ];
 @endphp
 
-<div x-data="ganttChart(@js($config))" x-ref="ganttRoot"
-    @gantt-updated.window="$wire?.call('handleGanttUpdate', $event.detail)" class="h-full w-full overflow-hidden">
+<div x-data="ganttChartComponent(@js($allEntries), @js($jsDates), @js($dayWidth))" x-ref="ganttComponent"
+    @gantt-updated.window="$wire.call('handleGanttUpdate', $event.detail)"
+    class="gantt-chart-colors h-[672px] w-full rounded-2xl bg-surface shadow-lg overflow-hidden">
 
     @once
         <style>
-            .gantt-no-scrollbar::-webkit-scrollbar {
+            .progress-fill {
+                height: 100%;
+                transition: width 0.2s ease;
+                border-radius: 6px;
+            }
+
+            .no-scrollbar::-webkit-scrollbar {
                 display: none;
             }
 
@@ -89,7 +96,8 @@
             }
 
             .gantt-bar:hover {
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
             }
 
             .gantt-handle {
@@ -272,34 +280,31 @@
                             @mousedown.stop.prevent="startResize(entry, 'end', $event)">
                         </div>
 
-                        {{-- Progress Fill --}}
-                        <div class="h-full"
-                            :style="`width: ${entry.process ?? 0}%; background-color: var(--color-${entry.color}); opacity: 0.85;`">
-                        </div>
+                        <!-- Progress Bar -->
+                        <div class="relative w-full h-full overflow-hidden rounded-lg"
+                            @mousedown.stop="startDrawProgress(entry, $event)" @mousemove="drawProgress($event)"
+                            @mouseup.stop="stopDrawProgress()">
 
-                        {{-- Progress Drag Handle --}}
-                        <div class="absolute top-0 h-full w-2 cursor-ew-resize gantt-handle z-40"
-                            :style="`left: calc(${entry.process ?? 0}% - 4px);`"
-                            @mousedown.stop.prevent="startProgressDrag(entry, $event)">
-                            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-white shadow-md"
-                                :style="`background-color: var(--color-${entry.color})`">
-                            </div>
-                        </div>
+                            <div class="progress-fill px-3 flex items-center relative"
+                                :style="`width: ${entry.process ?? 0}%; background-color: var(--color-${entry.color}); opacity: 0.9;`">
 
-                        {{-- Text Label --}}
-                        <template x-if="entry.text">
-                            <div class="absolute inset-0 px-3 flex items-center pointer-events-none">
-                                <span class="text-xs font-medium text-white truncate" x-text="entry.text"></span>
+                                <!-- Progress Tooltip -->
+                                <div x-show="hoveredProgressEntryId === entry._id || isDrawing" x-transition
+                                    class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse text-inverse-foreground text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
+                                    <span x-text="`${entry.process ?? 0}% complete`"></span>
+                                    <div
+                                        class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-4 border-transparent border-t-inverse">
+                                    </div>
+                                </div>
                             </div>
-                        </template>
 
-                        {{-- Hover Tooltip --}}
-                        <div x-show="hoveredEntryId === entry._id" x-transition.opacity.duration.150ms
-                            class="absolute -top-9 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
-                            <span x-text="`${entry.title} · ${entry.process ?? 0}%`"></span>
-                            <div
-                                class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-4 border-transparent border-t-gray-900">
-                            </div>
+                            <!-- Task Text -->
+                            <template x-if="entry.text">
+                                <div class="absolute inset-0 px-3 flex items-center pointer-events-none">
+                                    <span class="text-xs font-medium text-inverse-foreground truncate"
+                                        x-text="entry.text"></span>
+                                </div>
+                            </template>
                         </div>
                     </div>
                 </template>
@@ -310,280 +315,29 @@
 
 @once
     <script>
-        function ganttChart(config) {
+        function ganttChartComponent(allEntries, jsDates, dayWidth) {
             return {
-                // ── Data ──
-                entries: config.entries,
-                scale: config.scale || 'day',
-                today: config.today,
-                taskStartDate: config.taskStartDate,
-                taskEndDate: config.taskEndDate,
-                expanded: Object.fromEntries(config.entries.filter(e => e._is_parent).map(e => [e._parent, false])),
+                expanded: {},
+                entries: allEntries,
+                dates: jsDates,
+                dayWidth: dayWidth,
                 hoveredEntryId: null,
-                _loading: false,
+                hoveredProgressEntryId: null,
+                draggedEntry: null,
+                isDrawing: false,
 
-                // ── Date Range (reactive) ──
-                startDate: '',
-                endDate: '',
-
-                // ── Scale Configs ──
-                _scales: {
-                    day: { ppd: 80, buffer: 30, extend: 30 },
-                    week: { ppd: 16, buffer: 90, extend: 60 },
-                    month: { ppd: 4, buffer: 180, extend: 90 },
-                },
-
-                get _cfg() { return this._scales[this.scale]; },
-                get ppd() { return this._cfg.ppd; },
-
-                // ── Init ──
-                init() {
-                    const buf = this._cfg.buffer;
-                    this.startDate = this._addDays(this.taskStartDate, -buf);
-                    this.endDate = this._addDays(this.taskEndDate, buf);
-                    this._computeVisible();
-
-                    this.$nextTick(() => {
-                        this._scrollTo(this.taskStartDate);
-                        this._bindScroll();
-                    });
-                },
-
-                // ── Date Helpers ──
-                _d(str) {
-                    return new Date(str + 'T12:00:00');
-                },
-
-                _addDays(str, n) {
-                    const d = this._d(str);
-                    d.setDate(d.getDate() + n);
-                    return d.toISOString().slice(0, 10);
-                },
-
-                _diffDays(a, b) {
-                    return Math.round((this._d(b) - this._d(a)) / 86400000);
-                },
-
-                _fmt(str) {
-                    return str ? str.slice(0, 10) : null;
-                },
-
-                // ── Day Range ──
-                get dayRange() {
-                    const total = this._diffDays(this.startDate, this.endDate);
-                    const days = [];
-                    for (let i = 0; i <= total; i++) {
-                        days.push(this._addDays(this.startDate, i));
-                    }
-                    return days;
-                },
-
-                get totalWidth() {
-                    return this.dayRange.length * this.ppd;
-                },
-
-                // ── Columns ──
-                get columns() {
-                    const range = this.dayRange;
-                    const ppd = this.ppd;
-
-                    if (this.scale === 'day') {
-                        const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-                        return range.map((ds, i) => {
-                            const d = this._d(ds);
-                            const dow = d.getDay();
+                get visibleEntries() {
+                    let top = -1;
+                    return this.entries
+                        .filter(e => e._is_parent || this.expanded[e._parent])
+                        .map(e => {
+                            top++;
                             return {
-                                key: ds,
-                                date: ds,
-                                x: i * ppd,
-                                width: ppd,
-                                label1: String(d.getDate()).padStart(2, '0'),
-                                label2: dayNames[dow],
-                                isToday: ds === this.today,
-                                isWeekend: dow === 0 || dow === 6,
+                                ...e,
+                                _top: (top * 40) + 8,
+                                _height: e._is_parent ? 32 : 24
                             };
                         });
-                    }
-
-                    // Week or Month: group consecutive days
-                    const cols = [];
-                    let gKey = null, gStart = 0, gCount = 0;
-
-                    for (let i = 0; i < range.length; i++) {
-                        const d = this._d(range[i]);
-                        let key;
-
-                        if (this.scale === 'week') {
-                            // Group by ISO week (starts Monday)
-                            const mon = new Date(d);
-                            mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7));
-                            key = mon.toISOString().slice(0, 10);
-                        } else {
-                            key = range[i].slice(0, 7);
-                        }
-
-                        if (key !== gKey) {
-                            if (gKey !== null) {
-                                cols.push(this._groupCol(gKey, gStart, gCount, range));
-                            }
-                            gKey = key;
-                            gStart = i;
-                            gCount = 1;
-                        } else {
-                            gCount++;
-                        }
-                    }
-                    if (gKey !== null) {
-                        cols.push(this._groupCol(gKey, gStart, gCount, range));
-                    }
-                    return cols;
-                },
-
-                _groupCol(key, startIdx, dayCount, range) {
-                    const ppd = this.ppd;
-                    const d = this._d(range[startIdx]);
-                    const endD = this._d(range[startIdx + dayCount - 1]);
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    let label1, label2;
-
-                    if (this.scale === 'week') {
-                        label1 = `${d.getDate()} - ${endD.getDate()}`;
-                        label2 = months[d.getMonth()];
-                    } else {
-                        label1 = months[d.getMonth()];
-                        label2 = String(d.getFullYear());
-                    }
-
-                    const todayInRange = range.slice(startIdx, startIdx + dayCount).includes(this.today);
-
-                    return {
-                        key,
-                        date: range[startIdx],
-                        x: startIdx * ppd,
-                        width: dayCount * ppd,
-                        label1,
-                        label2,
-                        isToday: todayInRange,
-                        isWeekend: false,
-                    };
-                },
-
-                // ── Header Groups (month/year row above columns) ──
-                get headerGroups() {
-                    const groups = [];
-                    let label = null, width = 0;
-                    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-                    for (const col of this.columns) {
-                        const d = this._d(col.date);
-                        const l = this.scale === 'month'
-                            ? String(d.getFullYear())
-                            : `${months[d.getMonth()]} ${d.getFullYear()}`;
-
-                        if (l !== label) {
-                            if (label !== null) groups.push({ key: label + '-' + groups.length, label, width });
-                            label = l;
-                            width = col.width;
-                        } else {
-                            width += col.width;
-                        }
-                    }
-                    if (label !== null) groups.push({ key: label + '-' + groups.length, label, width });
-                    return groups;
-                },
-
-                // ── Row Height (matches sidebar h-10 = 40px) ──
-                rowHeight: 40,
-                barHeight: 28,
-                barPadding: 6, // (40 - 28) / 2 = 6px top/bottom
-
-                // ── Visible Entries ──
-                visibleEntries: [],
-
-                _computeVisible() {
-                    this.visibleEntries = this.entries
-                        .filter(e => e._is_parent || this.expanded[e._parent]);
-                },
-
-                toggleExpand(idx) {
-                    this.expanded[idx] = !this.expanded[idx];
-                    this._computeVisible();
-                },
-
-                get gridHeight() {
-                    return this.visibleEntries.length * this.rowHeight;
-                },
-
-                // ── Bar Positioning ──
-                _dateToX(str) {
-                    if (!str) return 0;
-                    return this._diffDays(this.startDate, this._fmt(str)) * this.ppd;
-                },
-
-                getBarStyle(entry, idx) {
-                    if (!entry.start || !entry.end) return 'display: none;';
-
-                    const left = this._dateToX(entry.start);
-                    const endX = this._dateToX(entry.end);
-                    const width = Math.max(endX - left + this.ppd, this.ppd);
-                    const top = idx * this.rowHeight + this.barPadding;
-
-                    return `top:${top}px; left:${left}px; width:${width}px; height:${this.barHeight}px; border:2px solid var(--color-${entry.color});`;
-                },
-
-                // ── Today Label (shown in sidebar header) ──
-                get todayLabel() {
-                    const d = this._d(this.today);
-                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                    return `${dayNames[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
-                },
-
-                // ── Today Line ──
-                get todayX() {
-                    if (!this.today) return null;
-                    const days = this._diffDays(this.startDate, this.today);
-                    if (days < 0 || days > this.dayRange.length) return null;
-                    return days * this.ppd + this.ppd / 2;
-                },
-
-                // ── Scroll / Infinite ──
-                _bindScroll() {
-                    const el = this.$refs.timeline;
-                    if (!el) return;
-                    el.addEventListener('scroll', () => this._onScroll(), { passive: true });
-                },
-
-                _onScroll() {
-                    const el = this.$refs.timeline;
-                    if (!el || this._loading) return;
-
-                    // Sync sidebar vertical scroll
-                    if (this.$refs.sidebarBody) {
-                        this.$refs.sidebarBody.scrollTop = el.scrollTop;
-                    }
-
-                    const threshold = 400;
-
-                    if (el.scrollLeft < threshold) {
-                        this._extendLeft();
-                    }
-                    if (el.scrollWidth - el.scrollLeft - el.clientWidth < threshold) {
-                        this._extendRight();
-                    }
-                },
-
-                _extendLeft() {
-                    this._loading = true;
-                    const days = this._cfg.extend;
-                    const oldWidth = this.totalWidth;
-                    this.startDate = this._addDays(this.startDate, -days);
-
-                    this.$nextTick(() => {
-                        const newWidth = this.totalWidth;
-                        this.$refs.timeline.scrollLeft += (newWidth - oldWidth);
-                        this._loading = false;
-                    });
                 },
 
                 _extendRight() {
@@ -693,18 +447,49 @@
                         },
                         bubbles: true,
                     }));
-                },
+                };
 
-                // ── Scale Switch ──
-                setScale(newScale) {
-                    if (this.scale === newScale) return;
-                    this.scale = newScale;
-                    const buf = this._cfg.buffer;
-                    this.startDate = this._addDays(this.taskStartDate, -buf);
-                    this.endDate = this._addDays(this.taskEndDate, buf);
-                    this.$nextTick(() => this._scrollTo(this.taskStartDate));
-                },
-            };
+                window.addEventListener('mousemove', moveHandler);
+                window.addEventListener('mouseup', upHandler);
+            },
+
+                startDrawProgress(entry, event) {
+                this.draggedEntry = entry;
+                this.isDrawing = true;
+                this.hoveredProgressEntryId = entry._id;
+                this.drawProgress(event);
+            },
+
+            drawProgress(event) {
+                if (!this.isDrawing || !this.draggedEntry) return;
+
+                const container = event.currentTarget;
+                const rect = container.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+                this.draggedEntry.process = Math.round(percent);
+            },
+
+            stopDrawProgress() {
+                if (this.isDrawing && this.draggedEntry) {
+                    this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
+                        detail: {
+                            id: this.draggedEntry._task_id,
+                            _id: this.draggedEntry._id,
+                            start: this.draggedEntry.start,
+                            end: this.draggedEntry.end,
+                            process: this.draggedEntry.process
+                        },
+                        bubbles: true
+                    }));
+                }
+
+                this.isDrawing = false;
+                this.draggedEntry = null;
+                this.hoveredProgressEntryId = null;
+            }
+        };
         }
     </script>
 @endonce
