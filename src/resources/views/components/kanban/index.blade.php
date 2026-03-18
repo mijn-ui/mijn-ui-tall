@@ -24,20 +24,90 @@
     }
 
     .kanban-parent-card {
-        transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        transition: transform 0.15s ease, border-color 0.2s ease;
     }
 
     .kanban-parent-card:hover {
         transform: translateY(-1px);
-        box-shadow: var(--shadow-sm);
+        border-color: var(--kanban-accent);
+    }
+
+    .kanban-parent-card.kanban-drop-target {
+        transform: none;
+        border: 2px dashed var(--kanban-accent);
+        background: var(--kanban-subtle);
     }
 
     .kanban-child-card {
-        transition: background-color 0.2s ease, border-color 0.2s ease;
+        transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        border-left: 3px solid var(--kanban-accent, hsl(var(--border)));
+    }
+
+    .kanban-child-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--kanban-accent) 25%, transparent);
+        border-color: var(--kanban-accent);
     }
 
     .kanban-progress-fill {
         transition: width 0.2s ease;
+    }
+
+    .kanban-card-actions {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+    }
+
+    .kanban-parent-card:hover .kanban-card-actions,
+    .kanban-child-card:hover .kanban-card-actions {
+        opacity: 1;
+    }
+
+    .kanban-grip {
+        cursor: grab;
+        opacity: 0.4;
+        transition: opacity 0.15s ease;
+    }
+
+    .kanban-grip:hover {
+        opacity: 0.8;
+    }
+
+    .kanban-children-enter {
+        animation: kanban-slide-down 0.2s ease;
+    }
+
+    @keyframes kanban-slide-down {
+        from { opacity: 0; max-height: 0; }
+        to { opacity: 1; max-height: 500px; }
+    }
+
+    .kanban-inline-edit-input {
+        background: transparent;
+        border: 1px solid var(--kanban-border);
+        border-radius: 0.375rem;
+        padding: 0.125rem 0.375rem;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+        width: 100%;
+        outline: none;
+        transition: border-color 0.15s ease;
+    }
+
+    .kanban-inline-edit-input:focus {
+        border-color: var(--kanban-accent);
+        box-shadow: 0 0 0 1px var(--kanban-accent);
+    }
+
+    .kanban-inline-edit-input.kanban-field-error {
+        border-color: hsl(var(--danger));
+    }
+
+    .kanban-field-error-text {
+        font-size: 0.6875rem;
+        color: hsl(var(--danger));
+        margin-top: 0.125rem;
     }
 </style>
 
@@ -45,31 +115,33 @@
     'width' => null,
     'maxWidth' => '352px',
     'columns' => [],
+    'mode' => 'wire',
     'createAction' => 'createCardFromKanban',
     'updateAction' => 'updateCardFromKanban',
     'editAction' => 'startEdit',
     'moveAction' => 'updateCardStatus',
     'childMoveAction' => 'moveChildCard',
+    'deleteAction' => null,
+    'demoteToChildAction' => 'demoteParentToChild',
     'defaultCreatePayload' => [],
-    'defaultCreateForm' => [],
-    'defaultEditForm' => [],
+    'showAddButton' => true,
+    'showEditButton' => true,
+    'showDeleteButton' => false,
+    'inlineEditable' => [],
+    'validationRules' => [],
+    'onBeforeCreate' => null,
+    'onAfterCreate' => null,
+    'onBeforeMove' => null,
+    'onAfterMove' => null,
+    'onBeforeUpdate' => null,
+    'onAfterUpdate' => null,
+    'onBeforeChildMove' => null,
+    'onAfterChildMove' => null,
 ])
 
 @php
-    $hasCustomCreateForm = isset($createForm) && ! $createForm->isEmpty();
-    $hasCustomEditForm = isset($editForm) && ! $editForm->isEmpty();
-    $livewireHost = app('livewire')->current();
-    $livewireMethods = $livewireHost ? get_class_methods($livewireHost) : [];
-    $resolveAction = function ($action) use ($livewireMethods) {
-        $name = is_string($action) ? trim($action) : '';
-
-        return $name !== '' && in_array($name, $livewireMethods, true) ? $name : null;
-    };
-    $resolvedCreateAction = $resolveAction($createAction);
-    $resolvedUpdateAction = $resolveAction($updateAction);
-    $resolvedEditAction = $resolveAction($editAction);
-    $resolvedMoveAction = $resolveAction($moveAction);
-    $resolvedChildMoveAction = $resolveAction($childMoveAction);
+    $hasCardTemplate = isset($cardTemplate) && ! $cardTemplate->isEmpty();
+    $hasChildTemplate = isset($childTemplate) && ! $childTemplate->isEmpty();
     $widthStyle = '';
     if ($width) {
         $widthValue = is_numeric($width) ? "{$width}px" : $width;
@@ -117,7 +189,6 @@
             'border' => 'hsl(var(--border-danger-subtle))',
             'contrast' => 'hsl(var(--danger-foreground))',
         ],
-        // The package theme does not currently expose info tokens, so this component provides local info tones.
         'info' => [
             'accent' => '#2563eb',
             'subtle' => 'rgba(37, 99, 235, 0.12)',
@@ -216,7 +287,6 @@
             'name' => $columnName,
             'color' => $columnColor,
             'createPayload' => is_array($column['createPayload'] ?? null) ? $column['createPayload'] : [],
-            'createForm' => is_array($column['createForm'] ?? null) ? $column['createForm'] : [],
             'editForm' => is_array($column['editForm'] ?? null) ? $column['editForm'] : [],
             'styles' => [
                 'vars' => $buildToneVars($columnColor),
@@ -234,21 +304,38 @@
 @endphp
 
 <div
+    x-ref="kanban"
     x-data="kanbanBoard({
         columns: @js($normalizedColumns),
         cards: @js($normalizedCards),
         widthStyle: @js($widthStyle),
         palette: @js($palette),
-        createAction: @js($resolvedCreateAction),
-        updateAction: @js($resolvedUpdateAction),
-        editAction: @js($resolvedEditAction),
-        moveAction: @js($resolvedMoveAction),
-        childMoveAction: @js($resolvedChildMoveAction),
+        mode: @js($mode),
+        createAction: @js($createAction),
+        updateAction: @js($updateAction),
+        editAction: @js($editAction),
+        moveAction: @js($moveAction),
+        childMoveAction: @js($childMoveAction),
+        deleteAction: @js($deleteAction),
+        demoteToChildAction: @js($demoteToChildAction),
         defaultCreatePayload: @js($defaultCreatePayload),
-        defaultCreateForm: @js($defaultCreateForm),
-        defaultEditForm: @js($defaultEditForm),
-        hasCustomCreateForm: @js($hasCustomCreateForm),
-        hasCustomEditForm: @js($hasCustomEditForm),
+        showAddButton: @js($showAddButton),
+        showEditButton: @js($showEditButton),
+        showDeleteButton: @js($showDeleteButton),
+        hasCardTemplate: @js($hasCardTemplate),
+        hasChildTemplate: @js($hasChildTemplate),
+        inlineEditable: @js($inlineEditable),
+        validationRules: @js($validationRules),
+        callbackNames: {
+            onBeforeCreate: @js($onBeforeCreate),
+            onAfterCreate: @js($onAfterCreate),
+            onBeforeMove: @js($onBeforeMove),
+            onAfterMove: @js($onAfterMove),
+            onBeforeUpdate: @js($onBeforeUpdate),
+            onAfterUpdate: @js($onAfterUpdate),
+            onBeforeChildMove: @js($onBeforeChildMove),
+            onAfterChildMove: @js($onAfterChildMove),
+        },
     })"
     x-init="init()"
     class="flex w-full items-start justify-center gap-5"
@@ -258,13 +345,11 @@
             {{ $attributes->merge(['class' => $containerClasses]) }}
             x-bind:style="getColumnStyle(columnId)"
             @dragover.prevent="
-                if (!hasAction(moveAction)) return;
                 $event.dataTransfer.dropEffect = 'move';
                 $el.classList.add('drop-zone-active');
             "
-            @dragleave="if (!hasAction(moveAction)) return; $el.classList.remove('drop-zone-active')"
+            @dragleave="$el.classList.remove('drop-zone-active')"
             @drop.prevent="
-                if (!hasAction(moveAction)) return;
                 handleDrop($event, columnId);
                 $el.classList.remove('drop-zone-active');
             "
@@ -276,191 +361,281 @@
                         x-bind:style="getAccentDotStyle(column)"
                     ></span>
                     <h3 class="font-medium text-main-text sm:text-lg" x-text="column.name"></h3>
-                    <span
-                        class="inline-flex min-w-8 items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold"
+                    <mijnui:badge
+                        color="secondary"
+                        variant="subtle"
+                        size="xs"
+                        rounded="full"
+                        class="min-w-8 justify-center"
                         x-bind:style="getCountBadgeStyle(columnId)"
                         x-text="(cards[columnId] || []).length"
-                    ></span>
+                    />
                 </div>
             </div>
 
             <div class="space-y-4 px-4 py-2">
                 <template x-for="(card, index) in cards[columnId] || []" :key="card.uid">
                     <div>
-                        <div
-                            class="kanban-parent-card w-full cursor-pointer space-y-3 rounded-xl p-4"
-                            x-bind:draggable="hasAction(moveAction)"
-                            @dragstart="if (!hasAction(moveAction)) return; handleDragStart($event, card, columnId, index)"
-                            @dragend="if (!hasAction(moveAction)) return; resetDragState()"
-                            @dragover.prevent="if (!hasAction(moveAction)) return; updateDropIndex(columnId, index)"
-                            @dragleave="if (!hasAction(moveAction)) return; dropIndex = null"
-                            :class="{ 'dragging': isDragging && draggedCard?.uid === card.uid }"
-                            x-bind:style="getParentCardStyle(card)"
-                            @click="handleEdit(card.id)"
-                        >
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            class="inline-flex h-2.5 w-2.5 rounded-full"
-                                            x-bind:style="getAccentDotStyle(card)"
-                                        ></span>
-                                        <h5 class="text-sm font-semibold text-main-text" x-text="card.title"></h5>
-                                    </div>
-                                    {{-- <template x-if="card.is_parent">
-                                        <p class="text-xs text-muted-text">Parent item</p>
-                                    </template> --}}
-                                </div>
-
-                                <template x-if="hasAction(updateAction)">
-                                    <mijnui:button
-                                        type="button"
-                                        color="secondary"
-                                        variant="ghost"
-                                        size="icon-sm"
-                                        rounded="full"
-                                        x-bind:style="getEntityActionStyle(card)"
-                                        @click.stop="openCardEditor(columnId, `parent:${card.id}`)"
-                                    >
-                                        <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                            stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="12" cy="12" r="1"></circle>
-                                            <circle cx="12" cy="5" r="1"></circle>
-                                            <circle cx="12" cy="19" r="1"></circle>
-                                        </svg>
-                                    </mijnui:button>
-                                </template>
+                        {{-- Parent Card --}}
+                        @if ($hasCardTemplate)
+                            <div
+                                class="kanban-parent-card w-full cursor-pointer rounded-xl p-4"
+                                draggable="true"
+                                @dragstart="handleDragStart($event, card, columnId, index)"
+                                @dragend="resetDragState()"
+                                @dragover.prevent.stop="handleDragOverParent($event, columnId, card, index)"
+                                @dragleave="$el.classList.remove('kanban-drop-target')"
+                                @drop.prevent.stop="handleDropOnParent($event, columnId, card)"
+                                :class="{ 'dragging': isDragging && draggedCard?.uid === card.uid }"
+                                x-bind:style="getParentCardStyle(card)"
+                                @click="handleEdit(card.id)"
+                            >
+                                {{ $cardTemplate }}
                             </div>
-
-                            <template x-if="card.tags.length > 0">
-                                <div class="flex flex-wrap gap-1">
-                                    <template x-for="tag in card.tags" :key="`${card.uid}-tag-${tag}`">
-                                        <span
-                                            class="inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-medium"
-                                            x-bind:style="getTagStyle(card)"
-                                            x-text="tag"
-                                        ></span>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <div class="space-y-1" x-show="card.showProgress">
-                                <div class="flex items-center justify-between text-xs text-muted-text">
-                                    <h5>Progress</h5>
-                                    <p x-text="`${card.progress}%`"></p>
-                                </div>
-                                <div class="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-                                    <div
-                                        class="kanban-progress-fill h-full rounded-full"
-                                        aria-valuemin="0"
-                                        aria-valuemax="100"
-                                        :aria-valuenow="card.progress"
-                                        role="progressbar"
-                                        x-bind:style="getProgressFillStyle(card)"
-                                    ></div>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center gap-2 text-muted-text sm:gap-4">
-                                <template x-if="card.items.length > 0">
-                                    <template x-for="item in card.items" :key="`${card.uid}-item-${item.icon || 'text'}-${item.text || ''}`">
-                                        <div class="flex items-center gap-1">
-                                            <template x-if="item.icon">
-                                                <span class="h-5 w-5" x-html="getIcon(item.icon)"></span>
+                        @else
+                            <div
+                                class="kanban-parent-card w-full cursor-pointer space-y-3 rounded-xl p-4"
+                                draggable="true"
+                                @dragstart="handleDragStart($event, card, columnId, index)"
+                                @dragend="resetDragState()"
+                                @dragover.prevent.stop="handleDragOverParent($event, columnId, card, index)"
+                                @dragleave="$el.classList.remove('kanban-drop-target')"
+                                @drop.prevent.stop="handleDropOnParent($event, columnId, card)"
+                                :class="{ 'dragging': isDragging && draggedCard?.uid === card.uid }"
+                                x-bind:style="getParentCardStyle(card)"
+                                @click="handleEdit(card.id)"
+                            >
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span
+                                                class="inline-flex h-2.5 w-2.5 rounded-full"
+                                                x-bind:style="getAccentDotStyle(card)"
+                                            ></span>
+                                            <template x-if="!isInlineEditing(card.id, 'title')">
+                                                <h5
+                                                    class="text-sm font-semibold text-main-text"
+                                                    x-text="card.title"
+                                                    @dblclick.stop="startInlineEdit(card.id, 'title', card.title, columnId)"
+                                                ></h5>
                                             </template>
-                                            <span class="text-xs" x-text="item.text || ''"></span>
-                                        </div>
-                                    </template>
-                                </template>
-
-                                <template x-if="card.avatars.length > 0">
-                                    <div class="flex w-full items-center justify-end -space-x-2">
-                                        <template x-for="avatar in card.avatars" :key="`${card.uid}-avatar-${avatar.image || avatar.initials || 'blank'}`">
-                                            <div
-                                                class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs ring-1 ring-muted-text/75">
-                                                <img
-                                                    x-show="avatar.image"
-                                                    alt="avatar"
-                                                    class="h-full w-full object-cover"
-                                                    :src="avatar.image"
+                                            <template x-if="isInlineEditing(card.id, 'title')">
+                                                <div @click.stop>
+                                                    <input
+                                                        class="kanban-inline-edit-input text-sm font-semibold"
+                                                        :class="{ 'kanban-field-error': inlineEditError }"
+                                                        type="text"
+                                                        x-model="inlineEditValue"
+                                                        @keydown.enter="confirmInlineEdit(card, columnId)"
+                                                        @keydown.tab.prevent="confirmInlineEdit(card, columnId)"
+                                                        @keydown.escape="cancelInlineEdit()"
+                                                        x-init="$nextTick(() => $el.focus())"
+                                                    />
+                                                    <template x-if="inlineEditError">
+                                                        <p class="kanban-field-error-text" x-text="inlineEditError"></p>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            {{-- <template x-if="card.has_children">
+                                                <mijnui:badge
+                                                    color="secondary"
+                                                    variant="subtle"
+                                                    size="xs"
+                                                    rounded="full"
+                                                    x-bind:style="getTagStyle(card)"
+                                                    x-text="`${card.children.length} sub`"
                                                 />
-                                                <span x-show="!avatar.image && avatar.initials" x-text="avatar.initials"></span>
-                                            </div>
+                                            </template> --}}
+                                        </div>
+                                    </div>
+
+                                    <div class="kanban-card-actions flex items-center gap-1">
+                                        <template x-if="showEditButton && hasAction(updateAction)">
+                                            <span
+                                                class="cursor-pointer text-muted-text hover:text-main-text transition-colors"
+                                                @click.stop="requestEdit(columnId, card)"
+                                            >
+                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                    <circle cx="12" cy="12" r="1"></circle>
+                                                    <circle cx="12" cy="5" r="1"></circle>
+                                                    <circle cx="12" cy="19" r="1"></circle>
+                                                </svg>
+                                            </span>
+                                        </template>
+
+                                        <template x-if="showDeleteButton && hasAction(deleteAction)">
+                                            <span
+                                                class="cursor-pointer text-muted-text hover:text-danger transition-colors"
+                                                @click.stop="pendingDelete = { columnId, cardId: card.id, kind: 'parent', title: card.title }"
+                                            >
+                                                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                                    stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M3 6h18"></path>
+                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                </svg>
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <template x-if="card.tags.length > 0">
+                                    <div class="flex flex-wrap gap-1">
+                                        <template x-for="tag in card.tags" :key="`${card.uid}-tag-${tag}`">
+                                            <mijnui:badge
+                                                color="secondary"
+                                                variant="subtle"
+                                                size="xs"
+                                                rounded="full"
+                                                x-bind:style="getTagStyle(card)"
+                                                x-text="tag"
+                                            />
                                         </template>
                                     </div>
                                 </template>
-                            </div>
-                        </div>
 
-                        <template x-if="card.has_children && card.children.length > 0">
-                            <div class="ml-6 mt-2 space-y-2 border-l-2 border-muted pl-3">
-                                <template x-for="child in card.children" :key="child.uid">
-                                    <div
-                                        class="kanban-child-card flex cursor-pointer items-center justify-between gap-3 rounded-xl p-3 text-xs"
-                                        x-bind:style="getChildRowStyle(child)"
-                                        @click.stop="handleEdit(child.id)"
-                                    >
-                                        <div class="flex min-w-0 items-center gap-2">
-                                            <span
-                                                class="inline-flex h-8 w-1 rounded-full"
-                                                x-bind:style="getChildAccentStyle(child)"
-                                            ></span>
-                                            <div class="min-w-0">
-                                                <div class="flex items-center gap-2">
-                                                    <span class="text-muted-text">↳</span>
-                                                    <span class="truncate font-medium text-main-text" x-text="child.name"></span>
-                                                    {{-- <span
-                                                        class="inline-flex items-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold"
-                                                        x-bind:style="getChildTypeStyle(child)"
-                                                        x-text="child.type"
-                                                    ></span> --}}
-                                                </div>
-                                                <template x-if="child.status_name">
-                                                    <p class="mt-1 text-[11px] text-muted-text" x-text="child.status_name"></p>
-                                                </template>
-                                            </div>
-                                        </div>
-
-                                        <div class="flex shrink-0 items-center gap-2" @click.stop>
-                                            <template x-if="child.progress > 0">
-                                                <span class="text-[11px] font-semibold" x-text="`${child.progress}%`"></span>
-                                            </template>
-
-                                            <template x-if="hasAction(updateAction)">
-                                                <mijnui:button
-                                                    type="button"
-                                                    color="secondary"
-                                                    variant="ghost"
-                                                    size="icon-sm"
-                                                    rounded="full"
-                                                    x-bind:style="getEntityActionStyle(child)"
-                                                    @click.stop="openCardEditor(columnId, `child:${child.id}`)"
-                                                >
-                                                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
-                                                        stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                                        <circle cx="12" cy="12" r="1"></circle>
-                                                        <circle cx="12" cy="5" r="1"></circle>
-                                                        <circle cx="12" cy="19" r="1"></circle>
-                                                    </svg>
-                                                </mijnui:button>
-                                            </template>
-
-                                            <template x-if="hasAction(childMoveAction)">
-                                                <mijnui:button
-                                                    type="button"
-                                                    size="xs"
-                                                    rounded="full"
-                                                    color="secondary"
-                                                    variant="outline"
-                                                    class="text-[11px]"
-                                                    x-bind:style="getChildMoveButtonStyle(child)"
-                                                    @click.stop="openChildMove(child, columnId, card.id)"
-                                                >
-                                                    Move
-                                                </mijnui:button>
-                                            </template>
-                                        </div>
+                                <div class="space-y-1" x-show="card.showProgress">
+                                    <div class="flex items-center justify-between text-xs text-muted-text">
+                                         <p x-text="`${card.progress}%`"></p>
                                     </div>
+                                    <div class="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+                                        <div
+                                            class="kanban-progress-fill h-full rounded-full"
+                                            aria-valuemin="0"
+                                            aria-valuemax="100"
+                                            :aria-valuenow="card.progress"
+                                            role="progressbar"
+                                            x-bind:style="getProgressFillStyle(card)"
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-2 text-muted-text sm:gap-4">
+                                    <template x-if="card.items.length > 0">
+                                        <template x-for="item in card.items" :key="`${card.uid}-item-${item.icon || 'text'}-${item.text || ''}`">
+                                            <div class="flex items-center gap-1"> 
+                                                <template x-if="item.icon">
+                                                    <span class="h-5 w-5" x-html="getIcon(item.icon)"></span> 
+                                                </template>
+                                                <span class="text-xs" x-text="item.text || ''"></span>
+                                            </div>
+                                        </template>
+                                    </template>
+
+                                    <template x-if="card.avatars.length > 0">
+                                        <mijnui:avatar.group class="w-full justify-end">
+                                            <template x-for="avatar in card.avatars" :key="`${card.uid}-avatar-${avatar.image || avatar.initials || 'blank'}`">
+                                                <div
+                                                    class="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs ring-1 ring-muted-text/75">
+                                                    <img
+                                                        x-show="avatar.image"
+                                                        alt="avatar"
+                                                        class="h-full w-full object-cover"
+                                                        :src="avatar.image"
+                                                    />
+                                                    <span x-show="!avatar.image && avatar.initials" x-text="avatar.initials"></span>
+                                                </div>
+                                            </template>
+                                        </mijnui:avatar.group>
+                                    </template>
+                                </div>
+                            </div>
+                        @endif
+
+                        {{-- Children Cards --}}
+                        <template x-if="card.has_children && card.children.length > 0 && isChildrenExpanded(card.uid)">
+                            <div class="kanban-children-enter ml-4 mt-2 space-y-2 border-muted pl-3">
+                                <template x-for="(child, childIndex) in card.children" :key="child.uid">
+                                    @if ($hasChildTemplate)
+                                        <div
+                                            class="kanban-child-card rounded-lg border p-2.5"
+                                            draggable="true"
+                                            @dragstart.stop="handleChildDragStart($event, child, columnId, card.id, childIndex)"
+                                            @dragend="resetDragState()"
+                                            :class="{ 'dragging': isDragging && draggedChild?.uid === child.uid }"
+                                            x-bind:style="getChildRowStyle(child)"
+                                            @click.stop="handleEdit(child.id)"
+                                        >
+                                            {{ $childTemplate }}
+                                        </div>
+                                    @else
+                                        <div
+                                            class="kanban-child-card cursor-pointer space-y-2 rounded-lg border p-3"
+                                            draggable="true"
+                                            @dragstart.stop="handleChildDragStart($event, child, columnId, card.id, childIndex)"
+                                            @dragend="resetDragState()"
+                                            :class="{ 'dragging': isDragging && draggedChild?.uid === child.uid }"
+                                            x-bind:style="getChildRowStyle(child)"
+                                            @click.stop="handleEdit(child.id)"
+                                        >
+                                            <div class="flex items-start justify-between gap-2">
+                                                <div class="flex min-w-0 items-center gap-2">
+                                                    <span class="kanban-grip flex shrink-0 items-center text-muted-text">
+                                                        <svg width="8" height="12" viewBox="0 0 10 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                                            <circle cx="2" cy="2" r="1.5"/>
+                                                            <circle cx="8" cy="2" r="1.5"/>
+                                                            <circle cx="2" cy="7" r="1.5"/>
+                                                            <circle cx="8" cy="7" r="1.5"/>
+                                                            <circle cx="2" cy="12" r="1.5"/>
+                                                            <circle cx="8" cy="12" r="1.5"/>
+                                                        </svg>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <span class="block truncate text-xs font-semibold text-main-text" x-text="child.name"></span>
+                                                        {{-- <template x-if="child.status_name">
+                                                            <p class="mt-0.5 text-[10px] text-muted-text" x-text="child.status_name"></p>
+                                                        </template> --}}
+                                                    </div>
+                                                </div>
+
+                                                <div class="kanban-card-actions flex shrink-0 items-center gap-1" @click.stop>
+                                                    <template x-if="showEditButton && hasAction(updateAction)">
+                                                        <span
+                                                            class="cursor-pointer text-muted-text hover:text-main-text"
+                                                            @click.stop="requestEdit(columnId, card, child)"
+                                                        >
+                                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                                                stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                                <circle cx="12" cy="12" r="1"></circle>
+                                                                <circle cx="12" cy="5" r="1"></circle>
+                                                                <circle cx="12" cy="19" r="1"></circle>
+                                                            </svg>
+                                                        </span>
+                                                    </template>
+
+                                                    <template x-if="showDeleteButton && hasAction(deleteAction)">
+                                                        <span
+                                                            class="cursor-pointer text-muted-text hover:text-danger transition-colors"
+                                                            @click.stop="pendingDelete = { columnId, cardId: child.id, kind: 'child', parentCardId: card.id, title: child.name }"
+                                                        >
+                                                            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
+                                                                stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M3 6h18"></path>
+                                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <template x-if="child.progress > 0">
+                                                <div class="space-y-0.5">
+                                                    <div class="flex items-center justify-between"> 
+                                                        <span class="text-[10px] font-semibold" x-bind:style="'color: var(--kanban-accent);'" x-text="`${child.progress}%`"></span>
+                                                    </div>
+                                                    <div class="relative h-1 w-full overflow-hidden rounded-full" style="background-color: var(--kanban-border);">
+                                                        <div
+                                                            class="kanban-progress-fill h-full rounded-full"
+                                                            style="background-color: var(--kanban-accent);"
+                                                            :style="'width:' + Math.min(100, Math.max(0, child.progress)) + '%'"
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    @endif
                                 </template>
                             </div>
                         </template>
@@ -468,7 +643,7 @@
                 </template>
 
                 <div class="relative flex items-center justify-between gap-4 px-4 py-2">
-                    <template x-if="hasAction(createAction)">
+                    <template x-if="showAddButton && hasAction(createAction)">
                         <mijnui:button
                             type="button"
                             color="secondary"
@@ -476,7 +651,7 @@
                             justify="start"
                             class="gap-2 text-sm font-medium"
                             x-bind:style="getAddButtonStyle(columnId)"
-                            @click="openCreateModal(columnId)"
+                            @click="requestCreate(columnId)"
                         >
                             <span>
                                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24"
@@ -494,221 +669,46 @@
         </div>
     </template>
 
-    <template x-if="hasAction(updateAction)">
-        <mijnui:modal x-model="cardEditorOpen">
-            <mijnui:modal.content class="max-w-3xl">
-                <mijnui:modal.header>
-                    <p class="text-xs uppercase tracking-[0.2em] text-muted-text">Manage</p>
-                    <h2 class="text-lg font-semibold text-main-text">Update Card Info</h2>
-                </mijnui:modal.header>
-
-                <mijnui:modal.body class="space-y-5">
-                    <template x-if="getCardEditorTarget()">
-                        <div class="grid gap-4 rounded-xl border border-main-border bg-muted p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
-                            <div class="min-w-0 space-y-2">
-                                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-text" x-text="getCardEditorTypeLabel()"></p>
-                                <p class="text-base font-semibold text-main-text" x-text="getCardEditorTarget()?.item?.title || getCardEditorTarget()?.item?.name || ''"></p>
-                                <template x-if="getCardEditorTarget()?.kind === 'child'">
-                                    <p class="text-sm text-muted-text" x-text="`Parent: ${getCardEditorTarget().parentTitle}`"></p>
-                                </template>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2 md:justify-end">
-                                <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    x-bind:style="getToneBadgeStyle(editFormData.color || getCardEditorTarget()?.item?.color || columns[editingColumnId]?.color)"
-                                    x-text="getCardEditorTypeLabel()"
-                                ></span>
-                                <span
-                                    class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold"
-                                    x-bind:style="getToneBadgeStyle(columns[editingColumnId]?.color)"
-                                    x-text="`Section: ${columns[editingColumnId]?.name || ''}`"
-                                ></span>
-                            </div>
-                        </div>
-                    </template>
-
-                    @if ($hasCustomEditForm)
-                        <div class="w-full space-y-4">
-                            {{ $editForm }}
-                        </div>
-                    @else
-                        <div class="rounded-xl border border-dashed border-main-border bg-muted/60 p-4 text-sm text-muted-text">
-                            Pass an <code>x-slot:editForm</code> from your Blade view to render the editor form.
-                        </div>
-                    @endif
-
-                    <template x-if="editingCardError">
-                        <p class="text-sm text-red-600" x-text="editingCardError"></p>
-                    </template>
-                </mijnui:modal.body>
-
-                <mijnui:modal.footer>
+    {{-- Delete Confirmation --}}
+    <template x-teleport="body">
+        <div
+            x-show="pendingDelete"
+            x-transition.opacity
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            @click.self="pendingDelete = null"
+        >
+            <div
+                x-show="pendingDelete"
+                x-transition
+                class="w-full max-w-sm rounded-xl border bg-white p-6 shadow-lg"
+                @click.stop
+            >
+                <h3 class="text-lg font-semibold text-main-text">Warning</h3>
+                <p class="mt-2 text-sm text-muted-text">
+                    Are you sure you want to delete
+                    <span class="font-medium text-main-text" x-text="pendingDelete?.title || 'this card'"></span>?
+                    This action cannot be undone.
+                </p>
+                <div class="mt-4 flex justify-end gap-2">
                     <mijnui:button
+                        size="sm"
                         color="secondary"
-                        variant="subtle"
-                        type="button"
-                        @click="cardEditorOpen = false"
-                    >
-                        Cancel
-                    </mijnui:button>
-
+                        variant="outline"
+                        @click="pendingDelete = null"
+                    >Cancel</mijnui:button>
                     <mijnui:button
-                        type="button"
-                        x-bind:style="getModalPrimaryStyle(editingColumnId)"
-                        x-bind:disabled="!editingCardSelection || !hasCustomEditForm"
-                        @click="const updated = await saveCardUpdate(); if (updated) { cardEditorOpen = false; }"
-                    >
-                        Save
-                    </mijnui:button>
-                </mijnui:modal.footer>
-            </mijnui:modal.content>
-        </mijnui:modal>
-    </template>
-
-    <template x-if="hasAction(childMoveAction)">
-        <mijnui:modal x-model="childMoveOpen">
-            <mijnui:modal.content class="max-w-xl">
-                <mijnui:modal.header>
-                    <p class="text-xs uppercase tracking-[0.2em] text-muted-text">Reassign</p>
-                    <h2 class="text-lg font-semibold text-main-text">Move Child Item</h2>
-                </mijnui:modal.header>
-
-                <mijnui:modal.body class="space-y-4">
-                    <div class="space-y-1">
-                        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-text">Child</p>
-                        <p class="text-sm font-medium text-main-text" x-text="movingChild?.name || ''"></p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-main-text">Placement</label>
-                        <mijnui:select
-                            x-model="childMoveMode"
-                            placeholder="Choose placement"
-                            class="w-full min-w-0"
-                        >
-                            <mijnui:select.option value="child">Keep as child</mijnui:select.option>
-                            <mijnui:select.option value="parent">Promote to parent</mijnui:select.option>
-                        </mijnui:select>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-sm font-medium text-main-text">Section</label>
-                        <mijnui:select
-                            x-model="childMoveTargetColumn"
-                            placeholder="Choose section"
-                            class="w-full min-w-0"
-                        >
-                            @foreach ($normalizedColumns as $targetColumnId => $targetColumn)
-                                <mijnui:select.option value="{{ $targetColumnId }}">
-                                    {{ $targetColumn['name'] }}
-                                </mijnui:select.option>
-                            @endforeach
-                        </mijnui:select>
-                    </div>
-
-                    <div class="space-y-2" x-show="childMoveMode === 'child'">
-                        <label class="text-sm font-medium text-main-text">Parent card</label>
-                        <mijnui:select
-                            x-model="childMoveTargetParentId"
-                            placeholder="Select parent"
-                            searchable
-                            clearable
-                            class="w-full min-w-0"
-                        >
-                            @foreach ($normalizedCards as $targetColumnId => $targetCards)
-                                @foreach ($targetCards as $targetCard)
-                                    <mijnui:select.option
-                                        value="{{ $targetCard['id'] }}"
-                                        x-show="childMoveTargetColumn === @js((string) $targetColumnId)"
-                                    >
-                                        {{ $targetCard['title'] }}
-                                    </mijnui:select.option>
-                                @endforeach
-                            @endforeach
-                        </mijnui:select>
-                        <template x-if="getChildMoveParentOptions().length === 0">
-                            <p class="text-sm text-muted-text">No parent cards are available in the selected section.</p>
-                        </template>
-                    </div>
-
-                    <template x-if="childMoveError">
-                        <p class="text-sm text-red-600" x-text="childMoveError"></p>
-                    </template>
-                </mijnui:modal.body>
-
-                <mijnui:modal.footer>
-                    <mijnui:button
-                        color="secondary"
-                        variant="subtle"
-                        type="button"
-                        @click="childMoveOpen = false"
-                    >
-                        Cancel
-                    </mijnui:button>
-
-                    <mijnui:button
-                        type="button"
-                        x-bind:style="getModalPrimaryStyle(childMoveTargetColumn)"
-                        x-bind:disabled="childMoveMode === 'child' && !childMoveTargetParentId"
-                        @click="const moved = await submitChildMove(); if (moved) { childMoveOpen = false; }"
-                    >
-                        Save
-                    </mijnui:button>
-                </mijnui:modal.footer>
-            </mijnui:modal.content>
-        </mijnui:modal>
-    </template>
-
-    <template x-if="hasAction(createAction)">
-        <mijnui:modal x-model="createModalOpen">
-            <mijnui:modal.content class="max-w-xl">
-                <mijnui:modal.header>
-                    <p class="text-xs uppercase tracking-[0.2em] text-muted-text">Create</p>
-                    <h2 class="text-lg font-semibold text-main-text">Add New</h2>
-                </mijnui:modal.header>
-
-                <mijnui:modal.body class="space-y-4">
-                    @if ($hasCustomCreateForm)
-                        <div class="w-full space-y-4">
-                            {{ $createForm }}
-                        </div>
-                    @else
-                        <mijnui:input
-                            x-model="createFormData.title"
-                            x-bind:data-kanban-new-card-input="newCardColumn"
-                            @input="errorMessage = ''"
-                            @keydown.enter="const created = await addNewCard(); if (created) createModalOpen = false;"
-                            placeholder="Enter work item title..."
-                            wrapper-class="w-full"
-                        />
-                    @endif
-
-                    <template x-if="errorMessage">
-                        <p class="text-sm text-red-600" x-text="errorMessage"></p>
-                    </template>
-                </mijnui:modal.body>
-
-                <mijnui:modal.footer>
-                    <mijnui:button
-                        color="secondary"
-                        variant="subtle"
-                        type="button"
-                        @click="createModalOpen = false"
-                    >
-                        Cancel
-                    </mijnui:button>
-
-                    <mijnui:button
-                        type="button"
-                        x-bind:style="getModalPrimaryStyle(newCardColumn)"
-                        @click="const created = await addNewCard(); if (created) createModalOpen = false;"
-                    >
-                        Add
-                    </mijnui:button>
-                </mijnui:modal.footer>
-            </mijnui:modal.content>
-        </mijnui:modal>
+                        size="sm"
+                        color="danger"
+                        @click="
+                            if (pendingDelete) {
+                                deleteCard(pendingDelete.columnId, pendingDelete.cardId, pendingDelete.kind, pendingDelete.parentCardId);
+                            }
+                            pendingDelete = null;
+                        "
+                    >Delete</mijnui:button>
+                </div>
+            </div>
+        </div>
     </template>
 </div>
 
@@ -719,41 +719,54 @@
             cards: config.cards || {},
             widthStyle: config.widthStyle || '',
             palette: config.palette || {},
+            mode: config.mode || 'wire',
             createAction: config.createAction ?? null,
             updateAction: config.updateAction ?? null,
             editAction: config.editAction ?? null,
             moveAction: config.moveAction ?? null,
             childMoveAction: config.childMoveAction ?? null,
+            deleteAction: config.deleteAction ?? null,
+            demoteToChildAction: config.demoteToChildAction ?? null,
             defaultCreatePayload: config.defaultCreatePayload || {},
-            defaultCreateForm: config.defaultCreateForm || {},
-            defaultEditForm: config.defaultEditForm || {},
-            hasCustomCreateForm: Boolean(config.hasCustomCreateForm),
-            hasCustomEditForm: Boolean(config.hasCustomEditForm),
+            showAddButton: Boolean(config.showAddButton ?? true),
+            showEditButton: Boolean(config.showEditButton ?? true),
+            showDeleteButton: Boolean(config.showDeleteButton ?? false),
+            hasCardTemplate: Boolean(config.hasCardTemplate),
+            hasChildTemplate: Boolean(config.hasChildTemplate),
+            inlineEditable: Array.isArray(config.inlineEditable) ? config.inlineEditable : [],
+            validationRules: config.validationRules || {},
+
+            // Drag state
             draggedCard: null,
+            draggedChild: null,
+            dragType: null,
             sourceColumn: null,
             sourceIndex: null,
+            dragSourceParentId: null,
             isDragging: false,
             iconCache: {},
             dropIndex: null,
             dropColumn: null,
-            createModalOpen: false,
-            createFormData: {},
-            newCardColumn: null,
-            newCardMeta: {},
-            errorMessage: '',
-            childMoveOpen: false,
-            movingChild: null,
-            movingChildSourceColumn: null,
-            movingChildSourceParentId: null,
-            childMoveMode: 'child',
-            childMoveTargetColumn: null,
-            childMoveTargetParentId: null,
-            childMoveError: '',
-            cardEditorOpen: false,
-            editingColumnId: null,
-            editingCardSelection: null,
-            editFormData: {},
-            editingCardError: '',
+
+            // Expand/collapse state
+            expandedCards: {},
+
+            // Inline editing state
+            inlineEdit: { cardId: null, field: null },
+            inlineEditValue: '',
+
+            // Delete confirmation state
+            pendingDelete: null,
+            inlineEditError: '',
+            inlineEditColumnId: null,
+
+            // Callback references
+            __callbacks: {
+                onBeforeCreate: null, onAfterCreate: null,
+                onBeforeMove: null, onAfterMove: null,
+                onBeforeUpdate: null, onAfterUpdate: null,
+                onBeforeChildMove: null, onAfterChildMove: null,
+            },
 
             init() {
                 const hydratedColumns = {};
@@ -766,25 +779,70 @@
 
                 this.columns = hydratedColumns;
                 this.cards = hydratedCards;
-                this.$watch('childMoveMode', () => this.syncChildMoveTargetParent());
-                this.$watch('childMoveTargetColumn', () => this.syncChildMoveTargetParent());
-                this.$watch('editingCardSelection', () => this.syncCardEditorForm());
-                this.$watch('createModalOpen', (value) => {
-                    if (!value) {
-                        this.resetNewCardState();
+
+                Object.values(this.cards).flat().forEach((card) => {
+                    if (card.has_children) {
+                        this.expandedCards[card.uid] = true;
                     }
                 });
-                this.$watch('childMoveOpen', (value) => {
-                    if (!value) {
-                        this.resetChildMoveState();
-                    }
-                });
-                this.$watch('cardEditorOpen', (value) => {
-                    if (!value) {
-                        this.resetCardEditorState();
-                    }
-                });
+
+                this.resolveCallbacks(config.callbackNames || {});
             },
+
+            // ── Callback Resolution ─────────────────────────────────
+
+            resolveCallbacks(names) {
+                for (const [key, name] of Object.entries(names)) {
+                    if (!name) continue;
+                    if (typeof window[name] === 'function') {
+                        this.__callbacks[key] = window[name];
+                    }
+                }
+            },
+
+            setCallback(name, fn) {
+                if (typeof fn === 'function' && this.__callbacks.hasOwnProperty(name)) {
+                    this.__callbacks[name] = fn;
+                }
+            },
+
+            // ── Hook System ─────────────────────────────────────────
+
+            async fireBeforeHook(hookName, detail) {
+                const callbackKey = `onBefore${hookName}`;
+                const callback = this.__callbacks[callbackKey];
+                if (typeof callback === 'function') {
+                    const result = await callback(detail);
+                    if (result === false) return false;
+                }
+
+                const eventName = `kanban:before-${hookName.toLowerCase().replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+                const event = new CustomEvent(eventName, {
+                    detail,
+                    bubbles: true,
+                    cancelable: true,
+                });
+                this.$el.dispatchEvent(event);
+                return !event.defaultPrevented;
+            },
+
+            fireAfterHook(hookName, detail) {
+                const callbackKey = `onAfter${hookName}`;
+                const callback = this.__callbacks[callbackKey];
+                if (typeof callback === 'function') {
+                    callback(detail);
+                }
+
+                const eventMap = {
+                    'Create': 'kanban:created',
+                    'Move': 'kanban:moved',
+                    'Update': 'kanban:updated',
+                    'ChildMove': 'kanban:child-moved',
+                };
+                this.$dispatch(eventMap[hookName] || `kanban:${hookName.toLowerCase()}`, detail);
+            },
+
+            // ── Utility ──────────────────────────────────────────────
 
             headline(value) {
                 return String(value || '')
@@ -826,6 +884,48 @@
                 return typeof action === 'string' && action.trim().length > 0;
             },
 
+            isWireMode() {
+                return this.mode === 'wire' && !!this.$wire?.call;
+            },
+
+            // ── Validation ──────────────────────────────────────────
+
+            validateSingleField(value, rules) {
+                if (!Array.isArray(rules)) return null;
+                const str = String(value ?? '');
+
+                for (const rule of rules) {
+                    if (rule === 'required' && str.trim() === '') return 'This field is required.';
+
+                    const minMatch = String(rule).match(/^min:(\d+)$/);
+                    if (minMatch && str.length < parseInt(minMatch[1])) {
+                        return `Must be at least ${minMatch[1]} characters.`;
+                    }
+
+                    const maxMatch = String(rule).match(/^max:(\d+)$/);
+                    if (maxMatch && str.length > parseInt(maxMatch[1])) {
+                        return `Must be at most ${maxMatch[1]} characters.`;
+                    }
+
+                    const patternMatch = String(rule).match(/^pattern:(.+)$/);
+                    if (patternMatch && !new RegExp(patternMatch[1]).test(str)) {
+                        return 'Invalid format.';
+                    }
+                }
+                return null;
+            },
+
+            validateFields(data, rules) {
+                const errors = {};
+                for (const [field, fieldRules] of Object.entries(rules || {})) {
+                    const error = this.validateSingleField(data[field], fieldRules);
+                    if (error) errors[field] = error;
+                }
+                return errors;
+            },
+
+            // ── Hydration ────────────────────────────────────────────
+
             hydrateColumn(columnId, column) {
                 const color = this.normalizeColor(column.color || 'secondary');
 
@@ -835,7 +935,6 @@
                     name: column.name || this.headline(columnId),
                     color,
                     createPayload: column.createPayload && typeof column.createPayload === 'object' ? { ...column.createPayload } : {},
-                    createForm: column.createForm && typeof column.createForm === 'object' ? { ...column.createForm } : {},
                     editForm: column.editForm && typeof column.editForm === 'object' ? { ...column.editForm } : {},
                     styles: {
                         vars: this.buildToneVars(color),
@@ -888,6 +987,8 @@
                 };
             },
 
+            // ── Style Getters ────────────────────────────────────────
+
             getColumnStyle(columnId) {
                 return this.composeStyle(this.widthStyle, this.columns[columnId]?.styles?.vars);
             },
@@ -902,7 +1003,7 @@
             getParentCardStyle(card) {
                 return this.composeStyle(
                     card.styles?.vars,
-                    'border: 1px solid var(--kanban-border); background: linear-gradient(180deg, var(--kanban-subtle) 0%, hsl(var(--background)) 28%);'
+                    'border: 1px solid var(--kanban-border); background-color: var(--kanban-subtle);'
                 );
             },
 
@@ -923,14 +1024,7 @@
             getChildRowStyle(child) {
                 return this.composeStyle(
                     child.styles?.vars,
-                    'border: 1px solid var(--kanban-border); background-color: var(--kanban-subtle); color: var(--kanban-foreground);'
-                );
-            },
-
-            getChildTypeStyle(child) {
-                return this.composeStyle(
-                    child.styles?.vars,
-                    'border: 1px solid var(--kanban-border); background-color: var(--kanban-contrast); color: var(--kanban-foreground);'
+                    'border-color: var(--kanban-border); background-color: var(--kanban-subtle); color: var(--kanban-foreground);'
                 );
             },
 
@@ -965,14 +1059,15 @@
             },
 
             getModalPrimaryStyle(columnId = null) {
-                const activeColumnId = columnId || this.newCardColumn || this.childMoveTargetColumn;
-                const column = this.columns[activeColumnId] || {};
+                const column = this.columns[columnId] || {};
 
                 return this.composeStyle(
                     column.styles?.vars,
                     'background-color: var(--kanban-accent); color: var(--kanban-contrast);'
                 );
             },
+
+            // ── Icons ────────────────────────────────────────────────
 
             async getIcon(iconName) {
                 if (!this.iconCache[iconName]) {
@@ -987,175 +1082,152 @@
                 return this.iconCache[iconName];
             },
 
+            // ── Livewire Bridge ──────────────────────────────────────
+
             async callWireAction(action, ...params) {
-                if (!this.$wire?.call || !this.hasAction(action)) {
+                if (!this.isWireMode() || !this.hasAction(action)) {
                     return null;
                 }
 
                 return this.$wire.call(action, ...params);
             },
 
+            // ── Expand/Collapse ──────────────────────────────────────
+
+            toggleChildren(cardUid) {
+                this.expandedCards[cardUid] = !this.expandedCards[cardUid];
+            },
+
+            isChildrenExpanded(cardUid) {
+                return this.expandedCards[cardUid] !== false;
+            },
+
+            // ── Event Dispatchers (replace modals) ───────────────────
+
+            requestCreate(columnId) {
+                const column = this.columns[columnId] || {};
+                this.$dispatch('kanban:create-requested', {
+                    columnId,
+                    column: JSON.parse(JSON.stringify(column)),
+                    meta: {
+                        ...(this.defaultCreatePayload || {}),
+                        ...(column.createPayload || {}),
+                    },
+                });
+            },
+
+            requestEdit(columnId, card, child = null) {
+                this.$dispatch('kanban:edit-requested', {
+                    cardId: child ? child.id : card.id,
+                    columnId,
+                    kind: child ? 'child' : 'parent',
+                    card: JSON.parse(JSON.stringify(card)),
+                    child: child ? JSON.parse(JSON.stringify(child)) : null,
+                });
+            },
+
+            requestChildMove(child, columnId, parentCardId) {
+                this.$dispatch('kanban:child-move-requested', {
+                    childId: child.id,
+                    child: JSON.parse(JSON.stringify(child)),
+                    columnId,
+                    parentCardId,
+                    columns: JSON.parse(JSON.stringify(this.columns)),
+                    cards: JSON.parse(JSON.stringify(this.cards)),
+                });
+            },
+
+            // ── Edit Click ───────────────────────────────────────────
+
             handleEdit(cardId) {
-                if (!this.hasAction(this.editAction)) {
+                this.$dispatch('kanban:edit-clicked', { cardId });
+
+                if (this.isWireMode() && this.hasAction(this.editAction)) {
+                    void this.callWireAction(this.editAction, cardId);
+                }
+            },
+
+            // ── Inline Editing ───────────────────────────────────────
+
+            isInlineEditing(cardId, field) {
+                return this.inlineEdit.cardId === cardId && this.inlineEdit.field === field;
+            },
+
+            isFieldInlineEditable(field) {
+                return this.inlineEditable.includes(field);
+            },
+
+            startInlineEdit(cardId, field, currentValue, columnId) {
+                if (!this.isFieldInlineEditable(field)) return;
+                this.inlineEdit = { cardId, field };
+                this.inlineEditValue = currentValue;
+                this.inlineEditError = '';
+                this.inlineEditColumnId = columnId;
+            },
+
+            cancelInlineEdit() {
+                this.inlineEdit = { cardId: null, field: null };
+                this.inlineEditValue = '';
+                this.inlineEditError = '';
+                this.inlineEditColumnId = null;
+            },
+
+            async confirmInlineEdit(card, columnId) {
+                if (!this.inlineEdit.cardId) return;
+
+                const field = this.inlineEdit.field;
+                const value = this.inlineEditValue;
+
+                const fieldRules = this.validationRules[field];
+                if (fieldRules) {
+                    const error = this.validateSingleField(value, fieldRules);
+                    if (error) {
+                        this.inlineEditError = error;
+                        return;
+                    }
+                }
+
+                const detail = { cardId: card.id, columnId, field, value, card: JSON.parse(JSON.stringify(card)) };
+                if (!await this.fireBeforeHook('Update', detail)) {
+                    this.cancelInlineEdit();
                     return;
                 }
 
-                void this.callWireAction(this.editAction, cardId);
+                card[field] = value;
+                if (field === 'title') card.title = value;
+                if (field === 'color') card.styles = { vars: this.buildToneVars(value) };
+
+                if (this.isWireMode() && this.hasAction(this.updateAction)) {
+                    try {
+                        const payload = {
+                            cardId: Number(card.id),
+                            columnId,
+                            meta: card.meta || {},
+                            title: field === 'title' ? value : null,
+                            progress: field === 'progress' ? this.normalizeProgress(value) : null,
+                            color: field === 'color' ? this.normalizeColor(value) : null,
+                            form: { [field]: value },
+                        };
+                        const result = await this.callWireAction(this.updateAction, payload);
+                        if (result && typeof result === 'object') {
+                            this.applyCardUpdateResult(result);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+
+                this.fireAfterHook('Update', { cardId: card.id, columnId, [field]: value });
+                this.cancelInlineEdit();
             },
+
+            // ── Card Finder ──────────────────────────────────────────
 
             findParentCard(columnId, cardId) {
                 return (this.cards[columnId] || []).find((card) => String(card.id) === String(cardId)) || null;
             },
 
-            findCardEditorTarget(columnId = this.editingColumnId, selection = this.editingCardSelection) {
-                if (!columnId || !selection) {
-                    return null;
-                }
-
-                const [kind, rawId] = String(selection).split(':');
-
-                if (!kind || !rawId) {
-                    return null;
-                }
-
-                if (kind === 'parent') {
-                    const parent = this.findParentCard(columnId, rawId);
-
-                    return parent
-                        ? {
-                            kind: 'parent',
-                            columnId,
-                            parentId: null,
-                            parentTitle: null,
-                            item: parent,
-                        }
-                        : null;
-                }
-
-                for (const parent of this.cards[columnId] || []) {
-                    const child = (parent.children || []).find((entry) => String(entry.id) === String(rawId));
-
-                    if (child) {
-                        return {
-                            kind: 'child',
-                            columnId,
-                            parentId: parent.id,
-                            parentTitle: parent.title,
-                            item: child,
-                        };
-                    }
-                }
-
-                return null;
-            },
-
-            getCardEditorTarget() {
-                return this.findCardEditorTarget();
-            },
-
-            getCardEditorTypeLabel() {
-                return this.getCardEditorTarget()?.kind === 'child' ? 'Child card' : 'Parent card';
-            },
-
-            buildEditFormData(target) {
-                if (!target) {
-                    return {};
-                }
-
-                const title = target.kind === 'child' ? target.item.name : target.item.title;
-                const color = this.normalizeColor(target.item.color || this.columns[target.columnId]?.color || 'secondary');
-
-                return {
-                    ...(this.defaultEditForm || {}),
-                    ...((this.columns[target.columnId]?.editForm || {})),
-                    ...(target.item?.meta && typeof target.item.meta === 'object' ? target.item.meta : {}),
-                    title,
-                    name: title,
-                    progress: this.normalizeProgress(target.item.progress),
-                    color,
-                    type: target.kind,
-                    columnId: target.columnId,
-                    parentId: target.parentId,
-                    parentTitle: target.parentTitle,
-                };
-            },
-
-            cloneEditFormData() {
-                return this.editFormData && typeof this.editFormData === 'object'
-                    ? JSON.parse(JSON.stringify(this.editFormData))
-                    : {};
-            },
-
-            getEditFormTitle(formData = this.editFormData) {
-                if (!formData || typeof formData !== 'object') {
-                    return '';
-                }
-
-                const title = typeof formData.title === 'string'
-                    ? formData.title
-                    : (typeof formData.name === 'string' ? formData.name : '');
-
-                return title.trim();
-            },
-
-            getEditFormProgress(formData = this.editFormData) {
-                if (!formData || typeof formData !== 'object' || formData.progress === undefined || formData.progress === null || formData.progress === '') {
-                    return null;
-                }
-
-                return this.normalizeProgress(formData.progress);
-            },
-
-            getEditFormColor(formData = this.editFormData) {
-                if (!formData || typeof formData !== 'object' || !formData.color) {
-                    return null;
-                }
-
-                return this.normalizeColor(formData.color);
-            },
-
-            syncCardEditorForm() {
-                const target = this.getCardEditorTarget();
-
-                if (!target) {
-                    this.editFormData = {};
-                    return;
-                }
-
-                this.editFormData = this.buildEditFormData(target);
-                this.editingCardError = '';
-            },
-
-            prepareCardEditor(columnId, selection) {
-                this.editingColumnId = columnId;
-                this.editingCardSelection = selection || null;
-                this.editFormData = {};
-                this.editingCardError = '';
-                this.syncCardEditorForm();
-
-                this.$nextTick(() => {
-                    const selectors = [
-                        `[data-kanban-edit-autofocus="${columnId}"] input`,
-                        `input[data-kanban-edit-autofocus="${columnId}"]`,
-                        `[data-kanban-edit-autofocus] input`,
-                        `input[data-kanban-edit-autofocus]`,
-                    ];
-
-                    document.querySelector(selectors.join(', '))?.focus();
-                });
-            },
-
-            openCardEditor(columnId, selection) {
-                this.prepareCardEditor(columnId, selection);
-                this.cardEditorOpen = true;
-            },
-
-            resetCardEditorState() {
-                this.editingColumnId = null;
-                this.editingCardSelection = null;
-                this.editFormData = {};
-                this.editingCardError = '';
-            },
+            // ── Parent-Child Sync ────────────────────────────────────
 
             syncParentChildItem(card) {
                 const childCount = Array.isArray(card.children) ? card.children.length : 0;
@@ -1163,17 +1235,11 @@
                 const childCountIndex = currentItems.findIndex((item) => item.icon === 'queue-list');
 
                 if (childCount > 0 && childCountIndex === -1) {
-                    currentItems.push({
-                        icon: 'queue-list',
-                        text: childCount,
-                    });
+                    currentItems.push({ icon: 'queue-list', text: childCount });
                 }
 
                 if (childCount > 0 && childCountIndex !== -1) {
-                    currentItems[childCountIndex] = {
-                        ...currentItems[childCountIndex],
-                        text: childCount,
-                    };
+                    currentItems[childCountIndex] = { ...currentItems[childCountIndex], text: childCount };
                 }
 
                 if (childCount === 0 && childCountIndex !== -1) {
@@ -1206,76 +1272,21 @@
                 return null;
             },
 
-            getChildMoveParentOptions() {
-                if (!this.childMoveTargetColumn) {
-                    return [];
-                }
+            // ── Result Appliers ──────────────────────────────────────
 
-                return (this.cards[this.childMoveTargetColumn] || []).map((card) => ({
-                    id: String(card.id),
-                    title: card.title,
-                }));
-            },
+            applyChildMoveResult(result, movingChildId, targetColumn, targetParentId) {
+                const removed = this.removeChildFromLocalState(movingChildId);
+                const targetColumnId = result?.columnId || targetColumn;
 
-            syncChildMoveTargetParent() {
-                if (this.childMoveMode !== 'child') {
-                    this.childMoveTargetParentId = null;
-                    return;
-                }
+                if (!removed || !targetColumnId) return;
 
-                const options = this.getChildMoveParentOptions();
-
-                if (options.length === 0) {
-                    this.childMoveTargetParentId = null;
-                    return;
-                }
-
-                if (!options.some((parent) => String(parent.id) === String(this.childMoveTargetParentId))) {
-                    this.childMoveTargetParentId = String(options[0].id);
-                }
-            },
-
-            prepareChildMove(child, columnId, parentCardId) {
-                this.movingChild = JSON.parse(JSON.stringify(child));
-                this.movingChildSourceColumn = columnId;
-                this.movingChildSourceParentId = parentCardId;
-                this.childMoveMode = 'child';
-                this.childMoveTargetColumn = columnId;
-                this.childMoveTargetParentId = String(parentCardId);
-                this.childMoveError = '';
-                this.syncChildMoveTargetParent();
-            },
-
-            openChildMove(child, columnId, parentCardId) {
-                this.prepareChildMove(child, columnId, parentCardId);
-                this.childMoveOpen = true;
-            },
-
-            resetChildMoveState() {
-                this.movingChild = null;
-                this.movingChildSourceColumn = null;
-                this.movingChildSourceParentId = null;
-                this.childMoveMode = 'child';
-                this.childMoveTargetColumn = null;
-                this.childMoveTargetParentId = null;
-                this.childMoveError = '';
-            },
-
-            applyChildMoveResult(result) {
-                const removed = this.removeChildFromLocalState(this.movingChild?.id);
-                const targetColumnId = result.columnId || this.childMoveTargetColumn;
-
-                if (!removed || !targetColumnId) {
-                    return;
-                }
-
-                if (result.mode === 'parent') {
+                if (result?.mode === 'parent' || !targetParentId) {
                     if (!Array.isArray(this.cards[targetColumnId])) {
                         this.cards[targetColumnId] = [];
                     }
 
                     this.cards[targetColumnId].push(
-                        this.hydrateCard(result.item || {
+                        this.hydrateCard(result?.item || {
                             id: removed.child.id,
                             title: removed.child.name,
                             color: removed.child.color || this.columns[targetColumnId]?.color,
@@ -1292,12 +1303,8 @@
                     return;
                 }
 
-                const targetParentId = result.targetParentId || this.childMoveTargetParentId;
                 const targetParent = this.findParentCard(targetColumnId, targetParentId);
-
-                if (!targetParent) {
-                    return;
-                }
+                if (!targetParent) return;
 
                 if (!Array.isArray(targetParent.children)) {
                     targetParent.children = [];
@@ -1305,13 +1312,9 @@
 
                 targetParent.children.push(
                     this.hydrateChild(
-                        result.item || {
-                            ...removed.child,
-                            name: removed.child.name,
-                            color: removed.child.color || targetParent.color,
-                        },
+                        result?.item || { ...removed.child, color: removed.child.color || targetParent.color },
                         targetParent.color,
-                        `${targetColumnId}-card-${targetParent.id}-child-${result.item?.id || removed.child.id}`
+                        `${targetColumnId}-card-${targetParent.id}-child-${result?.item?.id || removed.child.id}`
                     )
                 );
 
@@ -1319,149 +1322,446 @@
             },
 
             applyCardUpdateResult(result) {
-                const target = this.getCardEditorTarget();
-                const columnId = result.columnId || target?.columnId || this.editingColumnId;
-
-                if (!target || !columnId || !result?.item) {
-                    return;
-                }
+                const columnId = result.columnId;
+                if (!columnId || !result?.item) return;
 
                 if (result.mode === 'parent') {
                     const cards = this.cards[columnId] || [];
                     const cardIndex = cards.findIndex((card) => String(card.id) === String(result.item.id));
-
-                    if (cardIndex === -1) {
-                        return;
-                    }
-
+                    if (cardIndex === -1) return;
                     cards.splice(cardIndex, 1, this.hydrateCard(result.item, columnId, cardIndex));
                     return;
                 }
 
-                const parent = this.findParentCard(columnId, result.parentId || target.parentId);
-
-                if (!parent) {
-                    return;
-                }
+                const parent = this.findParentCard(columnId, result.parentId);
+                if (!parent) return;
 
                 const childIndex = (parent.children || []).findIndex((child) => String(child.id) === String(result.item.id));
-
-                if (childIndex === -1) {
-                    return;
-                }
+                if (childIndex === -1) return;
 
                 parent.children.splice(
-                    childIndex,
-                    1,
+                    childIndex, 1,
                     this.hydrateChild(result.item, parent.color, `${columnId}-card-${parent.id}-child-${result.item.id}`)
                 );
                 this.syncParentChildItem(parent);
             },
 
-            async saveCardUpdate() {
-                const target = this.getCardEditorTarget();
-                const form = this.cloneEditFormData();
-                const resolvedTitle = this.getEditFormTitle(form);
+            // ── Public API ───────────────────────────────────────────
 
-                if (!target) {
-                    this.editingCardError = 'Choose a card to update.';
+            async addCard(columnId, cardData) {
+                const detail = { columnId, cardData };
+
+                console.log(detail)
+                if (!await this.fireBeforeHook('Create', detail)) return false;
+
+                const errors = this.validateFields(cardData, this.validationRules);
+                if (Object.keys(errors).length > 0) {
+                    this.$dispatch('kanban:validation-failed', { errors, operation: 'create' });
                     return false;
                 }
 
-                if (!this.hasAction(this.updateAction)) {
-                    this.editingCardError = 'No update action is configured.';
-                    return false;
-                }
-
-                if (!this.hasCustomEditForm) {
-                    this.editingCardError = 'Provide an editForm slot to save changes.';
-                    return false;
-                }
-
-                this.editingCardError = '';
-
-                try {
-                    const result = await this.callWireAction(this.updateAction, {
-                        cardId: Number(target.item.id),
-                        columnId: this.editingColumnId,
-                        meta: target.item?.meta || {},
-                        title: resolvedTitle || null,
-                        progress: this.getEditFormProgress(form),
-                        color: this.getEditFormColor(form),
-                        form,
-                    });
-
-                    if (!result || typeof result !== 'object') {
-                        throw new Error('Update action must return an updated placement payload.');
+                if (this.isWireMode() && this.hasAction(this.createAction)) {
+                    try {
+                        const payload = {
+                            title: cardData.title || null,
+                            columnId,
+                            meta: {
+                                ...(this.defaultCreatePayload || {}),
+                                ...(this.columns[columnId]?.createPayload || {}),
+                                ...(cardData.meta || {}),
+                            },
+                            form: cardData,
+                        };
+                        const createdCard = await this.callWireAction(this.createAction, payload);
+                        if (!createdCard || typeof createdCard !== 'object') {
+                            throw new Error('Create action must return a card payload.');
+                        }
+                        this.pushCard(columnId, createdCard);
+                        this.fireAfterHook('Create', { card: createdCard, columnId });
+                        return true;
+                    } catch (error) {
+                        console.error(error);
+                        return false;
                     }
-
-                    this.applyCardUpdateResult(result);
-                    return true;
-                } catch (error) {
-                    this.editingCardError = 'Failed to update card info';
-                    console.error(error);
-                    return false;
                 }
+
+                const optimisticCard = {
+                    id: `temp-${Date.now()}`,
+                    title: cardData.title || 'Untitled',
+                    color: cardData.color || this.columns[columnId]?.color || 'secondary',
+                    progress: cardData.progress ? this.normalizeProgress(cardData.progress) : 0,
+                    showProgress: (cardData.progress || 0) > 0,
+                    tags: cardData.tags || [],
+                    items: cardData.items || [],
+                    avatars: cardData.avatars || [],
+                    children: cardData.children || [],
+                    meta: cardData.meta || {},
+                };
+                this.pushCard(columnId, optimisticCard);
+                this.fireAfterHook('Create', { card: optimisticCard, columnId });
+                return true;
             },
 
-            async submitChildMove() {
-                if (!this.movingChild) {
-                    return false;
+            pushCard(columnId, cardData) {
+                if (!Array.isArray(this.cards[columnId])) {
+                    this.cards[columnId] = [];
                 }
 
-                if (!this.hasAction(this.childMoveAction)) {
-                    this.childMoveError = 'No child move action is configured.';
-                    return false;
-                }
-
-                if (this.childMoveMode === 'child' && !this.childMoveTargetParentId) {
-                    this.childMoveError = 'Choose a target parent.';
-                    return false;
-                }
-
-                this.childMoveError = '';
-
-                try {
-                    const result = await this.callWireAction(this.childMoveAction, {
-                        childId: this.movingChild.id,
-                        targetColumnId: this.childMoveTargetColumn,
-                        targetParentId: this.childMoveMode === 'child'
-                            ? Number(this.childMoveTargetParentId)
-                            : null,
-                    });
-
-                    if (!result || typeof result !== 'object') {
-                        throw new Error('Child move action must return a placement payload.');
-                    }
-
-                    this.applyChildMoveResult(result);
-                    return true;
-                } catch (error) {
-                    this.childMoveError = 'Failed to move child item';
-                    console.error(error);
-                    return false;
-                }
+                this.cards[columnId].push(
+                    this.hydrateCard(cardData, columnId, this.cards[columnId].length)
+                );
             },
+
+            removeCard(columnId, cardId) {
+                if (!Array.isArray(this.cards[columnId])) return false;
+                const index = this.cards[columnId].findIndex((c) => String(c.id) === String(cardId));
+                if (index === -1) return false;
+                this.cards[columnId].splice(index, 1);
+                return true;
+            },
+
+            async deleteCard(columnId, cardId, kind = 'parent', parentCardId = null) {
+                if (!this.hasAction(this.deleteAction)) return false;
+
+                const payload = { cardId, columnId, kind };
+                if (parentCardId) payload.parentCardId = parentCardId;
+
+                if (this.isWireMode()) {
+                    try {
+                        await this.callWireAction(this.deleteAction, payload);
+                    } catch (e) {
+                        console.error(e);
+                        return false;
+                    }
+                }
+
+                if (kind === 'child' && parentCardId) {
+                    this.removeChildFromLocalState(cardId);
+                } else {
+                    this.removeCard(columnId, cardId);
+                }
+
+                this.$dispatch('kanban:card-deleted', { cardId, columnId, kind });
+                return true;
+            },
+
+            async moveCard(cardId, fromColumn, toColumn, index) {
+                const detail = { cardId, fromColumn, toColumn, index };
+                if (!await this.fireBeforeHook('Move', detail)) return false;
+
+                const sourceCards = this.cards[fromColumn] || [];
+                const cardIndex = sourceCards.findIndex((c) => String(c.id) === String(cardId));
+                if (cardIndex === -1) return false;
+
+                const [card] = sourceCards.splice(cardIndex, 1);
+                if (!Array.isArray(this.cards[toColumn])) this.cards[toColumn] = [];
+
+                const targetCards = this.cards[toColumn];
+                const insertAt = Math.max(0, Math.min(index ?? targetCards.length, targetCards.length));
+                const movedCard = this.hydrateCard(
+                    { ...card, color: this.columns[toColumn]?.color || card.color },
+                    toColumn, insertAt
+                );
+                targetCards.splice(insertAt, 0, movedCard);
+
+                const payload = { cardId, fromColumnId: fromColumn, toColumnId: toColumn, dropIndex: insertAt, dragType: 'parent' };
+                if (this.isWireMode() && this.hasAction(this.moveAction)) {
+                    try { await this.callWireAction(this.moveAction, payload); } catch (e) { console.error(e); }
+                }
+
+                this.fireAfterHook('Move', payload);
+                return true;
+            },
+
+            async demoteParentToChild(draggedCard, sourceColumnId, targetCard, targetColumnId) {
+                const payload = {
+                    cardId: Number(draggedCard.id),
+                    targetParentId: Number(targetCard.id),
+                    targetColumnId,
+                    sourceColumnId,
+                };
+
+                if (!await this.fireBeforeHook('Move', payload)) return;
+
+                // Remove parent from source column
+                const sourceCards = this.cards[sourceColumnId] || [];
+                const cardIndex = sourceCards.findIndex((c) => String(c.id) === String(draggedCard.id));
+                if (cardIndex === -1) return;
+                sourceCards.splice(cardIndex, 1);
+
+                // Convert to child and add to target parent
+                if (!Array.isArray(targetCard.children)) {
+                    targetCard.children = [];
+                }
+
+                const childData = {
+                    id: draggedCard.id,
+                    name: draggedCard.title,
+                    type: 'Child',
+                    status_name: '',
+                    progress: draggedCard.progress || 0,
+                    color: draggedCard.color || targetCard.color,
+                    meta: draggedCard.meta || {},
+                };
+
+                targetCard.children.push(
+                    this.hydrateChild(
+                        childData,
+                        targetCard.color,
+                        `${targetColumnId}-card-${targetCard.id}-child-${draggedCard.id}`
+                    )
+                );
+                this.syncParentChildItem(targetCard);
+                this.expandedCards[targetCard.uid] = true;
+
+                // Call Livewire action
+                if (this.isWireMode() && this.hasAction(this.demoteToChildAction)) {
+                    try {
+                        const result = await this.callWireAction(this.demoteToChildAction, payload);
+                        if (result && typeof result === 'object' && result.item) {
+                            // Update the child with server-returned data
+                            const childIndex = targetCard.children.findIndex((c) => String(c.id) === String(draggedCard.id));
+                            if (childIndex !== -1) {
+                                targetCard.children.splice(childIndex, 1,
+                                    this.hydrateChild(result.item, targetCard.color, `${targetColumnId}-card-${targetCard.id}-child-${result.item.id || draggedCard.id}`)
+                                );
+                                this.syncParentChildItem(targetCard);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+
+                this.fireAfterHook('Move', { ...payload, mode: 'demote' });
+            },
+
+            updateCard(columnId, cardId, data) {
+                const cards = this.cards[columnId] || [];
+                const card = cards.find((c) => String(c.id) === String(cardId));
+                if (!card) return false;
+                Object.assign(card, data);
+                if (data.color) {
+                    card.color = this.normalizeColor(data.color);
+                    card.styles = { vars: this.buildToneVars(card.color) };
+                }
+                if (data.title !== undefined) card.title = data.title;
+                if (data.progress !== undefined) {
+                    card.progress = this.normalizeProgress(data.progress);
+                    card.showProgress = card.progress > 0;
+                }
+                if (data.children !== undefined) {
+                    card.children = data.children;
+                    card.has_children = card.children.length > 0;
+                }
+                return true;
+            },
+
+            async saveCard(columnId, cardId, data) {
+                const detail = { columnId, cardId, data };
+                if (!await this.fireBeforeHook('Update', detail)) return false;
+
+                this.updateCard(columnId, cardId, data);
+
+                if (this.isWireMode() && this.hasAction(this.updateAction)) {
+                    try {
+                        const payload = {
+                            cardId: Number(cardId),
+                            columnId,
+                            meta: data.meta || {},
+                            title: data.title ?? null,
+                            progress: data.progress !== undefined ? this.normalizeProgress(data.progress) : null,
+                            color: data.color ?? null,
+                            form: data,
+                        };
+                        const result = await this.callWireAction(this.updateAction, payload);
+                        if (result && typeof result === 'object') {
+                            this.applyCardUpdateResult(result);
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        return false;
+                    }
+                }
+
+                this.fireAfterHook('Update', { cardId, columnId, ...data });
+                return true;
+            },
+
+            patchCard(result) {
+                if (!result || typeof result !== 'object') return;
+                this.applyCardUpdateResult(result);
+            },
+
+            getCards(columnId) {
+                return JSON.parse(JSON.stringify(this.cards[columnId] || []));
+            },
+
+            getCard(columnId, cardId) {
+                const card = (this.cards[columnId] || []).find((c) => String(c.id) === String(cardId));
+                return card ? JSON.parse(JSON.stringify(card)) : null;
+            },
+
+            // ── Drag and Drop ────────────────────────────────────────
 
             handleDragStart(event, card, columnId, index) {
                 this.isDragging = true;
+                this.dragType = 'parent';
                 this.draggedCard = JSON.parse(JSON.stringify(card));
+                this.draggedChild = null;
                 this.sourceColumn = columnId;
                 this.sourceIndex = index;
+                this.dragSourceParentId = null;
+                event.dataTransfer.effectAllowed = 'move';
+            },
+
+            handleChildDragStart(event, child, columnId, parentId, childIndex) {
+                event.stopPropagation();
+                this.isDragging = true;
+                this.dragType = 'child';
+                this.draggedChild = JSON.parse(JSON.stringify(child));
+                this.draggedCard = null;
+                this.sourceColumn = columnId;
+                this.sourceIndex = childIndex;
+                this.dragSourceParentId = parentId;
                 event.dataTransfer.effectAllowed = 'move';
             },
 
             resetDragState() {
                 this.draggedCard = null;
+                this.draggedChild = null;
+                this.dragType = null;
                 this.sourceColumn = null;
                 this.sourceIndex = null;
+                this.dragSourceParentId = null;
                 this.isDragging = false;
                 this.dropIndex = null;
                 this.dropColumn = null;
+
+                document.querySelectorAll('.kanban-drop-target').forEach((el) => {
+                    el.classList.remove('kanban-drop-target');
+                });
+            },
+
+            handleDragOverParent(event, columnId, card, index) {
+                if (!this.isDragging) return;
+
+                event.dataTransfer.dropEffect = 'move';
+
+                if (this.dragType === 'child') {
+                    if (String(card.id) !== String(this.dragSourceParentId) || columnId !== this.sourceColumn) {
+                        event.currentTarget.classList.add('kanban-drop-target');
+                    }
+                } else if (this.dragType === 'parent') {
+                    if (this.hasAction(this.demoteToChildAction) && this.draggedCard && String(card.id) !== String(this.draggedCard.id)) {
+                        event.currentTarget.classList.add('kanban-drop-target');
+                    } else {
+                        this.updateDropIndex(columnId, index);
+                    }
+                }
+            },
+
+            async handleDropOnParent(event, columnId, targetCard) {
+                if (!this.isDragging) return;
+
+                event.currentTarget.classList.remove('kanban-drop-target');
+
+                if (this.dragType === 'child' && this.draggedChild) {
+                    const payload = {
+                        childId: this.draggedChild.id,
+                        targetColumnId: columnId,
+                        targetParentId: Number(targetCard.id),
+                        mode: 'child',
+                    };
+
+                    if (!await this.fireBeforeHook('ChildMove', payload)) {
+                        this.resetDragState();
+                        return;
+                    }
+
+                    const removed = this.removeChildFromLocalState(this.draggedChild.id);
+                    if (!removed) {
+                        this.resetDragState();
+                        return;
+                    }
+
+                    if (!Array.isArray(targetCard.children)) {
+                        targetCard.children = [];
+                    }
+
+                    targetCard.children.push(
+                        this.hydrateChild(
+                            { ...removed.child, color: removed.child.color || targetCard.color },
+                            targetCard.color,
+                            `${columnId}-card-${targetCard.id}-child-${removed.child.id}`
+                        )
+                    );
+                    this.syncParentChildItem(targetCard);
+                    this.expandedCards[targetCard.uid] = true;
+
+                    if (this.isWireMode() && this.hasAction(this.childMoveAction)) {
+                        void this.callWireAction(this.childMoveAction, payload).catch(console.error);
+                    }
+
+                    this.fireAfterHook('ChildMove', payload);
+                } else if (this.dragType === 'parent' && this.draggedCard) {
+                    if (this.hasAction(this.demoteToChildAction) && String(targetCard.id) !== String(this.draggedCard.id)) {
+                        await this.demoteParentToChild(this.draggedCard, this.sourceColumn, targetCard, columnId);
+                    } else {
+                        this.handleDrop(event, columnId);
+                        return;
+                    }
+                }
+
+                this.resetDragState();
             },
 
             async handleDrop(event, targetColumnId) {
-                if (!this.hasAction(this.moveAction)) {
+                if (!this.isDragging) return;
+
+                if (this.dragType === 'child' && this.draggedChild) {
+                    const payload = {
+                        childId: this.draggedChild.id,
+                        targetColumnId,
+                        targetParentId: null,
+                        mode: 'parent',
+                    };
+
+                    if (!await this.fireBeforeHook('ChildMove', payload)) {
+                        this.resetDragState();
+                        return;
+                    }
+
+                    const removed = this.removeChildFromLocalState(this.draggedChild.id);
+                    if (!removed) {
+                        this.resetDragState();
+                        return;
+                    }
+
+                    if (!Array.isArray(this.cards[targetColumnId])) {
+                        this.cards[targetColumnId] = [];
+                    }
+
+                    this.cards[targetColumnId].push(
+                        this.hydrateCard({
+                            id: removed.child.id,
+                            title: removed.child.name,
+                            color: this.columns[targetColumnId]?.color || removed.child.color,
+                            progress: removed.child.progress,
+                            showProgress: removed.child.progress > 0,
+                            tags: [],
+                            items: [],
+                            avatars: [],
+                            children: [],
+                            meta: removed.child.meta || {},
+                        }, targetColumnId, this.cards[targetColumnId].length)
+                    );
+
+                    if (this.isWireMode() && this.hasAction(this.childMoveAction)) {
+                        void this.callWireAction(this.childMoveAction, payload).catch(console.error);
+                    }
+
+                    this.fireAfterHook('ChildMove', payload);
                     this.resetDragState();
                     return;
                 }
@@ -1475,6 +1775,19 @@
                 const draggedCard = sourceCards[this.sourceIndex];
 
                 if (!draggedCard) {
+                    this.resetDragState();
+                    return;
+                }
+
+                const movePayload = {
+                    cardId: draggedCard.id,
+                    fromColumnId: this.sourceColumn,
+                    toColumnId: targetColumnId,
+                    dropIndex: null,
+                    dragType: 'parent',
+                };
+
+                if (!await this.fireBeforeHook('Move', movePayload)) {
                     this.resetDragState();
                     return;
                 }
@@ -1505,122 +1818,23 @@
 
                 targetCards.splice(insertIndex, 0, movedCard);
 
-                try {
-                    await this.callWireAction(this.moveAction, {
-                        cardId: draggedCard.id,
-                        fromColumnId: this.sourceColumn,
-                        toColumnId: targetColumnId,
-                        dropIndex: insertIndex,
-                    });
-                } catch (error) {
-                    console.error(error);
+                movePayload.dropIndex = insertIndex;
+
+                if (this.isWireMode() && this.hasAction(this.moveAction)) {
+                    try {
+                        await this.callWireAction(this.moveAction, movePayload);
+                    } catch (error) {
+                        console.error(error);
+                    }
                 }
 
+                this.fireAfterHook('Move', movePayload);
                 this.resetDragState();
             },
 
             updateDropIndex(columnId, index) {
                 this.dropColumn = columnId;
                 this.dropIndex = index;
-            },
-
-            cloneCreateFormData() {
-                return this.createFormData && typeof this.createFormData === 'object'
-                    ? JSON.parse(JSON.stringify(this.createFormData))
-                    : {};
-            },
-
-            getCreateFormTitle(formData = this.createFormData) {
-                if (!formData || typeof formData !== 'object') {
-                    return '';
-                }
-
-                const title = typeof formData.title === 'string'
-                    ? formData.title
-                    : (typeof formData.name === 'string' ? formData.name : '');
-
-                return title.trim();
-            },
-
-            prepareNewCard(columnId) {
-                this.newCardColumn = columnId;
-                this.createFormData = {
-                    ...(this.defaultCreateForm || {}),
-                    ...((this.columns[columnId]?.createForm || {})),
-                };
-                this.newCardMeta = {
-                    ...(this.defaultCreatePayload || {}),
-                    ...((this.columns[columnId]?.createPayload || {})),
-                };
-                this.errorMessage = '';
-
-                this.$nextTick(() => {
-                    const selectors = [
-                        `[data-kanban-create-autofocus="${columnId}"] input`,
-                        `input[data-kanban-create-autofocus="${columnId}"]`,
-                        `[data-kanban-create-autofocus] input`,
-                        `input[data-kanban-create-autofocus]`,
-                        `[data-kanban-new-card-input="${columnId}"] input`,
-                        `input[data-kanban-new-card-input="${columnId}"]`,
-                    ];
-
-                    document.querySelector(selectors.join(', '))?.focus();
-                });
-            },
-
-            openCreateModal(columnId) {
-                this.prepareNewCard(columnId);
-                this.createModalOpen = true;
-            },
-
-            resetNewCardState() {
-                this.createFormData = {};
-                this.newCardColumn = null;
-                this.newCardMeta = {};
-                this.errorMessage = '';
-            },
-
-            async addNewCard() {
-                if (!this.hasAction(this.createAction)) {
-                    this.errorMessage = 'No create action is configured.';
-                    return false;
-                }
-
-                const form = this.cloneCreateFormData();
-                const resolvedTitle = this.getCreateFormTitle(form);
-
-                if (!this.hasCustomCreateForm && !resolvedTitle) {
-                    this.errorMessage = 'Title is required.';
-                    return false;
-                }
-
-                try {
-                    const createdCard = await this.callWireAction(this.createAction, {
-                        title: resolvedTitle || null,
-                        columnId: this.newCardColumn,
-                        meta: this.newCardMeta,
-                        form,
-                    });
-
-                    if (!createdCard || typeof createdCard !== 'object') {
-                        throw new Error('Create action must return a card payload.');
-                    }
-
-                    if (!Array.isArray(this.cards[this.newCardColumn])) {
-                        this.cards[this.newCardColumn] = [];
-                    }
-
-                    this.cards[this.newCardColumn].push(
-                        this.hydrateCard(createdCard, this.newCardColumn, this.cards[this.newCardColumn].length)
-                    );
-
-                    this.resetNewCardState();
-                    return true;
-                } catch (error) {
-                    this.errorMessage = 'Failed to create work item';
-                    console.error(error);
-                    return false;
-                }
             },
         };
     }
