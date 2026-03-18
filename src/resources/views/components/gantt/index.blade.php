@@ -17,6 +17,7 @@ $scale = in_array($scale, $scales) ? $scale : 'day';
     </div>
 </div>
 
+@once
 <script>
 function ganttChart({ tasks, scale }) {
     return {
@@ -52,3 +53,4 @@ function ganttChart({ tasks, scale }) {
     };
 }
 </script>
+@endonce

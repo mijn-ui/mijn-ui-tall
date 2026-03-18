@@ -10,7 +10,7 @@
 @endphp
 
 <label {{ $attributes->class([$baseClasses]) }}>
-    <input type="checkbox" class="peer sr-only" {{ $checked ? 'checked' : '' }} {{ $disabled ? 'disabled' : '' }}
-        {{ $attributes->whereStartsWith('wire:model') }} />
+    <input type="checkbox" role="switch" class="peer sr-only" @checked($checked) @disabled($disabled)
+        {{ $attributes->except(['class', 'checked', 'disabled']) }} />
     <div class="{{ $switchClasses }}"></div>
 </label>

@@ -38,8 +38,9 @@
         ],
     ];
 
-    $inputClasses = "{$baseClasses} {$colors[$color]['input']}";
-    $iconClasses = "{$colors[$color]['icon']} h-4 w-4";
+    $colorSet = $colors[$color] ?? $colors['primary'];
+    $inputClasses = "{$baseClasses} {$colorSet['input']}";
+    $iconClasses = "{$colorSet['icon']} h-4 w-4";
 @endphp
 
 <div {{ $attributes->class(['flex items-start gap-2'])->only(['class']) }}>

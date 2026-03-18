@@ -14,7 +14,7 @@
         'default' => 'border',
         'outlined' => 'border',
         'filled' => 'border-0',
-    ][$variant];
+    ][$variant] ?? 'border';
 
     $colorClasses = [
         'default' => [
@@ -47,22 +47,22 @@
             'outlined' => 'border-warning text-warning',
             'filled' => 'bg-warning text-warning-foreground',
         ],
-        'error' => [
+        'danger' => [
             'default' => 'border-danger text-danger bg-danger/20 dark:bg-danger/10',
             'outlined' => 'border-danger text-danger',
             'filled' => 'bg-danger text-white',
         ],
-    ][$color][$variant];
+    ][$color][$variant] ?? 'border-inverse-text/20 text-main-text bg-accent';
 
 @endphp
-<div x-cloak x-on:keydown.escape.window="open = false" role="dialog" aria-labelledby="{{ $id }}-title"
-    aria-describedby="{{ $id }}-description"
+<div x-cloak x-on:keydown.escape.window="open = false"
     x-bind:class="open ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     class="transition fixed inset-0 flex items-center justify-center bg-black/80 z-50">
-    <div x-show="open" x-on:click.outside="open = false"
+    <div x-show="open" x-on:click.outside="open = false" x-trap.noscroll="open"
+        role="alertdialog" aria-modal="true" aria-labelledby="{{ $id }}-title" aria-describedby="{{ $id }}-description"
         {{ $attributes->merge(['class' => "$base $colorClasses $variantClass"]) }}>
         <button x-on:click="open = false" aria-label="Close" class="absolute top-2 right-2 size-8">
-            <mijnui:icon class="hgi hgi-stroke hgi-cancel-01 text-gray-500 hover:text-gray-700">
+            <mijnui:icon class="hgi hgi-stroke hgi-cancel-01 text-muted-text hover:text-foreground">
             </mijnui:icon>
         </button>
 

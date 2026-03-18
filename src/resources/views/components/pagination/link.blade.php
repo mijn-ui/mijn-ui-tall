@@ -11,7 +11,7 @@
     $query_perPage = $c_perPage ? "&perPage=$c_perPage" : '';
     
 @endphp
-<a href="?page={{$page . $query_perPage}}" wire:navigate>
+<a href="?page={{$page . $query_perPage}}" wire:navigate aria-label="Go to page {{ $page }}" {{ $current == $page ? 'aria-current=page' : '' }}>
     <button x-init {{ $current == $page ? 'disabled' : '' }} {{ $attributes->merge(['class' => $base]) }}>
         {{ $page }}
     </button>

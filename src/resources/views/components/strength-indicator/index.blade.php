@@ -1,5 +1,4 @@
 @props([
-    'strength' => '',
     'name' => null,
     'errors' => null,
 ])
@@ -32,7 +31,7 @@
         'medium' => ['bg-yellow-500', 'bg-yellow-500', 'bg-gray-300', 'bg-gray-300'],
         'strong' => ['bg-yellow-500', 'bg-yellow-500', 'bg-yellow-500', 'bg-gray-300'],
         'verystrong' => ['bg-green-500', 'bg-green-500', 'bg-green-500', 'bg-green-500'],
-    ][$strengthLevel];
+    ][$strengthLevel] ?? ['bg-gray-300', 'bg-gray-300', 'bg-gray-300', 'bg-gray-300'];
 @endphp
 
 <div {{ $attributes->merge(['class' => $baseClasses]) }}>

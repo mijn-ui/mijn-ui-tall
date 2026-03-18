@@ -5,7 +5,7 @@
     'striped' => false,
     'bordered' => false,
     'searchBy' => [],
-    'viewableColumns' => [], // Array of objects: ['label' => 'Name', 'key' => 'name']
+    'hasViewable' => false,
 ])
 
 @php
@@ -23,75 +23,90 @@
     ];
 
     $hasSearch = !empty($searchBy);
-    $hasViewableColumns = !empty($viewableColumns);
 @endphp
 
-<div {{ $attributes->class(['space-y-4']) }} 
+<div {{ $attributes->class(['space-y-4 mijnui-table-root']) }} 
     x-data="{
-        visibleColumns: @js(collect($viewableColumns)->pluck('key')->toArray()),
+        hasViewable: @js($hasViewable),
+        allColumns: [],
+        visibleColumns: [],
+        registerColumn(key, label, visible = true) {
+            if (!this.allColumns.find(c => c.key === key)) {
+                this.allColumns = [...this.allColumns, { key, label }];
+                if (visible) {
+                    this.visibleColumns = [...this.visibleColumns, key];
+                }
+            }
+        },
         toggleColumn(key) {
             if (this.visibleColumns.includes(key)) {
                 this.visibleColumns = this.visibleColumns.filter(c => c !== key);
             } else {
-                this.visibleColumns.push(key);
+                this.visibleColumns = [...this.visibleColumns, key];
             }
         }
     }"
 >
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
-        @if($hasSearch)
-            <div class="relative max-w-sm w-full">
-                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                    <x-mijnui::icon name="fa-solid fa-magnifying-glass" size="sm" />
-                </div>
-                <input 
-                    type="search" 
-                    wire:model.live.debounce.300ms="search"
-                    placeholder="Search by {{ implode(', ', $searchBy) }}..."
-                    class="block w-full pl-10 pr-3 py-2 border border-border rounded-lg bg-background text-sm focus:ring-primary focus:border-primary"
-                >
+    @if($hasSearch || $hasViewable)
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+            <div class="flex flex-1 items-center gap-2 max-w-md">
+                @if($hasSearch)
+                    <mijnui:input 
+                        type="search" 
+                        placeholder="Search by {{ implode(', ', $searchBy) }}..."
+                        start-icon="fa-solid fa-magnifying-glass"
+                        clearable
+                        class="h-9"
+                        {{ $attributes->only(['wire:model', 'wire:model.live', 'wire:model.live.debounce.300ms']) }}
+                    />
+                @endif
             </div>
-        @endif
 
-        @if($hasViewableColumns)
-            <x-mijnui::dropdown :close-on-select="false" align="right" teleport>
-                <x-slot:trigger>
-                    <x-mijnui::button variant="outline" class="gap-2">
-                        <x-mijnui::icon name="fa-solid fa-filter" size="sm" />
-                        <span>Filtered by</span>
-                        <x-mijnui::icon name="fa-solid fa-chevron-down" size="sm" />
-                    </x-mijnui::button>
-                </x-slot:trigger>
+            <div class="flex items-center gap-2">
+                @if($hasViewable)
+                    <mijnui:dropdown :close-on-select="false" align="right">
+                        <mijnui:dropdown.trigger>
+                            <mijnui:button variant="outline" class="gap-2">
+                                <span>Columns</span>
+                                <mijnui:icon name="fa-solid fa-chevron-down" size="sm" />
+                            </mijnui:button>
+                        </mijnui:dropdown.trigger>
 
-                <x-slot:content>
-                    <div class="min-w-[200px] space-y-1">
-                        @foreach($viewableColumns as $column)
-                            <x-mijnui::dropdown.item 
-                                x-on:click.stop="toggleColumn('{{ $column['key'] }}')"
-                                class="flex items-center justify-between"
-                            >
-                                <span>{{ $column['label'] }}</span>
-                                <template x-if="visibleColumns.includes('{{ $column['key'] }}')">
-                                    <x-mijnui::icon name="fa-solid fa-check" size="xs" class="text-primary" />
-                                </template>
-                            </x-mijnui::dropdown.item>
-                        @endforeach
-                    </div>
-                </x-slot:content>
-            </x-mijnui::dropdown>
-        @endif
-    </div>
+                        <mijnui:dropdown.content>
+                            <div class="min-w-[200px] flex flex-col p-1">
+                                <div class="space-y-0.5">
+                                    <template x-for="column in allColumns" :key="column.key">
+                                        <mijnui:dropdown.item 
+                                            x-on:click.stop="toggleColumn(column.key)"
+                                            class="flex items-center justify-between py-2 group"
+                                        >
+                                            <span x-text="column.label" class="flex-1 truncate"></span>
+                                            <mijnui:switch 
+                                                x-bind:checked="visibleColumns.includes(column.key)"
+                                                x-on:change.stop="toggleColumn(column.key)"
+                                                size="sm"
+                                                class="pointer-events-none"
+                                            />
+                                        </mijnui:dropdown.item>
+                                    </template>
+                                </div>
+                            </div>
+                        </mijnui:dropdown.content>
+                    </mijnui:dropdown>
+                @endif
+            </div>
+        </div>
+    @endif
 
     <div @class($wrapperClasses)>
-        <table @class($tableClasses)>
+        <table @class($tableClasses) @unless($attributes->has('aria-label')) aria-label="Data table" @endunless>
             {{ $slot }}
         </table>
     </div>
 
     @if($paginate)
         <div class="px-1">
-            <x-mijnui::pagination :data="$paginate" :$perPage />
+            <mijnui:pagination :data="$paginate" :$perPage />
         </div>
     @endif
 </div>
-

@@ -56,11 +56,12 @@ $dates = collect(range(0, $totalDays - 1))->map(fn($i) => $startDate->copy()->ad
 $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
 @endphp
 
-<div x-data="ganttChartComponent(@js($allEntries), @js($jsDates), {{ $dayWidth }})"
+<div x-data="ganttChartComponent(@js($allEntries), @js($jsDates), @js($dayWidth))"
      x-ref="ganttComponent"
      @gantt-updated.window="$wire.call('handleGanttUpdate', $event.detail)"
-     class="h-[672px] w-full rounded-2xl bg-surface shadow-lg overflow-hidden">
+     class="gantt-chart-colors h-[672px] w-full rounded-2xl bg-surface shadow-lg overflow-hidden">
 
+    @once
     <style>
         .progress-fill {
             height: 100%;
@@ -84,7 +85,7 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
 
         .gantt-bar:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: var(--shadow-md);
         }
 
         .resize-handle {
@@ -96,15 +97,16 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
             opacity: 1;
         }
 
-        :root {
-            --color-primary: #3b82f6;
-            --color-secondary: #64748b;
-            --color-success: #22c55e;
-            --color-warning: #eab308;
-            --color-danger: #ef4444;
-            --color-gray: #6b7280;
+        .gantt-chart-colors {
+            --color-primary: var(--primary);
+            --color-secondary: var(--secondary-foreground);
+            --color-success: var(--success);
+            --color-warning: var(--warning);
+            --color-danger: var(--danger);
+            --color-gray: var(--muted-foreground);
         }
     </style>
+    @endonce
 
     <div class="relative flex h-full w-full overflow-hidden">
         <!-- Left Sidebar -->
@@ -236,16 +238,16 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
                                 <!-- Progress Tooltip -->
                                 <div x-show="hoveredProgressEntryId === entry._id || isDrawing"
                                      x-transition
-                                     class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
+                                     class="absolute -top-8 left-1/2 -translate-x-1/2 bg-inverse text-inverse-foreground text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50">
                                     <span x-text="`${entry.process ?? 0}% complete`"></span>
-                                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-4 border-transparent border-t-gray-900"></div>
+                                    <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-4 border-transparent border-t-inverse"></div>
                                 </div>
                             </div>
 
                             <!-- Task Text -->
                             <template x-if="entry.text">
                                 <div class="absolute inset-0 px-3 flex items-center pointer-events-none">
-                                    <span class="text-xs font-medium text-white truncate" x-text="entry.text"></span>
+                                    <span class="text-xs font-medium text-inverse-foreground truncate" x-text="entry.text"></span>
                                 </div>
                             </template>
                         </div>
@@ -256,6 +258,7 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
     </div>
 </div>
 
+@once
 <script>
     function ganttChartComponent(allEntries, jsDates, dayWidth) {
         return {
@@ -373,3 +376,4 @@ $jsDates = $dates->map(fn($d) => $d->format('Y-m-d'))->values();
         };
     }
 </script>
+@endonce

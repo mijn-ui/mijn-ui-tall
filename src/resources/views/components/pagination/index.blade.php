@@ -13,17 +13,18 @@ if (!method_exists($data, 'firstItem')) {
     throw new \Exception('data for pagination must be type of Illuminate\Pagination\LengthAwarePaginator');
 }
 
-$c_page = request()->query('page') ?? 1;
-$c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
+$c_page = (int) (request()->query('page') ?? 1);
+$c_perPage = (int) (request()->query('perPage') ?? $perPage ?? $perPageOptions[0]);
 @endphp
 
-<nav 
+<nav
     {{ $attributes->merge([
         'class' => 'flex flex-col items-center justify-between gap-2 py-2 sm:flex-row',
+        'aria-label' => 'Pagination',
     ]) }}
     x-data="{
-        currentPage: {{ $c_page }},
-        perPage: {{ $c_perPage }},
+        currentPage: @js($c_page),
+        perPage: @js($c_perPage),
         perPageOpen: false,
         goToPage(page) {
             const url = new URL(window.location.href);
@@ -74,7 +75,7 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
             </a>
             
             {{-- First Page --}}
-            <span v-if="currentPage == 1">
+            <span>
                 <mijnui:pagination.link current="{{$c_page}}" page="1"/>
             </span>
 
@@ -127,7 +128,7 @@ $c_perPage = request()->query('perPage') ?? $perPage ?? $perPageOptions[0];
             @foreach ($perPageOptions as $perPageOption)
                 <div
                     @click="updatePerPage({{ $perPageOption }}); perPageOpen = false"
-                    :class="perPage == {{ $perPageOption }} ? 'bg-primary/10 text-black' : 'hover:bg-primary/20 hover:text-primary'"
+                    :class="perPage == {{ $perPageOption }} ? 'bg-primary/10 text-foreground' : 'hover:bg-primary/20 hover:text-primary'"
                     class="inline-flex w-full cursor-pointer items-center justify-between gap-2 rounded-md px-4 py-2 text-left text-sm"
                 >
                     {{ $perPageOption }}

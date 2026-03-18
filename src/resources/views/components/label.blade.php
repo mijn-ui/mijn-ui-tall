@@ -11,10 +11,10 @@
         'default' => 'text-base',
         'lg' => 'text-lg',
         'xl' => 'text-xl',
-    ][$size];
+    ][$size] ?? 'text-sm';
 
 @endphp
 
-<label for="{{ $for }}" {{ $attributes->merge(['class' => $sizeClass]) }}>
+<label @if($for) for="{{ $for }}" @endif {{ $attributes->merge(['class' => $sizeClass]) }}>
     {{ $slot }}
 </label>

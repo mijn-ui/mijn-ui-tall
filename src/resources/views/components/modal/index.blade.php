@@ -1,6 +1,6 @@
-@props(['name'])
+@props([])
 
-<span x-data="{ open: false }" {{$attributes}}>
+<span x-data="{ open: false, modalId: 'modal-' + Math.random().toString(36).substr(2, 9) }" {{$attributes}}>
 
     @isset($content)
         {{ $content }}

@@ -38,12 +38,13 @@
             {{ $slot }}
         </select>
     @else
-        <div x-data="selectComponent(@js($multiple), '{{ $placeholder }}', @entangle($attributes->wire('model')) ?? null)">
+        <div x-data="selectComponent(@js($multiple), @js($placeholder), @entangle($attributes->wire('model')) ?? null)">
             <input type="hidden" {{ $attributes->except('class') }} @isset($name) name="{{ $name }}" @endisset x-bind:value="value" />
 
             <div class="relative w-full" x-on:click.outside="selectOpen = false">
                 <!-- Trigger -->
-                <button type="button" x-on:click="selectOpen = !selectOpen" role="combobox" x-ref="selectTrigger"
+                <button type="button" x-on:click="selectOpen = !selectOpen" role="combobox" :aria-expanded="selectOpen" aria-haspopup="listbox" aria-controls="select-options" x-ref="selectTrigger"
+                    @if($label) aria-label="{{ $label }}" @endif
                     @disabled($disabled) class="{{ $triggerClasses }}">
                     <template x-if="multiple">
                         <div class="flex flex-wrap gap-1 items-center min-h-[1.25rem]">
@@ -51,12 +52,12 @@
                                 <mijnui:badge x-text="item" backicon="fa-solid fa-xmark" @click.stop="removeSelected(item)" />
                             </template>
                             <template x-if="selectedItem.length === 0">
-                                <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="text-muted-text line-clamp-1"></span>
+                                <span x-text="chosenText[value] ?? @js($placeholder)" class="text-muted-text line-clamp-1"></span>
                             </template>
                         </div>
                     </template>
                     <template x-if="!multiple">
-                        <span x-text="chosenText[value] ?? '{{ $placeholder }}'" class="line-clamp-1"></span>
+                        <span x-text="chosenText[value] ?? @js($placeholder)" class="line-clamp-1"></span>
                     </template>
                     <svg stroke="currentColor" fill="none" viewBox="0 0 24 24" height="1em" width="1em"
                         xmlns="http://www.w3.org/2000/svg" stroke-width="2" stroke-linecap="round"
@@ -68,11 +69,12 @@
 
                 <!-- Dropdown -->
                 <div x-cloak x-show="selectOpen" x-ref="dropdownPanel" x-transition
+                    id="select-options" role="listbox"
                     class="{{ $contentClasses }}"
                     x-effect="adjustDropdown($refs.selectTrigger, $refs.dropdownPanel)">
                     @if ($searchable)
                         <div class="border-b border-border/10 p-2">
-                            <input type="text" x-model="search" placeholder="Search..." 
+                            <input type="text" x-model="search" placeholder="Search..." aria-label="Search options"
                                 class="w-full rounded-md border-0 bg-secondary px-3 py-1.5 text-sm ring-1 ring-border focus:ring-2 focus:ring-primary outline-none placeholder:text-muted-foreground transition-all" />
                             @if($clearable)
                                 <button type="button" x-show="search" @click="search=''; $nextTick(() => $el.previousElementSibling.focus())" class="absolute right-4 top-4 text-muted-foreground hover:text-foreground">
@@ -101,6 +103,7 @@
     @endif
 </mijnui:with-field>
 
+@once
 <script>
     function selectComponent(multiple, placeholder, entangledValue) {
         return {
@@ -158,3 +161,4 @@
         }
     }
 </script>
+@endonce

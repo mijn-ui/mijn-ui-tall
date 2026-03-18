@@ -5,7 +5,6 @@
     'hasLoading' => false,
     'rounded' => 'md',
     'disabled' => false,
-    'mijnuiSidebarParent' => '',
     'justify' => 'center',
     'items' => 'center',
 ])
@@ -38,7 +37,7 @@
             'default' => 'shadow-xs bg-success text-success-foreground hover:bg-success/80',
             'outline' => 'border border-success text-success hover:bg-success/10',
             'subtle' => 'border border-success bg-success-subtle hover:bg-success/20 text-success',
-            'ghost' => 'text-success hover:bg-success-subtle dark:hover:bg-primary-subtle/30',
+            'ghost' => 'text-success hover:bg-success-subtle dark:hover:bg-success-subtle/30',
         ],
         'info' => [
             'default' => 'shadow-xs bg-info text-info-foreground hover:bg-info/80',
@@ -58,7 +57,7 @@
             'subtle' => 'border border-danger bg-danger-subtle hover:bg-danger/20 text-danger',
             'ghost' => 'text-danger-foreground hover:bg-danger-subtle dark:hover:bg-danger-subtle/30',
         ],
-    ][$color][$variant];
+    ][$color][$variant] ?? 'shadow-xs bg-primary text-primary-foreground hover:bg-primary/80';
 
     $sizeClasses = [
         'xs' => 'h-8 px-2',
@@ -70,14 +69,14 @@
         'icon-md' => 'px-0 gap-0 size-10',
         'icon-lg' => 'px-0 gap-0 size-11',
         'icon-xl' => 'px-0 gap-0 size-12',
-    ][$size];
+    ][$size] ?? 'h-9 px-3';
 
     $radiusClasses = [
         'sm' => 'rounded-sm',
         'md' => 'rounded-md',
         'lg' => 'rounded-lg',
         'full' => 'rounded-full',
-    ][$rounded];
+    ][$rounded] ?? 'rounded-md';
 
     $target = $attributes->whereStartsWith('wire:target')->first();
 

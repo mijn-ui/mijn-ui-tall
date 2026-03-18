@@ -8,9 +8,9 @@
 @endphp
 
 <span {{ $attributes->merge(['class' => "$base"]) }}>
-    <?php if($icon) :?>
+    @if($icon)
     <i class="{{ $icon }}"></i>
-    <?php else: ?>
+    @else
     {{ $slot }}
-    <?php endif ?>
+    @endif
 </span>

@@ -1,3 +1,4 @@
+@once
 <style>
     [draggable="true"] {
         cursor: grab;
@@ -8,17 +9,19 @@
         transform: scale(1.02);
     }
     .bg-muted-darker {
-        background-color: rgba(209, 213, 219, 0.3);
+        background-color: var(--muted);
+        opacity: 0.3;
     }
     .dragging {
         opacity: 0.5;
         transform: scale(0.98);
     }
     .drop-zone-active {
-        background-color: rgba(209, 213, 219, 0.3);
-        border: 2px dashed #3b82f6;
+        background-color: var(--muted);
+        border: 2px dashed var(--primary);
     }
 </style>
+@endonce
 
 @props([
     'width' => null,
@@ -78,6 +81,7 @@
                         x-text="cards[columnId]?.length || 0"></span>
                 </div>
                 <button
+                    aria-label="Column options"
                     class="disabled:text-muted-text/75-text inline-flex h-7 w-7 items-center justify-center gap-1 rounded-full text-sm text-muted-text hover:bg-accent hover:text-main-text">
                     <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round"
                         stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
@@ -229,9 +233,9 @@
         @click.self="showModal = false"
     >
         <div
-            class="bg-white dark:bg-[#262626] rounded-lg p-6 w-full max-w-md shadow-md"
+            class="bg-surface rounded-lg p-6 w-full max-w-md shadow-md"
         >
-            <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Add New Work Item</h2>
+            <h2 class="text-lg font-semibold mb-4 text-main-text">Add New Work Item</h2>
 
             <input
                 type="text"
@@ -239,23 +243,23 @@
                 @input="errorMessage = ''"
                 @keydown.enter="addNewCard"
                 x-ref="newCardInput"
-                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-[#262626]"
+                class="w-full border border-main-border rounded-lg px-4 py-2 bg-surface text-main-text focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Enter work item title..."
             />
 
             <template x-if="errorMessage">
-                <p class="text-sm text-red-600 mt-1" x-text="errorMessage"></p>
+                <p class="text-sm text-danger mt-1" x-text="errorMessage"></p>
             </template>
 
             <div class="flex justify-end gap-2 mt-4">
                 <button
-                    class="px-4 py-2 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    class="px-4 py-2 rounded bg-muted text-muted-text hover:bg-accent"
                     @click="showModal = false"
                 >
                     Cancel
                 </button>
                 <button
-                    class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                    class="px-4 py-2 rounded bg-primary text-primary-foreground hover:bg-primary/80"
                     @click="addNewCard"
                 >
                     Add
@@ -265,10 +269,10 @@
     </div>
 </div>
 
+@once
 <script>
 
     function kanbanBoard(initialData) {
-console.log(initialData);
         return {
             columns: initialData || {},
             cards: initialData || {},
@@ -289,11 +293,6 @@ console.log(initialData);
             errorMessage: '',
 
             init() {
-                // Debug logging
-                console.log('Kanban Board Initialized');
-                console.log('Columns:', this.columns);
-                console.log('Cards:', this.cards);
-
                 // Ensure all columns have card arrays
                 Object.keys(this.columns).forEach(columnId => {
                     if (!this.cards[columnId]) {
@@ -301,7 +300,6 @@ console.log(initialData);
                     }
                 });
 
-                console.log('Cards after init:', this.cards);
             },
 
             async getIcon(iconName) {
@@ -392,3 +390,4 @@ console.log(initialData);
         }
     }
 </script>
+@endonce

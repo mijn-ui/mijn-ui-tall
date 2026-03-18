@@ -21,15 +21,15 @@
         'lg' => 'size-6',
     ];
 
-    $iconClasses =  $iconSizes[$size] ?? 'text-lg';
+    $iconClasses = $iconSizes[$size] ?? 'text-lg';
     $svgClasses = $svgSizes[$size] ?? 'size-5';
 
 @endphp
 
-<?php if($name && !empty(trim($name))): ?>
-<i {{ $attributes->merge(['class' => "$name $iconClasses $class"]) }}></i>
-<?php else: ?>
-<span {{ $attributes->merge(['class' => "$wrapperClasses $svgClasses $class"]) }}>
+@if($name && !empty(trim($name)))
+<i aria-hidden="true" {{ $attributes->merge(['class' => "$name $iconClasses $class"]) }}></i>
+@else
+<span aria-hidden="true" {{ $attributes->merge(['class' => "$wrapperClasses $svgClasses $class"]) }}>
         {{ $slot }}
 </span>
-<?php endif; ?>
+@endif

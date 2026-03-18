@@ -6,6 +6,25 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Compilers\BladeCompiler;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * MijnUI - A TALL stack (Tailwind, Alpine.js, Laravel, Livewire) Blade component library.
+ *
+ * This service provider bootstraps MijnUI by registering:
+ * - A singleton {@see MijnuiTagCompiler} that compiles <mijnui:*> tags into standard Blade components.
+ * - A singleton {@see AssetManager} (bound as 'mijnui') for managing publishable CSS/JS assets.
+ * - The 'mijnui' view namespace pointing to the package's bundled Blade views.
+ * - Anonymous Blade component paths for all top-level and subdirectory components.
+ *
+ * Component discovery works by scanning the package's `resources/views/components` directory.
+ * Top-level components are registered under the 'mijnui' prefix, while subdirectories are
+ * registered under 'mijnui.{directory-name}', enabling nested component namespacing
+ * (e.g. <x-mijnui.button::icon />).
+ *
+ * Assets (CSS, JS, calendar locale files) are publishable via the 'mijnui-assets' tag
+ * and are placed under `public/vendor/mijnui/`.
+ *
+ * @package Mijnui\Mijnui
+ */
 class MijnuiServiceProvider extends ServiceProvider
 {
     public function register(): void

@@ -14,17 +14,17 @@
 <a
     href="{{ $href }}"
     {{ $attributes->class([$classes, 'gap-2' => $hasName])->except('alt') }}
-    data-flux-brand
+    data-mijnui-brand
 >
     <div class="{{ $hasName ? 'size-6' : 'size-8' }} rounded-sm overflow-hidden shrink-0">
-        <?php if(is_string($logo)) : ?>
-            <img src="{{ $logo }}" {{ $attributes->only('alt') }} />
-        <?php else: ?> 
+        @if(is_string($logo))
+            <img src="{{ $logo }}" alt="{{ $alt ?? $name ?? '' }}" />
+        @else
             {{ $logo ?? $slot }}
-        <?php endif; ?>
+        @endif
     </div>
 
-    <?php if($hasName) : ?>
+    @if($hasName)
         <div class="{{ $textClasses }}">{{ $name }}</div>
-    <?php endif; ?>
+    @endif
 </a>

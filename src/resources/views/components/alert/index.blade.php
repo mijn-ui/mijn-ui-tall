@@ -4,7 +4,9 @@
 ])
 
 @php
-    $variant = $variant === 'outlined' ? 'outline' : ($variant === 'filled' ? 'default' : $variant);
+    use Mijnui\Mijnui\Support\ColorHelper;
+
+    $variant = ColorHelper::normalizeVariant($variant);
 
     $base = 'relative flex gap-3 rounded-lg p-4 w-full';
 
@@ -51,10 +53,10 @@
             'subtle' => 'bg-danger-subtle text-danger border border-danger/20',
             'ghost' => 'bg-transparent text-danger',
         ],
-    ][$color][$variant];
+    ][$color][$variant] ?? 'bg-inverse text-inverse-foreground';
 @endphp
 
-<div {{ $attributes->merge(['class' => "$base $colorClasses"]) }}>
+<div {{ $attributes->merge(['class' => "$base $colorClasses"]) }} role="alert">
     <div class="flex-1">
         {{ $slot }}
     </div>

@@ -17,13 +17,19 @@
 
 @if ($href)
     <a href="{{ $href }}"
+       role="tab"
+       aria-selected="{{ $active ? 'true' : 'false' }}"
+       tabindex="{{ $active ? '0' : '-1' }}"
        data-state="{{ $dataState }}"
        {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
         {{ $slot }}
     </a>
 @else
-    <button x-data="{value : '{{$value}}'}" x-on:click="currentValue = value"
-        x-bind:data-state=" (currentValue == value ? 'active' : null) ?? '{{ $dataState }}'"
+    <button x-data="{value : @js($value)}" x-on:click="currentValue = value"
+        x-bind:data-state=" (currentValue == value ? 'active' : null) ?? @js($dataState)"
+        role="tab"
+        :aria-selected="(currentValue == value ? 'true' : null) ?? @js($active ? 'true' : 'false')"
+        :tabindex="(currentValue == value || @js($active)) ? '0' : '-1'"
         {{ $attributes->merge(['class' => $classes, 'disabled' => $disabled]) }}>
         {{ $slot }}
     </button>

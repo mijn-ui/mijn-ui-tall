@@ -28,7 +28,7 @@ $sizeClass = match ($size) {
 @endphp
 
 <div
-    x-data="{ open: false, persistent: {{ $persistent == 'true' ? 'true' : 'false' }} }"
+    x-data="{ open: false, persistent: @js((bool) $persistent) }"
     @keydown.escape.window="if(!persistent) open = false"
 >
     @isset($trigger)
@@ -36,14 +36,17 @@ $sizeClass = match ($size) {
     @endisset
 
     @if($backdrop)
-        <div class="fixed inset-0 z-40 bg-black/50" x-show="open" x-transition.opacity @click.away="if(!persistent) open = false" ></div>
+        <div class="fixed inset-0 z-40 bg-black/50" x-show="open" x-transition.opacity @click="if(!persistent) open = false" aria-hidden="true"></div>
     @endif
 
     <div
         x-show="open"
         x-transition
+        x-trap.noscroll="open"
         @click.away="if(!persistent) open = false"
-        class="fixed z-50 bg-white shadow-xl flex flex-col {{ $positionClass }} {{ $sizeClass }} {{ $class }}"
+        role="dialog"
+        aria-modal="true"
+        class="fixed z-50 bg-background-alt text-foreground shadow-xl flex flex-col {{ $positionClass }} {{ $sizeClass }} {{ $class }}"
     >
          @isset($header)
             {{ $header }}

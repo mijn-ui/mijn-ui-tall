@@ -1,5 +1,5 @@
 <x-slot name="trigger">
-    <div x-on:click="open = !open">
+    <button type="button" x-on:click="open = !open" :aria-expanded="open" aria-haspopup="dialog" {{ $attributes }}>
         {{ $slot }}
-    </div>
+    </button>
 </x-slot>

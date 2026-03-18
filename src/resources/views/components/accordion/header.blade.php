@@ -3,7 +3,7 @@
 @endphp
 
 <x-slot:header>
-    <button type="button" x-on:click="open = !open" {{ $attributes->merge([
+    <button type="button" x-on:click="open = !open" :aria-expanded="open" :aria-controls="contentId" :id="headerId" {{ $attributes->merge([
     'class' => $base,
 ]) }}>
         <span>{{ $slot }}</span>
