@@ -30,6 +30,11 @@
         "laravel/frontend-preset": "For scaffolding frontend assets like Tailwind CSS and Alpine.js."
     },
     "extra": {
+        "laravel": {
+            "providers": [
+                "Mijnui\\Mijnui\\MijnuiServiceProvider"
+            ]
+        },
         "branch-alias": {
             "dev-develop": "1.1.x-dev"
         }

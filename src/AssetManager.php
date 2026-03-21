@@ -19,9 +19,7 @@ class AssetManager
         });
 
         Blade::directive('mijnuiAppearance', function ($expression) {
-            return <<<PHP
-            {!! app('mijnui')->mijnuiAppearance($expression) !!}
-            PHP;
+            return '<?php echo ' . self::class . '::mijnuiAppearance(' . ($expression ?: "'light'") . '); ?>';
         });
     }
 
