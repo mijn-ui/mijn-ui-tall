@@ -1,7 +1,6 @@
-@source "../src/resources/**/*.blade.php";
-
-@theme {
-
+/* Tailwind v3 Compatible - Custom CSS Variables */
+:root {
+	/* Dark mode configuration */
 	--dark-mode: class;
 	/* Border Radius */
 	--radius-2xs: 0.125rem;
@@ -239,6 +238,8 @@
 	--border-info: hsl(217 91% 60%);
 	--border-info-subtle: hsl(217 33% 25%);
 }
+
+/* End of custom properties for Tailwind v3 compatibility */
 
 @layer base {
 	* {

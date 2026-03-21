@@ -4,6 +4,7 @@
     "type": "library",
     "license": "MIT",
     "version": "v0.1.0",
+    "keywords": ["laravel", "blade", "components", "ui", "tailwind", "tailwindcss", "v3"],
     "authors": [
         {
             "name": "paingsoeko",
