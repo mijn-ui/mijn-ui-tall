@@ -57,16 +57,28 @@
         return;
     }
 
-    $config = [
-        'entries' => $allEntries->values()->toArray(),
+    // Generate date range for timeline columns
+    $paddingDays = 14; // extra days before/after tasks
+    $rangeStart = $taskStart->copy()->subDays($paddingDays);
+    $rangeEnd = $taskEnd->copy()->addDays($paddingDays);
+
+    $jsDates = [];
+    $cursor = $rangeStart->copy();
+    while ($cursor->lte($rangeEnd)) {
+        $jsDates[] = $cursor->format('Y-m-d');
+        $cursor->addDay();
+    }
+
+    $jsConfig = [
+        'entries' => $entries,
         'scale' => $scale,
-        'taskStartDate' => $taskStart->format('Y-m-d'),
-        'taskEndDate' => $taskEnd->format('Y-m-d'),
         'today' => Carbon::today()->format('Y-m-d'),
+        'rangeStart' => $rangeStart->format('Y-m-d'),
+        'rangeEnd' => $rangeEnd->format('Y-m-d'),
     ];
 @endphp
 
-<div x-data="ganttChartComponent(@js($allEntries), @js($jsDates), @js($dayWidth))" x-ref="ganttComponent"
+<div x-data="ganttChartComponent(@js($jsConfig))" x-ref="ganttComponent"
     @gantt-updated.window="$wire.call('handleGanttUpdate', $event.detail)"
     class="gantt-chart-colors h-[672px] w-full rounded-2xl bg-surface shadow-lg overflow-hidden">
 
@@ -315,16 +327,177 @@
 
 @once
     <script>
-        function ganttChartComponent(allEntries, jsDates, dayWidth) {
+        function ganttChartComponent(config) {
             return {
+                // ── Data ──
+                entries: config.entries,
                 expanded: {},
-                entries: allEntries,
-                dates: jsDates,
-                dayWidth: dayWidth,
+                scale: config.scale || 'day',
+                today: config.today,
+                rangeStart: config.rangeStart,
+                rangeEnd: config.rangeEnd,
+                _loading: false,
                 hoveredEntryId: null,
                 hoveredProgressEntryId: null,
                 draggedEntry: null,
                 isDrawing: false,
+
+                // ── Date Range (reactive) ──
+                startDate: '',
+                endDate: '',
+
+                // ── Scale Configs ──
+                _scales: {
+                    day:   { ppd: 48, buffer: 15, extend: 30 },
+                    week:  { ppd: 16, buffer: 60, extend: 60 },
+                    month: { ppd: 4,  buffer: 180, extend: 90 },
+                },
+
+                get _cfg() { return this._scales[this.scale]; },
+                get ppd() { return this._cfg.ppd; },
+
+                // ── Init ──
+                init() {
+                    const buf = this._cfg.buffer;
+                    this.startDate = this._addDays(this.rangeStart, -buf);
+                    this.endDate = this._addDays(this.rangeEnd, buf);
+
+                    this.$nextTick(() => {
+                        this._scrollTo(this.today);
+                        this._bindScroll();
+                    });
+                },
+
+                // ── Date Helpers ──
+                _d(str) { return new Date(str + 'T12:00:00'); },
+
+                _addDays(str, n) {
+                    const d = this._d(str);
+                    d.setDate(d.getDate() + n);
+                    return d.toISOString().slice(0, 10);
+                },
+
+                _diffDays(a, b) {
+                    return Math.round((this._d(b) - this._d(a)) / 86400000);
+                },
+
+                // ── Day Range ──
+                get dayRange() {
+                    const total = this._diffDays(this.startDate, this.endDate);
+                    const days = [];
+                    for (let i = 0; i <= total; i++) {
+                        days.push(this._addDays(this.startDate, i));
+                    }
+                    return days;
+                },
+
+                get totalWidth() { return this.dayRange.length * this.ppd; },
+
+                // ── Display Columns (respects scale for headers) ──
+                get columns() {
+                    const range = this.dayRange;
+                    const ppd = this.ppd;
+
+                    if (this.scale === 'day') {
+                        const dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+                        return range.map((ds, i) => {
+                            const d = this._d(ds);
+                            const dow = d.getDay();
+                            return {
+                                key: ds, date: ds, x: i * ppd, width: ppd,
+                                label1: String(d.getDate()).padStart(2, '0'),
+                                label2: dayNames[dow],
+                                isToday: ds === this.today,
+                                isWeekend: dow === 0 || dow === 6,
+                            };
+                        });
+                    }
+
+                    const cols = [];
+                    let gKey = null, gStart = 0, gCount = 0;
+
+                    for (let i = 0; i < range.length; i++) {
+                        const d = this._d(range[i]);
+                        let key = this.scale === 'week'
+                            ? (() => { const m = new Date(d); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m.toISOString().slice(0, 10); })()
+                            : range[i].slice(0, 7);
+
+                        if (key !== gKey) {
+                            if (gKey !== null) cols.push(this._groupCol(gKey, gStart, gCount, range));
+                            gKey = key; gStart = i; gCount = 1;
+                        } else { gCount++; }
+                    }
+                    if (gKey !== null) cols.push(this._groupCol(gKey, gStart, gCount, range));
+                    return cols;
+                },
+
+                _groupCol(key, startIdx, dayCount, range) {
+                    const ppd = this.ppd;
+                    const d = this._d(range[startIdx]);
+                    const endD = this._d(range[startIdx + dayCount - 1]);
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    let label1, label2;
+
+                    if (this.scale === 'week') {
+                        label1 = `${d.getDate()} - ${endD.getDate()}`;
+                        label2 = months[d.getMonth()];
+                    } else {
+                        label1 = months[d.getMonth()];
+                        label2 = String(d.getFullYear());
+                    }
+
+                    return {
+                        key, date: range[startIdx], x: startIdx * ppd, width: dayCount * ppd,
+                        label1, label2,
+                        isToday: range.slice(startIdx, startIdx + dayCount).includes(this.today),
+                        isWeekend: false,
+                    };
+                },
+
+                // ── Header Groups ──
+                get headerGroups() {
+                    const groups = [];
+                    let label = null, width = 0;
+                    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+                    for (const col of this.columns) {
+                        const d = this._d(col.date);
+                        const l = this.scale === 'month'
+                            ? String(d.getFullYear())
+                            : `${months[d.getMonth()]} ${d.getFullYear()}`;
+
+                        if (l !== label) {
+                            if (label !== null) groups.push({ key: label + '-' + groups.length, label, width });
+                            label = l; width = col.width;
+                        } else { width += col.width; }
+                    }
+                    if (label !== null) groups.push({ key: label + '-' + groups.length, label, width });
+                    return groups;
+                },
+
+                // ── Row / Grid ──
+                rowHeight: 40,
+                get gridHeight() { return this.visibleEntries.length * this.rowHeight; },
+
+                // ── Today ──
+                get todayLabel() {
+                    const d = this._d(this.today);
+                    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                    return `${dayNames[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+                },
+
+                get todayX() {
+                    if (!this.today) return null;
+                    const days = this._diffDays(this.startDate, this.today);
+                    if (days < 0 || days > this.dayRange.length) return null;
+                    return days * this.ppd + this.ppd / 2;
+                },
+
+                // ── Expand / Collapse ──
+                toggleExpand(index) {
+                    this.expanded[index] = !this.expanded[index];
+                },
 
                 get visibleEntries() {
                     let top = -1;
@@ -340,6 +513,49 @@
                         });
                 },
 
+                // ── Bar Positioning ──
+                getBarStyle(entry, idx) {
+                    if (!entry.start || !entry.end) return 'display:none';
+                    const startDays = this._diffDays(this.startDate, entry.start);
+                    const duration = this._diffDays(entry.start, entry.end);
+                    const x = startDays * this.ppd;
+                    const w = Math.max(duration * this.ppd, this.ppd);
+                    const barH = entry._is_parent ? 32 : 24;
+                    const top = idx * this.rowHeight + (this.rowHeight - barH) / 2;
+                    return `left:${x}px; width:${w}px; top:${top}px; height:${barH}px;`;
+                },
+
+                // ── Scroll / Infinite ──
+                _bindScroll() {
+                    const el = this.$refs.timeline;
+                    if (!el) return;
+                    el.addEventListener('scroll', () => this._onScroll(), { passive: true });
+                },
+
+                _onScroll() {
+                    const el = this.$refs.timeline;
+                    if (!el || this._loading) return;
+
+                    if (this.$refs.sidebarBody) {
+                        this.$refs.sidebarBody.scrollTop = el.scrollTop;
+                    }
+
+                    const threshold = 400;
+                    if (el.scrollLeft < threshold) this._extendLeft();
+                    if (el.scrollWidth - el.scrollLeft - el.clientWidth < threshold) this._extendRight();
+                },
+
+                _extendLeft() {
+                    this._loading = true;
+                    const days = this._cfg.extend;
+                    const oldWidth = this.totalWidth;
+                    this.startDate = this._addDays(this.startDate, -days);
+                    this.$nextTick(() => {
+                        this.$refs.timeline.scrollLeft += (this.totalWidth - oldWidth);
+                        this._loading = false;
+                    });
+                },
+
                 _extendRight() {
                     this._loading = true;
                     this.endDate = this._addDays(this.endDate, this._cfg.extend);
@@ -349,8 +565,18 @@
                 _scrollTo(dateStr) {
                     const el = this.$refs.timeline;
                     if (!el) return;
-                    const x = this._dateToX(dateStr);
-                    el.scrollLeft = Math.max(0, x - el.clientWidth / 4);
+                    const x = this._diffDays(this.startDate, dateStr) * this.ppd;
+                    el.scrollLeft = Math.max(0, x - el.clientWidth / 3);
+                },
+
+                // ── Scale Switch ──
+                setScale(newScale) {
+                    if (this.scale === newScale) return;
+                    this.scale = newScale;
+                    const buf = this._cfg.buffer;
+                    this.startDate = this._addDays(this.rangeStart, -buf);
+                    this.endDate = this._addDays(this.rangeEnd, buf);
+                    this.$nextTick(() => this._scrollTo(this.today));
                 },
 
                 // ── Interactions: Move Bar ──
@@ -435,6 +661,34 @@
                     window.addEventListener('mouseup', onUp);
                 },
 
+                startDrawProgress(entry, event) {
+                    this.draggedEntry = entry;
+                    this.isDrawing = true;
+                    this.hoveredProgressEntryId = entry._id;
+                    this.drawProgress(event);
+                },
+
+                drawProgress(event) {
+                    if (!this.isDrawing || !this.draggedEntry) return;
+
+                    const container = event.currentTarget;
+                    const rect = container.getBoundingClientRect();
+                    const x = event.clientX - rect.left;
+                    const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+                    this.draggedEntry.process = Math.round(percent);
+                },
+
+                stopDrawProgress() {
+                    if (this.isDrawing && this.draggedEntry) {
+                        this._dispatch(this.draggedEntry);
+                    }
+
+                    this.isDrawing = false;
+                    this.draggedEntry = null;
+                    this.hoveredProgressEntryId = null;
+                },
+
                 // ── Dispatch Update ──
                 _dispatch(entry) {
                     this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
@@ -447,49 +701,8 @@
                         },
                         bubbles: true,
                     }));
-                };
-
-                window.addEventListener('mousemove', moveHandler);
-                window.addEventListener('mouseup', upHandler);
-            },
-
-                startDrawProgress(entry, event) {
-                this.draggedEntry = entry;
-                this.isDrawing = true;
-                this.hoveredProgressEntryId = entry._id;
-                this.drawProgress(event);
-            },
-
-            drawProgress(event) {
-                if (!this.isDrawing || !this.draggedEntry) return;
-
-                const container = event.currentTarget;
-                const rect = container.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
-
-                this.draggedEntry.process = Math.round(percent);
-            },
-
-            stopDrawProgress() {
-                if (this.isDrawing && this.draggedEntry) {
-                    this.$el.dispatchEvent(new CustomEvent('gantt-updated', {
-                        detail: {
-                            id: this.draggedEntry._task_id,
-                            _id: this.draggedEntry._id,
-                            start: this.draggedEntry.start,
-                            end: this.draggedEntry.end,
-                            process: this.draggedEntry.process
-                        },
-                        bubbles: true
-                    }));
-                }
-
-                this.isDrawing = false;
-                this.draggedEntry = null;
-                this.hoveredProgressEntryId = null;
-            }
-        };
+                },
+            };
         }
     </script>
 @endonce

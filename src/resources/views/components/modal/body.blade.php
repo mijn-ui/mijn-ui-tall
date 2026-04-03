@@ -1,3 +1,3 @@
-<p class="text-sm text-muted-text">
+<div {{ $attributes->merge(['class' => 'px-4 py-3 text-sm text-muted-foreground']) }}>
     {{ $slot }}
-    </div>
+</div>

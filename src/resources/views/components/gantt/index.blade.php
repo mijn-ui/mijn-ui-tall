@@ -3,7 +3,7 @@
     'header' => null,
     'tasks' => [],
     'members' => [],
-    'scale' => 'day',
+    'scale' => 'month',
     'class' => '',
 ])
 

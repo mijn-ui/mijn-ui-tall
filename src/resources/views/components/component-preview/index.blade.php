@@ -87,10 +87,10 @@
                     <div class="{{ $combinedClass }}">
                         @if (is_array($code))
                             @foreach ($code as $c)
-                                {!! \Illuminate\Support\Facades\Blade::render($c) !!}
+                                <div>{!! \Illuminate\Support\Facades\Blade::render($c) !!}</div>
                             @endforeach
                         @else
-                            {!! \Illuminate\Support\Facades\Blade::render($code) !!}
+                            <div>{!! \Illuminate\Support\Facades\Blade::render($code) !!}</div>
                         @endif
                     </div>
                 </div>
