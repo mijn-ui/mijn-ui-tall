@@ -2,7 +2,7 @@
     $base = 'flex items-start justify-between gap-4';
 @endphp
 
-<div {{ $attributes->merge(['class' => $base]) }}>
+<div {{ $attributes->merge(['class' => "p-4 pb-0 $base"]) }}>
     <div class="flex flex-col gap-y-1">
         {{ $slot }}
     </div>

@@ -24,12 +24,6 @@
 @endif
 {{ $attributes }}>
 
-    @isset($trigger)
-        {{ $trigger }}
-    @endisset
-
-    @isset($content)
-        {{ $content }}
-    @endisset
+    {{ $slot }}
 
 </span>
