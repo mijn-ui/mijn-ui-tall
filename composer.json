@@ -3,7 +3,7 @@
     "description": "UI component library for Laravel.",
     "type": "library",
     "license": "MIT",
-    "version": "v0.1.0",
+    "version": "1.0.0",
     "authors": [
         {
             "name": "paingsoeko",
@@ -23,25 +23,23 @@
             "Mijnui\\Mijnui\\": "src/"
         }
     },
+    "keywords": ["laravel", "livewire", "tailwind", "alpine", "components", "ui", "tall-stack"],
+    "homepage": "https://github.com/mijn-ui/mijn-ui-tall",
     "require": {
-        "php": "^8.1"
+        "php": "^8.1",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/view": "^10.0|^11.0|^12.0"
     },
     "suggest": {
-        "laravel/frontend-preset": "For scaffolding frontend assets like Tailwind CSS and Alpine.js."
+        "livewire/livewire": "Required for interactive components (^3.5.19)."
     },
     "extra": {
         "laravel": {
             "providers": [
                 "Mijnui\\Mijnui\\MijnuiServiceProvider"
             ]
-        },
-        "branch-alias": {
-            "dev-develop": "1.1.x-dev"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
-    "require-dev": {
-        "barryvdh/laravel-debugbar": "^4.0"
-    }
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

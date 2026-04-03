@@ -69,6 +69,15 @@ class MijnuiServiceProvider extends ServiceProvider
         $compiler = new MijnuiTagCompiler();
         $this->app->extend('blade.compiler', function (BladeCompiler $bladeCompiler) use ($compiler) {
             $bladeCompiler->extend(function ($value) use ($compiler) {
+                // Protect @php...@endphp blocks from tag compilation
+                // so that mijnui tags inside PHP strings are not compiled
+                $phpBlocks = [];
+                $value = preg_replace_callback('/@php(.*?)@endphp/s', function ($match) use (&$phpBlocks) {
+                    $placeholder = '___MIJNUI_PHP_BLOCK_' . count($phpBlocks) . '___';
+                    $phpBlocks[$placeholder] = $match[0];
+                    return $placeholder;
+                }, $value);
+
                 // Compile opening tags
                 $value = $compiler->compileOpeningTags($value);
 
@@ -77,6 +86,9 @@ class MijnuiServiceProvider extends ServiceProvider
 
                 // Compile closing tags
                 $value = $compiler->compileClosingTags($value);
+
+                // Restore @php...@endphp blocks
+                $value = str_replace(array_keys($phpBlocks), array_values($phpBlocks), $value);
 
                 return $value;
             });
